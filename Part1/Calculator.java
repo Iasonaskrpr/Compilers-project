@@ -1,8 +1,9 @@
-
+import java.io.InputStream;
+import java.io.IOException;
 class Calculator{
     private final InputStream in;
     private int lookahead;
-    public CalcEval(InputStream in) throws IOException {
+    public Calculator(InputStream in) throws IOException {
         this.in = in;
         lookahead = in.read();
     }
@@ -23,15 +24,18 @@ class Calculator{
     private boolean isExp(int c){
         return '*' == c;
     }
-    private int evalDigit(int c) {
+    private boolean evalDigit(int c) {
         return c - '0';
     }
 
-    private int isLParen(int c){
+    private boolean isLParen(int c){
         return '(' == c;
     }
-    private int isRParen(int c){
+    private boolean isRParen(int c){
         return ')' == c;
+    }
+    private boolean isEOF(int c){
+        return c == -1;
     }
     public int eval() throws IOException, ParseError {
         int value = expr();
@@ -65,9 +69,30 @@ class Calculator{
         else if(isLParen(condition)){
             return expr();
         }
+
         throw new ParseError();
     }
-    
+    private int numberTail(int condition){
+        consume(lookahead);
+        if(isDigit(lookahead)){
+            condition *= 10;
+            condition += digit(lookahead);
+            return numberTail(condition);
+        }
+        else if(isOp(lookahead)||isRParen(lookahead)||isEOF(lookahead)){
+            return condition;
+        }
+        else if(isExp(lookahead)){
+            consume(lookahead);
+            if (isExp(lookahead)){
+                return condition;
+            }
+            else{
+                throw new ParseError();
+            }
+        }
+        throw new ParseError();
+    }
     private int digit(int condition){
         if(isDigit(condition)){
             return evalDigit(condition);
