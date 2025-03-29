@@ -1,5 +1,6 @@
 import java.io.InputStream;
 import java.io.IOException;
+import java.lang.Math;
 class Calculator{
     private final InputStream in;
     private int lookahead;
@@ -24,7 +25,7 @@ class Calculator{
     private boolean isExp(int c){
         return '*' == c;
     }
-    private boolean evalDigit(int c) {
+    private int evalDigit(int c) {
         return c - '0';
     }
 
@@ -35,7 +36,7 @@ class Calculator{
         return ')' == c;
     }
     private boolean isEOF(int c){
-        return c == -1;
+        return c == -1 || c == 10;
     }
     public int eval() throws IOException, ParseError {
         int value = expr();
@@ -46,33 +47,63 @@ class Calculator{
         return value;
     }
     private int expr() throws IOException, ParseError{
-        consume(lookahead);
         if(isDigit(lookahead)||isLParen(lookahead)){
             int cond = power(lookahead);
-            cond  = expTail(cond);
+            cond  = exprTail(cond);
             return cond;
         }
         throw new ParseError();
     }
-    private int power(int condition){
+    private int exprTail(int condition) throws IOException, ParseError{
+        if(isOp(lookahead)){
+            int op = lookahead;
+            consume(lookahead);
+            if(op == '+'){
+                condition += power(lookahead);
+            }
+            else{
+                condition -= power(lookahead);
+            }
+            return exprTail(condition);
+        }
+        else if(isEOF(lookahead)||isRParen(lookahead)){
+            return condition;
+        }
+        throw new ParseError();
+    }
+    private int power(int condition) throws IOException, ParseError{
         if(isDigit(condition)||isLParen(condition)){
             condition = number(condition);
             return powerTail(condition);
         }
         throw new ParseError();
     }
-    private int number(int condition){
+    private int powerTail(int condition) throws IOException, ParseError{
+        if(isExp(lookahead)){
+            consume(lookahead);
+            int num2 = number(lookahead);
+            num2 = powerTail(num2);
+            return (int)Math.pow(condition,num2);
+        }
+        else if(isOp(lookahead)||isRParen(lookahead)||isEOF(lookahead)){
+            return condition;
+        }
+        throw new ParseError();
+    }
+    private int number(int condition) throws IOException, ParseError{
         if(isDigit(condition)){
             condition = digit(condition);
             return numberTail(condition);
         }
-        else if(isLParen(condition)){
-            return expr();
+        else if (isLParen(condition)) {
+            consume(condition); 
+            int value = expr();
+            consume(')'); 
+            return value;
         }
-
         throw new ParseError();
     }
-    private int numberTail(int condition){
+    private int numberTail(int condition) throws IOException, ParseError{
         consume(lookahead);
         if(isDigit(lookahead)){
             condition *= 10;
@@ -93,7 +124,7 @@ class Calculator{
         }
         throw new ParseError();
     }
-    private int digit(int condition){
+    private int digit(int condition) throws IOException, ParseError{
         if(isDigit(condition)){
             return evalDigit(condition);
         }
