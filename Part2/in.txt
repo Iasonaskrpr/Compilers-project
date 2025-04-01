@@ -1,0 +1,4 @@
+if ("Hello" = "World") 
+    "Equal"
+else
+    "Unequal"
