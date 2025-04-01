@@ -38,6 +38,9 @@ IDENTIFIER  = [a-zA-Z_][a-zA-Z0-9_]*
     "+"         { return new Symbol(sym.CONCAT); }
     "("         { return new Symbol(sym.LPAREN); }
     ")"         { return new Symbol(sym.RPAREN); }
+    "{"         { return new Symbol(sym.LBRAC); }
+    "}"         { return new Symbol(sym.RBRAC); }
+    ","         { return new Symbol(sym.COM)}
     {STRING}    { return new Symbol(sym.STR); }
     {WhiteSpace} { } 
     {IDENTIFIER} { return symbol(sym.IDENTIFIER, yytext()); }
