@@ -1,0 +1,19 @@
+import java_cup.runtime.*;
+
+parser code {:
+    // Connect this parser to a scanner!
+    Scanner s;
+    Parser(Scanner s){ this.s=s; }
+:}
+
+scan with {: return s.next_token(); :};
+
+
+
+/*Terminals*/
+terminal            IF,ELSE,PREFIX,SUFFIX,REVERSE,EQ,CONCAT, LPAREN, RPAREN,LBRAC,RBRAC,COM;
+terminal String     STR,IDENTIFIER;        // our scanner provides numbers as strings
+
+/*  Non terminals */
+non terminal            e,expr,funcall,stmt,fundef,op,arg,id;
+
