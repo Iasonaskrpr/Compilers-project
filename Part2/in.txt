@@ -7,7 +7,7 @@ repeat(x) {
 }
 
 cond_repeat(c, x) {
-  if ("?" suffix c)
+  if ("mum" suffix c)
     repeat(x)
   else
     x

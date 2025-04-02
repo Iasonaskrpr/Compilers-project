@@ -6,7 +6,7 @@ import java_cup.runtime.*;
 %column
 
 %cup
-
+%unicode
 %{
 StringBuffer stringBuffer = new StringBuffer();
 private Symbol symbol(int type) {
