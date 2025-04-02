@@ -39,7 +39,7 @@ IDENTIFIER  = [a-zA-Z_][a-zA-Z0-9_]*
     ")"         { return new Symbol(sym.RPAREN); }
     "{"         { return new Symbol(sym.LBRAC); }
     "}"         { return new Symbol(sym.RBRAC); }
-    ","         { return new Symbol(sym.COM);}
+    ","         { return new Symbol(sym.COMMA);}
     {WhiteSpace} { } 
     {IDENTIFIER} { return symbol(sym.IDENTIFIER, yytext()); }
     \"             { stringBuffer.setLength(0); yybegin(STRING); }
