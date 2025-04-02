@@ -20,7 +20,6 @@ private Symbol symbol(int type, Object value) {
 /* Regular expressions */
 LineTerminator = \r|\n|\r\n
 WhiteSpace     = {LineTerminator} | [ \t\f]
-STRING      = \"[^\"]*\"
 IDENTIFIER  = [a-zA-Z_][a-zA-Z0-9_]*
 
 %state STRING
@@ -40,8 +39,7 @@ IDENTIFIER  = [a-zA-Z_][a-zA-Z0-9_]*
     ")"         { return new Symbol(sym.RPAREN); }
     "{"         { return new Symbol(sym.LBRAC); }
     "}"         { return new Symbol(sym.RBRAC); }
-    ","         { return new Symbol(sym.COM)}
-    {STRING}    { return new Symbol(sym.STR); }
+    ","         { return new Symbol(sym.COM);}
     {WhiteSpace} { } 
     {IDENTIFIER} { return symbol(sym.IDENTIFIER, yytext()); }
     \"             { stringBuffer.setLength(0); yybegin(STRING); }
@@ -50,9 +48,10 @@ IDENTIFIER  = [a-zA-Z_][a-zA-Z0-9_]*
 
 <STRING> {
     \"                             { 
+                                      Symbol s = symbol(sym.STRING_LITERAL, stringBuffer.toString());
                                       yybegin(YYINITIAL);
                                       stringBuffer.setLength(0);
-                                      return symbol(sym.STRING_LITERAL, stringBuffer.toString());
+                                      return s;
                                     }
     [^\n\r\"\\]+                   { stringBuffer.append( yytext() ); }
     \\t                            { stringBuffer.append('\t'); }
