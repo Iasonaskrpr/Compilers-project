@@ -6,3 +6,7 @@ execute:
 	java -cp ../java-cup-11b-runtime.jar:. Main
 clean:
 	rm -f *.class *~
+	rm Parser.java
+	rm sym.java 
+	rm Scanner.java
+	rm Translated.ir

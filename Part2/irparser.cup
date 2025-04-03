@@ -38,7 +38,7 @@ expr ::= funcall:f {: RESULT  = f; :}
         | if_stmt:ifst {: RESULT  = ifst; :}
         | expr:e1 CONCAT expr:e2 {: RESULT  = e1 + "+" + e2; :}
         | id:i {: RESULT  = i; :}
-        | REVERSE id:i {: RESULT  = "reverse " + i; :}
+        | REVERSE expr:e1 {: RESULT  = "reverse " + e1; :}
         ;
 funcall ::= IDENTIFIER:i LPAREN arg:a RPAREN {: RESULT = i+"(" + a + ")"; :}
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
