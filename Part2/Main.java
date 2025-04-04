@@ -14,7 +14,7 @@ public class Main {
         parser.parse();
          
         outFile = new PrintStream(new FileOutputStream("Translated.java"));
-        System.setOut(originalOut);
+        System.setOut(outFile);
         FileReader fileReader2 = new FileReader("Translated.ir");
         Parser2 parser2 = new Parser2(new Scanner(fileReader2));
         parser2.parse();
