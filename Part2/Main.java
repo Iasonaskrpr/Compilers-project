@@ -13,7 +13,7 @@ public class Main {
         Parser parser = new Parser(new Scanner(fileReader)); 
         parser.parse();
          
-        //outFile = new PrintStream(new FileOutputStream("Translated.java"));
+        outFile = new PrintStream(new FileOutputStream("Translated.java"));
         System.setOut(originalOut);
         FileReader fileReader2 = new FileReader("Translated.ir");
         Parser2 parser2 = new Parser2(new Scanner(fileReader2));
