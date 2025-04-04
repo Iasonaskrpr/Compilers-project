@@ -3,10 +3,7 @@ name()  {
 }
     
 surname() {
-  if(reverse reverse "Doe" suffix "John")
-    "Doe"
-  else
-    "John"
+  "Doe"
 }
     
 fullname(first_name, sep, last_name) {
