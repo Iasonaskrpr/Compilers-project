@@ -1,98 +1,17 @@
-name()  {
-   "John"
+name() {
+  "John"
 }
 
-surname() {
-   "Doe"
+repeat(x) {
+  x + x
 }
 
-fullname(first_name, sep, last_name) {
-   "Tralalero Tralala Bombardino Crocodilo"
+cond_repeat(c, x) {
+  if(x prefix "Joe")
+    repeat("je")
+   else 
+    "dOE"
 }
 
-correct() {
-   "Correct"
-}
-
-incorrect() {
-   "Incorrect"
-}
-
-how() {
-   "how did you get here?"
-}
-
-eval(x) {
-   x
-}
-
-
-if (
-   eval(
-      if ("J" + "o" + "h" + "n" = name())  
-         if ("D" + "o" + "e" prefix surname())
-            correct()
-         else
-            if (reverse reverse "Do" + "e" suffix surname())
-               how()
-            else
-               incorrect()
-      else
-         incorrect()
-   ) prefix "Correct I guess"
-)
-   fullname(
-      fullname(
-         fullname(
-            "1",
-            "2",
-            "3"
-         ),
-         fullname(
-            "1",
-            "2",
-            "3"
-         ),
-         fullname(
-            "1",
-            "2",
-            "3"
-         )
-      ),
-      fullname(
-         fullname(
-            "1",
-            "2",
-            "3"
-         ),
-         fullname(
-            "1",
-            "2",
-            "3"
-         ),
-         fullname(
-            "1",
-            "2",
-            "3"
-         )
-      ),
-      fullname(
-         fullname(
-            "1",
-            "2",
-            "3"
-         ),
-         fullname(
-            "1",
-            "2",
-            "3"
-         ),
-         fullname(
-            "1",
-            "2",
-            "3"
-         )
-      )
-   )
-else
-   incorrect()
+cond_repeat(if("joe" prefix "Joe") repeat("joe") else "dOE", name())
+cond_repeat("no?", "Jane")
