@@ -15,7 +15,7 @@ terminal            PREFIX,SUFFIX,EQ,CONCAT, LPAREN, RPAREN,LBRAC,RBRAC,COMMA,IF
 terminal String     STRING_LITERAL,IDENTIFIER;     
 
 /*  Non terminals */
-non terminal            prog,e,expr_main,funcall,funcall_in,fundef,arg_main,main,arg_def,expr_in,rev_in,rev_main,arg_in;
+non terminal            prog,e,expr_main,funcall,funcall_in,fundef,arg_main,main,arg_def,expr_in,arg_in;
 
 
 precedence left IF, ELSE;
@@ -46,7 +46,6 @@ expr_main ::=  REVERSE expr_main:e1 {: RESULT = "new StringBuilder(" + e1 + ").r
         | funcall:f {: RESULT  = f; :}
         | STRING_LITERAL:i {: RESULT  = "\""+i+"\""; :}
         | expr_main:e1 CONCAT expr_main:e2 {: RESULT  = "(" + e1 + "+" + e2 + ")"; :}
-        | rev_main:r {: RESULT  = r; :}
 ;
 funcall ::= IDENTIFIER:i LPAREN arg_main:a RPAREN {: RESULT = i+"(" + a + ")"; :}
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
@@ -65,7 +64,6 @@ expr_in ::= REVERSE expr_in:e1 {: RESULT = "new StringBuilder(" + e1 + ").revers
         | funcall_in:f {: RESULT  = f ; :}
         | expr_in:e1 CONCAT expr_in:e2 {: RESULT  = "(" + e1 + "+" + e2 + ")"; :}
         | IF LPAREN expr_in:e1 PREFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "(" + e2 + ".toString().startsWith(" + e1 + ")" + ")" + "?" + "(" + e3 + ")" + ":" + "(" + e4 + ")";   :}
-        | rev_in:r {: RESULT  = r; :}
         | STRING_LITERAL:s {: RESULT  = "\""+s+"\""; :}
 ;
 

@@ -10,3 +10,4 @@ clean:
 	rm Parser.java
 	rm sym.java 
 	rm Scanner.java
+	rm Parser2.java

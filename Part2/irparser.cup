@@ -15,8 +15,8 @@ terminal            PREFIX,SUFFIX,EQ,CONCAT, LPAREN, RPAREN,LBRAC,RBRAC,COMMA,IF
 terminal String     STRING_LITERAL,IDENTIFIER;     
 
 /*  Non terminals */
-non terminal            prog,e,expr,funcall,fundef,if_stmt,arg,revid,revstr,main,var,if_stmt_m,arg2,funcall_d,arg3;
-non terminal String id;
+non terminal            prog,e,expr_main,funcall,funcall_in,fundef,arg_main,main,arg_def,expr_in,rev_in,rev_main,arg_in,if_stmt,if_stmt_m;
+
 
 precedence left IF, ELSE;
 precedence left SUFFIX,PREFIX,EQ;       
@@ -32,50 +32,57 @@ e ::= main:m {:RESULT = m;:}
     | fundef:f e:e1 {: RESULT = f + "\n" + e1; :} // Allow multiple function definitions
     | fundef:f {: RESULT = f; :}
     ;
-main ::= expr:e1 main:m {: RESULT = e1 + "\n" + m; :}
-       | expr:e1 {: RESULT = e1;  :}
-;
-var ::= IDENTIFIER:i {: RESULT  = i; :}
-        | revid:r {: RESULT  = r ; :}
-        | var:v1 CONCAT var:v2 {: RESULT  = v1 + "+" + v2; :}
-        | IDENTIFIER:i LPAREN arg3:a RPAREN {: RESULT = i+"(" + a + ")"; :}
-        | if_stmt:ifst {: RESULT  = ifst; :}
-        | STRING_LITERAL:i {: RESULT  = "\"" + i + "\""; :}
-        | revstr:r {: RESULT  = r; :}
-;
-expr ::= funcall:f {: RESULT  = f; :}
-        | if_stmt_m:ifst {: RESULT  = ifst; :}
-        | expr:e1 CONCAT expr:e2 {: RESULT  = e1 + "+" + e2; :}
-        | STRING_LITERAL:i {: RESULT  = "\"" + i + "\""; :}
-        | revstr:r {: RESULT  = r; :}
-        ;
-funcall ::= IDENTIFIER:i LPAREN arg:a RPAREN {: RESULT = i+"(" + a + ")"; :}
-          | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
-;
-fundef ::= IDENTIFIER:i LPAREN arg2:a RPAREN LBRAC var:e1 RBRAC {: RESULT = i + "(" + a + ")" + "{" + "\n" + e1 + "\n" + "}"; :}
-         | IDENTIFIER:i LPAREN  RPAREN LBRAC var:e1 RBRAC {: RESULT = i + "(" + ")" + "{" + "\n" + e1 + "\n" + "}"; :}
+
+/*Main rules*/
+
+main ::= expr_main:e1 main:m {: RESULT = e1 + "\n" + m; :}
+       | expr_main:e1 {: RESULT = e1;  :}
 ;
 
-if_stmt ::= IF LPAREN var:e1 SUFFIX var:e2 RPAREN var:e3 ELSE var:e4 {: RESULT = "if" + "(" + "reverse " + e1 + " prefix " + "reverse " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
-           | IF LPAREN var:e1 PREFIX var:e2 RPAREN var:e3 ELSE var:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
-           | IF LPAREN var:e1 EQ var:e2 RPAREN var:e3 ELSE var:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
+expr_main ::= funcall:f {: RESULT  = f; :}
+        | if_stmt_m:ifst {: RESULT  = ifst; :}
+        | expr_main:e1 CONCAT expr_main:e2 {: RESULT  = e1 + "+" + e2; :}
+        | STRING_LITERAL:i {: RESULT  = "\"" + i + "\""; :}
+        | REVERSE expr_main:e1 {: RESULT = "reverse " + e1; :}
+        ;
+
+funcall ::= IDENTIFIER:i LPAREN arg_main:a RPAREN {: RESULT = i+"(" + a + ")"; :}
+          | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
 ;
-if_stmt_m ::= IF LPAREN expr:e1 SUFFIX expr:e2 RPAREN expr:e3 ELSE expr:e4 {: RESULT = "if" + "(" + "reverse " + e1 + " prefix " + "reverse " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
-           | IF LPAREN expr:e1 PREFIX expr:e2 RPAREN expr:e3 ELSE expr:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
-           | IF LPAREN expr:e1 EQ expr:e2 RPAREN expr:e3 ELSE expr:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
+
+if_stmt_m ::= IF LPAREN expr_main:e1 SUFFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + "reverse " + e1 + " prefix " + "reverse " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
+           | IF LPAREN expr_main:e1 PREFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
+           | IF LPAREN expr_main:e1 EQ expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
 ;
-arg ::= expr:e1 COMMA arg:a {: RESULT = e1 + "," + a; :}
-       | expr:e1 {: RESULT = e1; :}
+
+arg_main ::= expr_main:e1 COMMA arg_main:a {: RESULT = e1 + "," + a; :}
+       | expr_main:e1 {: RESULT = e1; :}
 ;
-arg2 ::= IDENTIFIER:i COMMA arg2:a  {: RESULT = i + ", " + a; :}
+
+/*Rules for function definition*/
+
+expr_in ::= IDENTIFIER:i {: RESULT  = i; :}
+        | REVERSE expr_in:e1 {: RESULT = "reverse " + e1; :}
+        | expr_in:e1 CONCAT expr_in:e2 {: RESULT  = e1 + "+" + e2; :}
+        | IDENTIFIER:i LPAREN arg_in:a RPAREN {: RESULT = i+"(" + a + ")"; :}
+        | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
+        | if_stmt:ifst {: RESULT  = ifst; :}
+        | STRING_LITERAL:i {: RESULT  = "\"" + i + "\""; :}
+;
+
+fundef ::= IDENTIFIER:i LPAREN arg_def:a RPAREN LBRAC expr_in:e1 RBRAC {: RESULT = i + "(" + a + ")" + "{" + "\n" + e1 + "\n" + "}"; :}
+         | IDENTIFIER:i LPAREN  RPAREN LBRAC expr_in:e1 RBRAC {: RESULT = i + "(" + ")" + "{" + "\n" + e1 + "\n" + "}"; :}
+;
+
+if_stmt ::= IF LPAREN expr_in:e1 SUFFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + "reverse " + e1 + " prefix " + "reverse " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
+           | IF LPAREN expr_in:e1 PREFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
+           | IF LPAREN expr_in:e1 EQ expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
+;
+
+arg_def ::= IDENTIFIER:i COMMA arg_def:a  {: RESULT = i + ", " + a; :}
        | IDENTIFIER:i {: RESULT =  i; :}
 ;
-arg3 ::= var:v COMMA  arg3:a {: RESULT =  v + "," + a; :}
-        | var:v {: RESULT = v; :}
+
+arg_in ::= expr_in:e1 COMMA  arg_in:a {: RESULT =  e1 + "," + a; :}
+        | expr_in:e1 {: RESULT = e1; :}
 ;
-revid ::= REVERSE revid:r {: RESULT = "reverse " + r ; :}
-     | REVERSE IDENTIFIER:i {: RESULT = "reverse " + i  ; :}
-;
-revstr ::= REVERSE revstr:r {: RESULT = "reverse " + r; :}
-     | REVERSE STRING_LITERAL:s {: RESULT = "reverse " + "\"" + s + "\""; :}
-;  
