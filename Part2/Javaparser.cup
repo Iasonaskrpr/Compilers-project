@@ -15,7 +15,7 @@ terminal            PREFIX,SUFFIX,EQ,CONCAT, LPAREN, RPAREN,LBRAC,RBRAC,COMMA,IF
 terminal String     STRING_LITERAL,IDENTIFIER;     
 
 /*  Non terminals */
-non terminal            prog,e,expr,funcall,fundef,arg,main,arg2,var,revid,revstr,funcall_d,arg3;
+non terminal            prog,e,expr_main,funcall,funcall_in,fundef,arg_main,main,arg_def,expr_in,rev_in,rev_main,arg_in;
 
 
 precedence left IF, ELSE;
@@ -25,6 +25,8 @@ precedence right REVERSE;
 
 
 /*Grammar rules*/
+
+
 prog ::= e:e1 {: System.out.println("import java.io.*;\n\n"+"public class Translated{\n\t"+ e1 + "}" ); :}
         |
 ;
@@ -32,42 +34,48 @@ e ::= main:m {:RESULT = "public static void main(String[] args) {\n\t" + m + "\n
     | fundef:f e:e1 {: RESULT = "public static String  "+ f + "\n" + e1; :} // Allow multiple function definitions
     | fundef:f {: RESULT = "public static String "+ f + "\n"; :}
     ;
-main ::= funcall:f1 main:m {: RESULT = "System.out.println(" + f1 +")"+ ";"+ "\n\t" + m; :}
-        | funcall:f1 {: RESULT = "System.out.println(" + f1 +")"+ ";";  :}
+
+/*Rules for Main*/
+
+main ::= expr_main:e1 main:m {: RESULT = "System.out.println(" + e1 +")"+ ";"+ "\n\t" + m; :}
+        | expr_main:e1 {: RESULT = "System.out.println(" + e1 +")"+ ";";  :}
 ;
-var ::=  IDENTIFIER:i {: RESULT  = i; :}
-        | revid:r {: RESULT  = r ; :}
-        | funcall_d:f {: RESULT  = f; :}
-        | var:v1 CONCAT var:v2 {: RESULT  = v1 + "+" + v2; :}
-        | IF LPAREN var:v1 PREFIX var:v2 RPAREN var:v3 ELSE var:v4 {: RESULT = "("+ v2 + ".startsWith(" + v1 + ")" + ")" + "?" + "("+ v3 +")"+ ":"  + "("+ v4 +")";   :}
-        | expr:e {: RESULT  = e; :}
-;
-expr ::=  IF LPAREN expr:v1 PREFIX expr:v2 RPAREN expr:v3 ELSE expr:v4 {: RESULT = "("+ v2 + ".startsWith(" + v1 + ")" + ")" + "?" + "("+ v3 +")"+ ":"  + "("+ v4 +")";   :}
+
+expr_main ::=  REVERSE expr_main:e1 {: RESULT = "new StringBuilder(" + e1 + ").reverse().toString()"; :}
+        | IF LPAREN expr_main:v1 PREFIX expr_main:v2 RPAREN expr_main:v3 ELSE expr_main:v4 {: RESULT = "(" + v2 + ".toString().startsWith(" + v1 + ")" + ")" + "?" + "(" + v3 + ")" + ":" + "(" + v4 + ")";   :}
         | funcall:f {: RESULT  = f; :}
         | STRING_LITERAL:i {: RESULT  = "\""+i+"\""; :}
-        | expr:e1 CONCAT expr:e2 {: RESULT  = e1 + "+" + e2; :}
-        | revstr:r {: RESULT  = r; :}
+        | expr_main:e1 CONCAT expr_main:e2 {: RESULT  = "(" + e1 + "+" + e2 + ")"; :}
+        | rev_main:r {: RESULT  = r; :}
 ;
-funcall ::= IDENTIFIER:i LPAREN arg:a RPAREN {: RESULT = i+"(" + a + ")"; :}
+funcall ::= IDENTIFIER:i LPAREN arg_main:a RPAREN {: RESULT = i+"(" + a + ")"; :}
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
 ;
-funcall_d ::= IDENTIFIER:i LPAREN arg3:a RPAREN {: RESULT = i+"(" + a + ")"; :}
+arg_main ::= expr_main:e1 COMMA arg_main:a {: RESULT = e1 + "," + a; :}
+       | expr_main:e1 {: RESULT = e1; :}
 ;
-fundef ::= IDENTIFIER:i LPAREN arg2:a RPAREN LBRAC var:e1 RBRAC {: RESULT = i + "("+ a + ")" + "{" + "\n\t" + "return " + e1 + ";"+ "\n" + "}"; :}
-         | IDENTIFIER:i LPAREN  RPAREN LBRAC var:e1 RBRAC {: RESULT = i + "(" + ")" + "{" + "\n\t" + "return " + e1 + ";" + "\n" + "}"; :}
+
+/*Rules for function definition*/
+
+fundef ::= IDENTIFIER:i LPAREN arg_def:a RPAREN LBRAC expr_in:e1 RBRAC {: RESULT = i + "("+ a + ")" + "{" + "\n\t" + "return " + e1 + ";"+ "\n" + "}"; :}
+         | IDENTIFIER:i LPAREN  RPAREN LBRAC expr_in:e1 RBRAC {: RESULT = i + "(" + ")" + "{" + "\n\t" + "return " + e1 + ";" + "\n" + "}"; :}
 ;
-arg ::= expr:e1 COMMA arg:a {: RESULT = e1 + "," + a; :}
-       | expr:e1 {: RESULT = e1; :}
+expr_in ::= REVERSE expr_in:e1 {: RESULT = "new StringBuilder(" + e1 + ").reverse().toString()"; :}
+        |IDENTIFIER:i {: RESULT  = i; :}
+        | funcall_in:f {: RESULT  = f ; :}
+        | expr_in:e1 CONCAT expr_in:e2 {: RESULT  = "(" + e1 + "+" + e2 + ")"; :}
+        | IF LPAREN expr_in:e1 PREFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "(" + e2 + ".toString().startsWith(" + e1 + ")" + ")" + "?" + "(" + e3 + ")" + ":" + "(" + e4 + ")";   :}
+        | rev_in:r {: RESULT  = r; :}
+        | STRING_LITERAL:s {: RESULT  = "\""+s+"\""; :}
 ;
-arg2 ::= IDENTIFIER:i COMMA arg2:a  {: RESULT = "String " + i + ", " + a; :}
+
+funcall_in ::= IDENTIFIER:i LPAREN arg_in:a RPAREN {: RESULT = i+"(" + a + ")"; :}
+             | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"(" +  ")"; :}
+;
+arg_def ::= IDENTIFIER:i COMMA arg_def:a  {: RESULT = "String " + i + ", " + a; :}
        | IDENTIFIER:i {: RESULT = "String " + i; :}
 ;
-arg3 ::= var:v COMMA  arg3:a {: RESULT =  v + "," + a; :}
-        | var:v {: RESULT = v; :}
+arg_in ::= expr_in:v COMMA  arg_in:a {: RESULT =  v + "," + a; :}
+        |expr_in:v {: RESULT = v; :}
 ;
-revid ::= REVERSE revid:r {: RESULT = "new StringBuilder(" + r + ").reverse().toString()"; :}
-     | REVERSE IDENTIFIER:i {: RESULT = "new StringBuilder(" + i + ").reverse().toString()"; :}
-;
-revstr ::= REVERSE revstr:r {: RESULT = "new StringBuilder(" + r + ").reverse().toString()"; :}
-     | REVERSE STRING_LITERAL:s {: RESULT = "new StringBuilder(" + "\""+s+"\"" + ").reverse().toString()"; :}
-;
+

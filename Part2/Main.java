@@ -17,7 +17,6 @@ public class Main {
         FileReader fileReader = new FileReader("Translated.ir");
         Parser2 parser2 = new Parser2(new Scanner(fileReader));
         parser2.parse();
-        parser2.debug_parse(); 
         fileReader.close(); // Close the file after reading
         stdinReader.close();
     }

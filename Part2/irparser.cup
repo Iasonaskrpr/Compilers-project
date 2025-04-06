@@ -32,15 +32,16 @@ e ::= main:m {:RESULT = m;:}
     | fundef:f e:e1 {: RESULT = f + "\n" + e1; :} // Allow multiple function definitions
     | fundef:f {: RESULT = f; :}
     ;
-main ::= funcall:f1 main:m {: RESULT = f1 + "\n" + m; :}
-       | funcall:f1 {: RESULT = f1;  :}
+main ::= expr:e1 main:m {: RESULT = e1 + "\n" + m; :}
+       | expr:e1 {: RESULT = e1;  :}
 ;
 var ::= IDENTIFIER:i {: RESULT  = i; :}
         | revid:r {: RESULT  = r ; :}
         | var:v1 CONCAT var:v2 {: RESULT  = v1 + "+" + v2; :}
-        | funcall_d:f {: RESULT  = f; :}
+        | IDENTIFIER:i LPAREN arg3:a RPAREN {: RESULT = i+"(" + a + ")"; :}
         | if_stmt:ifst {: RESULT  = ifst; :}
-        | expr:e {: RESULT  = e; :}
+        | STRING_LITERAL:i {: RESULT  = "\"" + i + "\""; :}
+        | revstr:r {: RESULT  = r; :}
 ;
 expr ::= funcall:f {: RESULT  = f; :}
         | if_stmt_m:ifst {: RESULT  = ifst; :}
@@ -51,9 +52,6 @@ expr ::= funcall:f {: RESULT  = f; :}
 funcall ::= IDENTIFIER:i LPAREN arg:a RPAREN {: RESULT = i+"(" + a + ")"; :}
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
 ;
-funcall_d ::= IDENTIFIER:i LPAREN arg3:a RPAREN {: RESULT = i+"(" + a + ")"; :}
-;
-
 fundef ::= IDENTIFIER:i LPAREN arg2:a RPAREN LBRAC var:e1 RBRAC {: RESULT = i + "(" + a + ")" + "{" + "\n" + e1 + "\n" + "}"; :}
          | IDENTIFIER:i LPAREN  RPAREN LBRAC var:e1 RBRAC {: RESULT = i + "(" + ")" + "{" + "\n" + e1 + "\n" + "}"; :}
 ;
