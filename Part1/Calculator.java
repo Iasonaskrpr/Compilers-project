@@ -8,14 +8,12 @@ class Calculator{
         this.in = in;
         lookahead = in.read();
     }
-
     private void consume(int symbol) throws IOException, ParseError {
         if (lookahead == symbol)
             lookahead = in.read();
         else
             throw new ParseError();
     }
-
     private boolean isDigit(int c) {
         return '0' <= c && c <= '9';
     }
