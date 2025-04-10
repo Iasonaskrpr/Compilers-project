@@ -115,10 +115,6 @@ The **Java parser** closely follows the same grammar as the **IR parser**, but t
 - **Reverse Precedence**: Initially, the `reverse` operation was applied only to individual expressions. However, to maintain correct precedence, `reverse` was made to apply to the entire concatenation expression. For example, `e1 + e2 reverse e3` was transformed into `reverse (e1 + e2)`, ensuring that `reverse` affects the entire expression rather than just one part of it.
 - **Concatenation**: The concatenation operation (`+`) is wrapped in parentheses to ensure that the correct order of operations is maintained during evaluation.
 
-### Error Handling
-- The parser is equipped with basic error handling. Syntax errors are thrown when invalid expressions are encountered, such as unmatched parentheses or malformed `if-else` statements.
-- Future improvements could include more detailed error reporting to help diagnose specific issues in the input.
-
 ### Java Code Generation
 - After parsing the input and converting it into an intermediate representation, the Java parser generates the corresponding Java code. This includes:
   - Java class and method definitions.
