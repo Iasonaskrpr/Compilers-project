@@ -23,3 +23,4 @@ CheckSuffix(n){
 study("Compilers")
 CheckName("Jason")
 CheckSuffix("idisis")
+reverse "SAJ" + "O"+ "N"

@@ -32,7 +32,6 @@ prog ::= e:e1 {: System.out.println("import java.io.*;\n\n"+"public class Transl
 ;
 e ::= main:m {:RESULT = "public static void main(String[] args) {\n\t" + m + "\n}\n";:}
     | fundef:f e:e1 {: RESULT = "public static String  "+ f + "\n" + e1; :} // Allow multiple function definitions
-    | fundef:f {: RESULT = "public static String "+ f + "\n"; :}
     ;
 
 /*Rules for Main*/
@@ -45,7 +44,7 @@ expr_main ::=  REVERSE expr_main:e1 {: RESULT = "new StringBuilder(" + e1 + ").r
         | IF LPAREN expr_main:v1 PREFIX expr_main:v2 RPAREN expr_main:v3 ELSE expr_main:v4 {: RESULT = "(" + v2 + ".toString().startsWith(" + v1 + ")" + ")" + "?" + "(" + v3 + ")" + ":" + "(" + v4 + ")";   :}
         | funcall:f {: RESULT  = f; :}
         | STRING_LITERAL:i {: RESULT  = "\""+i+"\""; :}
-        | expr_main:e1 CONCAT expr_main:e2 {: RESULT  = "(" + e1 + "+" + e2 + ")"; :}
+        | expr_main:e1 CONCAT expr_main:e2 {: RESULT  = "(" +"(" + e1 +")"+ "+" +"(" + e2 +")" + ")"; :}
 ;
 funcall ::= IDENTIFIER:i LPAREN arg_main:a RPAREN {: RESULT = i+"(" + a + ")"; :}
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
@@ -62,7 +61,7 @@ fundef ::= IDENTIFIER:i LPAREN arg_def:a RPAREN LBRAC expr_in:e1 RBRAC {: RESULT
 expr_in ::= REVERSE expr_in:e1 {: RESULT = "new StringBuilder(" + e1 + ").reverse().toString()"; :}
         |IDENTIFIER:i {: RESULT  = i; :}
         | funcall_in:f {: RESULT  = f ; :}
-        | expr_in:e1 CONCAT expr_in:e2 {: RESULT  = "(" + e1 + "+" + e2 + ")"; :}
+        | expr_in:e1 CONCAT expr_in:e2 {: RESULT  = "(" +"(" + e1 +")"+ "+" +"(" + e2 +")" + ")"; :}
         | IF LPAREN expr_in:e1 PREFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "(" + e2 + ".toString().startsWith(" + e1 + ")" + ")" + "?" + "(" + e3 + ")" + ":" + "(" + e4 + ")";   :}
         | STRING_LITERAL:s {: RESULT  = "\""+s+"\""; :}
 ;

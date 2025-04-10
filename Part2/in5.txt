@@ -1,0 +1,8 @@
+outter_suff() {
+"begin" + if("Test" suffix "suffixTest") " ending" else " wrong" 
+
+}
+
+
+outter_suff()
+

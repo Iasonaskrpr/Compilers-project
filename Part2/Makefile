@@ -12,5 +12,5 @@ clean:
 	rm Scanner.java
 	rm Parser2.java
 run:
-	javac Translated.java
-	java Translated
+	@javac Translated.java > /dev/null 2>&1
+	@java Translated

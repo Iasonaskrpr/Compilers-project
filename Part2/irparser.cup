@@ -25,7 +25,7 @@ precedence right REVERSE;
 
 
 /*Grammar rules*/
-prog ::= e:e1 {: System.out.println(e1); :}
+prog ::= e:e1 {: System.out.println("rev_eval(x){\nreverse x\n}\n"+e1); :}
         |
 ;
 e ::= main:m {:RESULT = m;:}
@@ -50,7 +50,7 @@ funcall ::= IDENTIFIER:i LPAREN arg_main:a RPAREN {: RESULT = i+"(" + a + ")"; :
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
 ;
 
-if_stmt_m ::= IF LPAREN expr_main:e1 SUFFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + "reverse " + e1 + " prefix " + "reverse " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
+if_stmt_m ::= IF LPAREN expr_main:e1 SUFFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + "rev_eval(" + e1 + ")"+ " prefix " + "rev_eval(" + e2 + ")"+ ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
            | IF LPAREN expr_main:e1 PREFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
            | IF LPAREN expr_main:e1 EQ expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
 ;
@@ -74,7 +74,7 @@ fundef ::= IDENTIFIER:i LPAREN arg_def:a RPAREN LBRAC expr_in:e1 RBRAC {: RESULT
          | IDENTIFIER:i LPAREN  RPAREN LBRAC expr_in:e1 RBRAC {: RESULT = i + "(" + ")" + "{" + "\n" + e1 + "\n" + "}"; :}
 ;
 
-if_stmt ::= IF LPAREN expr_in:e1 SUFFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + "reverse " + e1 + " prefix " + "reverse " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
+if_stmt ::= IF LPAREN expr_in:e1 SUFFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + "rev_eval(" + e1 + ")"+ " prefix " + "rev_eval(" + e2 + ")"+")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
            | IF LPAREN expr_in:e1 PREFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
            | IF LPAREN expr_in:e1 EQ expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
 ;
