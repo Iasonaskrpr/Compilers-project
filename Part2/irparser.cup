@@ -25,15 +25,15 @@ precedence right REVERSE;
 
 
 /*Grammar rules*/
-prog ::= e:e1 {: System.out.println("rev_eval(x){\nreverse x\n}\n"+e1); :}
+prog ::= e:e1 {: System.out.println("rev_eval(x){\nreverse x\n}\n"+e1); :} //Add rev_eval function to allow correct  translation of suffix to reverse prefix reverse
         |
 ;
 e ::= main:m {:RESULT = m;:}
     | fundef:f e:e1 {: RESULT = f + "\n" + e1; :} // Allow multiple function definitions
-    | fundef:f {: RESULT = f; :}
     ;
 
-/*Main rules*/
+/*Rules for Main 
+Seperated main rules and function rules to make sure IDENTIFIER are not allowed in main*/
 
 main ::= expr_main:e1 main:m {: RESULT = e1 + "\n" + m; :}
        | expr_main:e1 {: RESULT = e1;  :}
@@ -50,9 +50,9 @@ funcall ::= IDENTIFIER:i LPAREN arg_main:a RPAREN {: RESULT = i+"(" + a + ")"; :
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
 ;
 
-if_stmt_m ::= IF LPAREN expr_main:e1 SUFFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + "rev_eval(" + e1 + ")"+ " prefix " + "rev_eval(" + e2 + ")"+ ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
+if_stmt_m ::= IF LPAREN expr_main:e1 SUFFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + "rev_eval(" + e1 + ")"+ " prefix " + "rev_eval(" + e2 + ")"+ ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}// rev_eval is used to make sure suffix is calculated correctly in this form
            | IF LPAREN expr_main:e1 PREFIX expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + e3 + "\n" + "else" + "\n" + e4;   :}
-           | IF LPAREN expr_main:e1 EQ expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
+           | IF LPAREN expr_main:e1 EQ expr_main:e2 RPAREN expr_main:e3 ELSE expr_main:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}// Turn equal to nested if
 ;
 
 arg_main ::= expr_main:e1 COMMA arg_main:a {: RESULT = e1 + "," + a; :}
@@ -79,7 +79,7 @@ if_stmt ::= IF LPAREN expr_in:e1 SUFFIX expr_in:e2 RPAREN expr_in:e3 ELSE expr_i
            | IF LPAREN expr_in:e1 EQ expr_in:e2 RPAREN expr_in:e3 ELSE expr_in:e4 {: RESULT = "if" + "(" + e1 + " prefix " + e2 + ")" + "\n" + "if" + "(" + e2 + " prefix " + e1 + ")"+ "\n" + e3 + "\n" + "else" + "\n" + e4 + "\n" + "else" + "\n" + e4;  :}
 ;
 
-arg_def ::= IDENTIFIER:i COMMA arg_def:a  {: RESULT = i + ", " + a; :}
+arg_def ::= IDENTIFIER:i COMMA arg_def:a  {: RESULT = i + ", " + a; :} //Only allow IDENTIFIER in function definition parameters
        | IDENTIFIER:i {: RESULT =  i; :}
 ;
 

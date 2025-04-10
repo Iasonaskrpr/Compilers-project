@@ -27,28 +27,31 @@ precedence right REVERSE;
 /*Grammar rules*/
 
 
-prog ::= e:e1 {: System.out.println("import java.io.*;\n\n"+"public class Translated{\n\t"+ e1 + "}" ); :}
+prog ::= e:e1 {: System.out.println("import java.io.*;\n\n"+"public class Translated{\n\t"+ e1 + "}" ); :} //Make sure we accept empty programs, handle EOF and also add necessary class definition
         |
 ;
-e ::= main:m {:RESULT = "public static void main(String[] args) {\n\t" + m + "\n}\n";:}
-    | fundef:f e:e1 {: RESULT = "public static String  "+ f + "\n" + e1; :} // Allow multiple function definitions
+e ::= main:m {:RESULT = "public static void main(String[] args) {\n\t" + m + "\n}\n";:} //Force program to have a main, if not throw parse error
+    | fundef:f e:e1 {: RESULT = "public static String  "+ f + "\n" + e1; :} // Allow multiple function definitions and make sure they have the correct return type
     ;
 
-/*Rules for Main*/
+/*Rules for Main 
+Seperated main rules and function rules to make sure IDENTIFIER are not allowed in main*/
 
 main ::= expr_main:e1 main:m {: RESULT = "System.out.println(" + e1 +")"+ ";"+ "\n\t" + m; :}
         | expr_main:e1 {: RESULT = "System.out.println(" + e1 +")"+ ";";  :}
 ;
 
-expr_main ::=  REVERSE expr_main:e1 {: RESULT = "new StringBuilder(" + e1 + ").reverse().toString()"; :}
-        | IF LPAREN expr_main:v1 PREFIX expr_main:v2 RPAREN expr_main:v3 ELSE expr_main:v4 {: RESULT = "(" + v2 + ".toString().startsWith(" + v1 + ")" + ")" + "?" + "(" + v3 + ")" + ":" + "(" + v4 + ")";   :}
+expr_main ::=  REVERSE expr_main:e1 {: RESULT = "new StringBuilder(" + e1 + ").reverse().toString()"; :} //Uses .reverse function from java
+        | IF LPAREN expr_main:v1 PREFIX expr_main:v2 RPAREN expr_main:v3 ELSE expr_main:v4 {: RESULT = "(" + v2 + ".toString().startsWith(" + v1 + ")" + ")" + "?" + "(" + v3 + ")" + ":" + "(" + v4 + ")";   :} //Uses .startsWith java function to evaluate prefix and also turns if-else to ternary since the have the same functionality
         | funcall:f {: RESULT  = f; :}
-        | STRING_LITERAL:i {: RESULT  = "\""+i+"\""; :}
-        | expr_main:e1 CONCAT expr_main:e2 {: RESULT  = "(" +"(" + e1 +")"+ "+" +"(" + e2 +")" + ")"; :}
+        | STRING_LITERAL:i {: RESULT  = "\""+i+"\""; :} // Enclose strings in ""
+        | expr_main:e1 CONCAT expr_main:e2 {: RESULT  = "(" +"(" + e1 +")"+ "+" +"(" + e2 +")" + ")"; :}  //added parentheses to make sure correct precedence is kept
 ;
+//Make sure we allow empty function calls
 funcall ::= IDENTIFIER:i LPAREN arg_main:a RPAREN {: RESULT = i+"(" + a + ")"; :}
           | IDENTIFIER:i LPAREN RPAREN {: RESULT = i+"()"; :}
 ;
+
 arg_main ::= expr_main:e1 COMMA arg_main:a {: RESULT = e1 + "," + a; :}
        | expr_main:e1 {: RESULT = e1; :}
 ;
