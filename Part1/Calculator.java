@@ -8,6 +8,11 @@ class Calculator{
         this.in = in;
         lookahead = in.read();
     }
+    private void skipWhitespace() throws IOException {
+        while (lookahead == ' ' || lookahead == '\t' || lookahead == '\r') {
+            lookahead = in.read();
+        }
+    }
     private void consume(int symbol) throws IOException, ParseError {
         if (lookahead == symbol)
             lookahead = in.read();
@@ -37,6 +42,7 @@ class Calculator{
         return c == -1 || c == 10;
     }
     public int eval() throws IOException, ParseError {
+        skipWhitespace();
         int value = expr();
 
         if (lookahead != -1 && lookahead != '\n')
@@ -56,6 +62,7 @@ class Calculator{
         if(isOp(lookahead)){
             int op = lookahead;
             consume(lookahead);
+            skipWhitespace();
             if(op == '+'){
                 condition += power(lookahead);
             }
@@ -70,16 +77,20 @@ class Calculator{
         throw new ParseError();
     }
     private int power(int condition) throws IOException, ParseError{
+        skipWhitespace();
         if(isDigit(condition)||isLParen(condition)){
             condition = number(condition);
+            skipWhitespace();
             return powerTail(condition);
         }
         throw new ParseError();
     }
     private int powerTail(int condition) throws IOException, ParseError{
-        if(isExp(lookahead)){
+        if(isExp(lookahead)){  
             consume(lookahead);
+            skipWhitespace();
             int num2 = number(lookahead);
+            skipWhitespace();
             num2 = powerTail(num2);
             return (int)Math.pow(condition,num2);
         }
@@ -89,14 +100,17 @@ class Calculator{
         throw new ParseError();
     }
     private int number(int condition) throws IOException, ParseError{
+        
         if(isDigit(condition)){
             condition = digit(condition);
             return numberTail(condition);
         }
         else if (isLParen(condition)) {
-            consume(condition); 
+            consume(condition);
+            skipWhitespace();
             int value = expr();
             consume(')'); 
+            skipWhitespace();
             return value;
         }
         throw new ParseError();
@@ -108,7 +122,8 @@ class Calculator{
             condition += digit(lookahead);
             return numberTail(condition);
         }
-        else if(isOp(lookahead)||isRParen(lookahead)||isEOF(lookahead)){
+        skipWhitespace();
+        if(isOp(lookahead)||isRParen(lookahead)||isEOF(lookahead)){
             return condition;
         }
         else if(isExp(lookahead)){
