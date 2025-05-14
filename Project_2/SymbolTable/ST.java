@@ -6,7 +6,7 @@ public class ST {
     private final Map<String, Info> table;
     private final ST parent;
     private String name; // Name of the class or scope
-
+    
     public ST(ST parent) {
         this.table = new HashMap<>();
         this.parent = parent;
@@ -21,16 +21,11 @@ public class ST {
         this(null);
     }
 
-    public void insert(String name, int size, String type) {
-        table.put(name, new Info(size, type));
+    public void insert(String name, int size, String type,int offset) {
+        table.put(name, new Info(size, type,offset));
     }
-
-    public void insert(String name, int size, String type, String retType) {
-        table.put(name, new Info(size, type, retType));
-    }
-
-    public void insertMethod(String name, String retType, List<String> paramTypes) {
-        table.put(name, new Info(retType, paramTypes));
+    public void insertMethod(String name, String retType, List<String> paramTypes,int offset) {
+        table.put(name, new Info(retType, paramTypes,offset));
     }
 
     public Info lookup(String name) {
@@ -65,5 +60,15 @@ public class ST {
         Info info = table.get(name);
         if (info != null && info.getRetType() != null) return info;
         return null;
+    }
+    public void PrintOffsets(String cls){
+        System.out.println("---Variables---");
+        for (Map.Entry<String,Info> i : this.table.entrySet()){
+            if(!i.getValue().isMethod()){System.out.println(cls+"."+i.getKey()+" : " + i.getValue().getOffset());} 
+        }
+        System.out.println("---Methods---");
+        for (Map.Entry<String,Info> i : this.table.entrySet()){
+            if(i.getValue().isMethod()){System.out.println(cls+"."+i.getKey()+" : " + i.getValue().getOffset());} 
+        }
     }
 }

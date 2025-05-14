@@ -5,24 +5,39 @@ import java.util.Map;
 public class Scopes {
     private final Map<String, ST> tables; // ClassName → SymbolTable
     private ST currentScope;
-
+    private int varOffset;
+    private int methodOffset; 
     public Scopes() {
+        this.varOffset = 0;
+        this.methodOffset = 0;
         this.tables = new HashMap<>();
     }
 
-    public boolean enter(String cls, ST parent) {
+    public boolean enter(String cls, ST parent,boolean flag) { //flag used to carry scope offset
         if (!tables.containsKey(cls)) {
             ST newScope = new ST(parent);
             tables.put(cls, newScope);
             currentScope = newScope;
+            if(flag){
+                varOffset = 0;
+                methodOffset = 0;
+            }
             return true;
         }
         return false;
     }
-
+    public void insert(String name, String retType, List<String> paramTypes){
+        if (currentScope != null) {
+            currentScope.insertMethod(name, retType,paramTypes,this.methodOffset);
+            this.methodOffset+=8;
+        }
+    }
     public void insert(String name, int size, String type) {
         if (currentScope != null) {
-            currentScope.insert(name, size, type);
+            currentScope.insert(name, size, type,varOffset);
+            if(type.equals("boolean")){varOffset+=1;}
+            else if(type.equals("int")){varOffset+=4;}
+            else{varOffset+=8;}
         }
     }
 
@@ -100,8 +115,8 @@ public class Scopes {
         return safeLookup(name, scope) != null;
     }
 
-    public boolean existsInScope(String name, String scopeName) {
-        return exists(name, getClassScope(scopeName));
+    public boolean existsInScope(String name, ST scopeName) {
+        return exists(name, scopeName);
     }
 
     // ========= Type Retrieval =========
@@ -113,8 +128,7 @@ public class Scopes {
         Info i = safeLookup(name, scope);
         return (i != null) ? i.getType() : null;
     }
-    public boolean methodExists(String className, String methodName, List<String> paramTypes) {
-        ST classScope = getClassScope(className);
+    public boolean methodExists(ST classScope, String methodName, List<String> paramTypes) {
         Info method = (classScope != null) ? classScope.lookup(methodName) : null;
 
         if (method != null && method.isMethod()) {
@@ -155,8 +169,8 @@ public class Scopes {
         if (currentScope == null) return null;
         return currentScope.methodExistsLocally(name);
     }
-    public boolean isValidOverride(String className, String methodName, String returnType, List<String> paramTypes) {
-        ST parentScope = getClassScope(className).getParent();
+    public boolean isValidOverride(ST classScope, String methodName, String returnType, List<String> paramTypes) {
+        ST parentScope =classScope.getParent();
         while (parentScope != null) {
             Info parentMethod = parentScope.lookup(methodName);
             if (parentMethod != null && parentMethod.isMethod()) {
@@ -166,5 +180,11 @@ public class Scopes {
             parentScope = parentScope.getParent();
         }
         return true; // No conflict in parent → allowed
+    }
+    public void PrintOffset(){
+        for (Map.Entry<String,ST> i : this.tables.entrySet()){
+            System.out.println("-----------Class "+ i.getKey()+"-----------");
+            i.getValue().PrintOffsets(i.getKey());
+        }
     }
 }

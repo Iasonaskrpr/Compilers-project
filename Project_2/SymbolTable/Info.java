@@ -1,28 +1,25 @@
 import java.util.List;
 public class Info {
-    private int size; // -1: variable, 0: uninitialized array, >1: array
+    private int size; // -1: variable, 0: uninitialized variable or array, >1: array
+    private int offset;
     private String type;
     private String retType;
     private List<String> paramTypes; // for methods only
 
     // Constructor for methods
-    Info(String retType, List<String> paramTypes) {
+    Info(String retType, List<String> paramTypes,int offset) {
         this.size = -1;  // Not applicable for methods
         this.type = "method";
         this.retType = retType;
         this.paramTypes = paramTypes;
+        this.offset = offset;
     }
-
-    // Constructor for variables
-    Info(int size, String type) {
-        this(size, type, null);
-    }
-
-    // Constructor for arrays (with optional return type)
-    Info(int size, String type, String retType) {
+    // Constructor for arrays
+    Info(int size, String type, int offset) {
         this.size = size;
         this.type = type;
-        this.retType = retType;
+        this.offset = offset;
+        this.retType = null;
         this.paramTypes = null;
     }
 
@@ -48,5 +45,8 @@ public class Info {
 
     public void changeSize(int size) {
         this.size = size;
+    }
+    public int getOffset(){
+        return this.offset;
     }
 }
