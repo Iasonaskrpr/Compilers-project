@@ -1,43 +1,45 @@
+package symbolTable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Scopes {
     private final Map<String, ST> tables; // ClassName → SymbolTable
-    private ST currentScope;
-    private int varOffset;
-    private int methodOffset; 
+    private ST currentScope; 
     public Scopes() {
-        this.varOffset = 0;
-        this.methodOffset = 0;
         this.tables = new HashMap<>();
     }
 
-    public boolean enter(String cls, ST parent,boolean flag) { //flag used to carry scope offset
+    public boolean enter(String cls, ST parent,boolean flag,boolean isClass) { //flag used to carry scope offset
         if (!tables.containsKey(cls)) {
-            ST newScope = new ST(parent);
+            ST newScope = new ST(cls,parent,isClass);
             tables.put(cls, newScope);
-            currentScope = newScope;
-            if(flag){
-                varOffset = 0;
-                methodOffset = 0;
+            if(!flag){
+                newScope.updateOffset(parent.getVar(), parent.getMethod());
             }
+            currentScope = newScope;
             return true;
         }
+        System.out.println(cls);
         return false;
+    }
+    public String getClassName(){
+        return this.currentScope.getName();
     }
     public void insert(String name, String retType, List<String> paramTypes){
         if (currentScope != null) {
-            currentScope.insertMethod(name, retType,paramTypes,this.methodOffset);
-            this.methodOffset+=8;
+            currentScope.insertMethod(name, retType,paramTypes);
+            currentScope.addMethod();
         }
     }
     public void insert(String name, int size, String type) {
         if (currentScope != null) {
-            currentScope.insert(name, size, type,varOffset);
-            if(type.equals("boolean")){varOffset+=1;}
-            else if(type.equals("int")){varOffset+=4;}
-            else{varOffset+=8;}
+            currentScope.insert(name, size, type);
+            if(!name.equals("this")){
+                if(type.equals("boolean")){currentScope.addBool();}
+                else if(type.equals("int")){currentScope.addInt();}
+                else{currentScope.addPointer();}
+            }
         }
     }
 
@@ -47,12 +49,6 @@ public class Scopes {
 
     public void exit() {
         if (currentScope != null) {
-            currentScope = currentScope.getParent();
-        }
-    }
-    public void exitAndDestroy() {
-        if (currentScope != null) {
-            tables.values().remove(currentScope);
             currentScope = currentScope.getParent();
         }
     }
@@ -148,7 +144,7 @@ public class Scopes {
     }
     public boolean InitiazeArray(String name,int size){
         Info arr = this.currentScope.lookup(name);
-        if(arr !=null && arr.getSize() != -1){
+        if (arr != null && arr.getType().equals("int[]") && arr.getSize() != -1) {
             arr.changeSize(size);
             return true;
         }
@@ -171,9 +167,13 @@ public class Scopes {
     }
     public boolean isValidOverride(ST classScope, String methodName, String returnType, List<String> paramTypes) {
         ST parentScope =classScope.getParent();
+        if(classScope.methodExistsLocally(methodName)!=null){
+            return false;
+        }
         while (parentScope != null) {
             Info parentMethod = parentScope.lookup(methodName);
             if (parentMethod != null && parentMethod.isMethod()) {
+                System.out.println(parentMethod.getParamTypes()+" "+ methodName);
                 return parentMethod.getRetType().equals(returnType) &&
                     parentMethod.getParamTypes().equals(paramTypes);
             }
@@ -183,7 +183,6 @@ public class Scopes {
     }
     public void PrintOffset(){
         for (Map.Entry<String,ST> i : this.tables.entrySet()){
-            System.out.println("-----------Class "+ i.getKey()+"-----------");
             i.getValue().PrintOffsets(i.getKey());
         }
     }

@@ -1,9 +1,11 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.*;
-import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import symbolTable.ST;
+import symbolTable.Scopes;
 import syntaxtree.AndExpression;
-import syntaxtree.ArrayLookup;
 import syntaxtree.ArrayType;
 import syntaxtree.BooleanType;
 import syntaxtree.ClassDeclaration;
@@ -20,12 +22,9 @@ import syntaxtree.IntegerType;
 import syntaxtree.MainClass;
 import syntaxtree.MethodDeclaration;
 import syntaxtree.Node;
-import syntaxtree.PrintStatement;
 import syntaxtree.VarDeclaration;
 import visitor.GJDepthFirst;
-
-
-class SymbolTableVisitors extends GJDepthFirst<String, Scopes>{
+class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
     /**
      * f0 -> "class"
      * f1 -> Identifier()
@@ -51,21 +50,15 @@ public String visit(MainClass n, Scopes Table) throws Exception {
     String classname = n.f1.accept(this, Table); // Class name extraction
     try {
         // Check if class already exists in scope
-        if (Table.enter(classname, null,true) == false) {
+        if (Table.enter(classname, null,true,true) == false) {
             throw new Exception("Class " + classname + " already exists in scope.");
         }
-        Table.enter("Function_main",Table.getCurrentScope(),false);
-
-        // Insert main method (signature: main(String[] args))
-        List<String> params = new ArrayList<>();
-        params.add("String[]");
-        Table.insert("main","void",params);
-
+        
+        Table.enter("Function_main",Table.getCurrentScope(),false,false);
+        Table.insert("this", -1, classname);
         // Insert the parameter "args" of type String[]
         String param = n.f11.accept(this, Table);
-        Table.insert(param, -1, "String[]");
-
-        // Visit variable declarations and statements
+        // Visit variable declarations and statement
         n.f14.accept(this, Table);
         n.f15.accept(this, Table);
 
@@ -74,10 +67,8 @@ public String visit(MainClass n, Scopes Table) throws Exception {
         System.err.println("Error during semantic analysis: " + e.getMessage());
         throw e;  // Rethrow exception to ensure error is propagated
     }
-    Table.exitAndDestroy();
     Table.exit();
-    // Continue the visit
-    super.visit(n, Table);
+    Table.exit();
     return null;
 }
 
@@ -92,12 +83,12 @@ public String visit(MainClass n, Scopes Table) throws Exception {
     @Override
     public String visit(ClassDeclaration n, Scopes Table) throws Exception {
         n.f0.accept(this, Table);
-        
         String classname = n.f1.accept(this, Table);
         try {
-            if (Table.enter(classname, null,true) == false) {
+            if (Table.enter(classname, null,true,true) == false) {
                 throw new Exception("Class " + classname + " already exists in scope.");
             }
+            Table.insert("this", -1, classname);
             n.f3.accept(this,Table);
             n.f4.accept(this,Table);
 
@@ -124,19 +115,20 @@ public String visit(MainClass n, Scopes Table) throws Exception {
      */
     @Override
     public String visit(ClassExtendsDeclaration n, Scopes Table) throws Exception {
-        String classname = n.f1.accept(this, null);
-        String subtype = n.f3.accept(this,null);
+        String classname = n.f1.accept(this, Table);
+        String subtype = n.f3.accept(this,Table);
         ST subScope;
         try {
             if((subScope = Table.getClassScope(subtype)) == null ){
                 throw new Exception("Class " + subtype + " doesn't exist.");
             }
-            if(Table.enter(classname, subScope,false) == false){
+            if(Table.enter(classname, subScope,false,true) == false){
                 throw new Exception("Class " + classname + " already exists.");
             }
+            Table.insert("this", -1, classname);
             n.f5.accept(this,Table);
             n.f6.accept(this,Table);
-
+            Table.exit();
         } catch (Exception e) {
             System.err.println("Error during semantic analysis: " + e.getMessage());
             throw e;  // Rethrow exception to ensure error is propagated
@@ -155,7 +147,7 @@ public String visit(MainClass n, Scopes Table) throws Exception {
         String var = n.f1.accept(this, Table);
         try {
             if(Table.varExistsInCurrentScope(var) != false){
-                throw new Exception("Variable already exists in current scope");
+                throw new Exception("Variable already exists in current scope:" + Table.getClassName());
             }
             Table.insert(var, -1, type);
         } catch (Exception e) {
@@ -185,15 +177,16 @@ public String visit(MainClass n, Scopes Table) throws Exception {
     public String visit(MethodDeclaration n, Scopes Table) throws Exception {
         String argumentList = n.f4.present() ? n.f4.accept(this, null) : null;
         List<String> types = new ArrayList<>();
+        boolean override = false;
         try{
             String retType = n.f1.accept(this,Table);
             String Id = n.f2.accept(this,Table);
-            Table.enter("Function_"+Id,Table.getCurrentScope(),false);
+            Table.enter(Table.getClassName()+"_Function_"+Id,Table.getCurrentScope(),false,false);
             if(argumentList != null){
                 Pattern pattern = Pattern.compile("([\\w\\[\\]]+)\\s+(\\w+)");
                 Matcher matcher = pattern.matcher(argumentList);
                 while (matcher.find()) {
-                    if(Table.existsInScope(matcher.group(2), Table.getCurrentScope())){throw new Exception("Variable: "+ matcher.group(2)+" already exists");}
+                    if(Table.varExistsInCurrentScope(matcher.group(2))){throw new Exception("Variable: "+ matcher.group(2)+" already exists " + Table.getClassName());}
                     Table.insert(matcher.group(2), -1, matcher.group(1));
                     types.add(matcher.group(1));
                 }
@@ -201,18 +194,17 @@ public String visit(MainClass n, Scopes Table) throws Exception {
             } 
             if(Table.methodExists(Table.getCurrentScope(), Id, types)){
                 if(!Table.isValidOverride(Table.getCurrentScope(), Id, retType, types)){
-                    Table.exitAndDestroy();
+                    Table.exit();
                     throw new Exception("Method: "+ Id+ "already exists");
                 }
+                override = true;
             }
-            Table.insert(Id,retType,types);
+            
             n.f7.accept(this,Table);
             n.f8.accept(this,Table);
-            if(!n.f10.accept(this,Table).equals(retType)){
-                Table.exitAndDestroy();
-                throw new Exception("Invalid return type at method: "+ Id);
-            }
-            Table.exitAndDestroy();
+            Table.exit();
+            if(!override){Table.insert(Id,retType,types);}
+            
         }
         catch(Exception e){
             System.err.println("Semantic error: " + e);
@@ -300,19 +292,20 @@ public String visit(MainClass n, Scopes Table) throws Exception {
     public String visit(IntegerLiteral n, Scopes argu){
       return "int";
    }
-   @Override
-    public String visit(PrintStatement n, Scopes argu) throws Exception{
-        String ExpType = n.f2.accept(this,argu);
-        try {
-             if(!ExpType.equals("int")){
-                throw new Exception("Print can only output integers");
-            }
-        } catch (Exception e) {
-            System.err.println(e);
-            throw e;
-        } 
-        return null;
-    }
+//    @Override
+//     public String visit(PrintStatement n, Scopes argu) throws Exception{
+//         String ExpType = n.f2.accept(this,argu);
+//         try {
+//              if(!ExpType.equals("int")){
+//                 throw new Exception("Print can only output integers");
+//             }
+//         } catch (Exception e) {
+//             System.err.println(e);
+//             throw e;
+//         } 
+//         return null;
+//     }
+
     @Override
     public String visit(Expression n, Scopes argu) throws Exception{
         return n.f0.accept(this,argu);

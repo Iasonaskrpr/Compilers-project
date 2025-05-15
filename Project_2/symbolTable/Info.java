@@ -1,3 +1,4 @@
+package symbolTable;
 import java.util.List;
 public class Info {
     private int size; // -1: variable, 0: uninitialized variable or array, >1: array
@@ -24,7 +25,7 @@ public class Info {
     }
 
     public boolean isMethod() {
-        return "method".equals(this.type);
+        return this.type.equals("method");
     }
 
     public List<String> getParamTypes() {
