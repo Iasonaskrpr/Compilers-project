@@ -20,7 +20,6 @@ public class Scopes {
             currentScope = newScope;
             return true;
         }
-        System.out.println(cls);
         return false;
     }
     public String getClassName(){
@@ -127,8 +126,8 @@ public class Scopes {
     public boolean methodExists(ST classScope, String methodName, List<String> paramTypes) {
         Info method = (classScope != null) ? classScope.lookup(methodName) : null;
 
-        if (method != null && method.isMethod()) {
-            return method.getParamTypes().equals(paramTypes);
+        if(method != null && method.isMethod()) {
+            return true;
         }
         return false;
     }
@@ -173,7 +172,6 @@ public class Scopes {
         while (parentScope != null) {
             Info parentMethod = parentScope.lookup(methodName);
             if (parentMethod != null && parentMethod.isMethod()) {
-                System.out.println(parentMethod.getParamTypes()+" "+ methodName);
                 return parentMethod.getRetType().equals(returnType) &&
                     parentMethod.getParamTypes().equals(paramTypes);
             }

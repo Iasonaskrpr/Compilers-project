@@ -22,6 +22,7 @@ import syntaxtree.IntegerType;
 import syntaxtree.MainClass;
 import syntaxtree.MethodDeclaration;
 import syntaxtree.Node;
+import syntaxtree.PrintStatement;
 import syntaxtree.VarDeclaration;
 import visitor.GJDepthFirst;
 class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
@@ -181,7 +182,9 @@ public String visit(MainClass n, Scopes Table) throws Exception {
         try{
             String retType = n.f1.accept(this,Table);
             String Id = n.f2.accept(this,Table);
-            Table.enter(Table.getClassName()+"_Function_"+Id,Table.getCurrentScope(),false,false);
+            if(Table.enter(Table.getClassName()+"_Function_"+Id,Table.getCurrentScope(),false,false) == false){
+                throw new Exception("Couldn't enter new scope");
+            }
             if(argumentList != null){
                 Pattern pattern = Pattern.compile("([\\w\\[\\]]+)\\s+(\\w+)");
                 Matcher matcher = pattern.matcher(argumentList);
@@ -279,33 +282,10 @@ public String visit(MainClass n, Scopes Table) throws Exception {
     public String visit(Identifier n, Scopes Table) {
         return n.f0.toString();
     }
-
-    @Override
-    public String visit(CompareExpression n, Scopes argu){
-        return "boolean";
-    }
-    @Override
-    public String visit(AndExpression n, Scopes argu){
-        return "boolean";
-    }
     @Override
     public String visit(IntegerLiteral n, Scopes argu){
       return "int";
    }
-//    @Override
-//     public String visit(PrintStatement n, Scopes argu) throws Exception{
-//         String ExpType = n.f2.accept(this,argu);
-//         try {
-//              if(!ExpType.equals("int")){
-//                 throw new Exception("Print can only output integers");
-//             }
-//         } catch (Exception e) {
-//             System.err.println(e);
-//             throw e;
-//         } 
-//         return null;
-//     }
-
     @Override
     public String visit(Expression n, Scopes argu) throws Exception{
         return n.f0.accept(this,argu);
