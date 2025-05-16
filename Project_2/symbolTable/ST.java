@@ -27,8 +27,8 @@ public class ST {
         this(null);
     }
 
-    public void insert(String name, int size, String type) {
-        table.put(name, new Info(size, type,this.varOffset));
+    public void insert(String name, String type) {
+        table.put(name, new Info(type,this.varOffset));
     }
     public void insertMethod(String name, String retType, List<String> paramTypes) {
         table.put(name, new Info(retType, paramTypes,this.methodOffset));

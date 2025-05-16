@@ -7,6 +7,7 @@ import symbolTable.ST;
 import symbolTable.Scopes;
 import syntaxtree.AndExpression;
 import syntaxtree.ArrayType;
+import syntaxtree.BooleanArrayType;
 import syntaxtree.BooleanType;
 import syntaxtree.ClassDeclaration;
 import syntaxtree.ClassExtendsDeclaration;
@@ -47,31 +48,31 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
      * f17 -> "}"
      */
     @Override
-public String visit(MainClass n, Scopes Table) throws Exception {
-    String classname = n.f1.accept(this, Table); // Class name extraction
-    try {
-        // Check if class already exists in scope
-        if (Table.enter(classname, null,true,true) == false) {
-            throw new Exception("Class " + classname + " already exists in scope.");
-        }
-        
-        Table.enter("Function_main",Table.getCurrentScope(),false,false);
-        Table.insert("this", -1, classname);
-        // Insert the parameter "args" of type String[]
-        String param = n.f11.accept(this, Table);
-        // Visit variable declarations and statement
-        n.f14.accept(this, Table);
-        n.f15.accept(this, Table);
+    public String visit(MainClass n, Scopes Table) throws Exception {
+        String classname = n.f1.accept(this, Table); // Class name extraction
+        try {
+            // Check if class already exists in scope
+            if (Table.enter(classname, null,true,true) == false) {
+                throw new Exception("Class " + classname + " already exists in scope.");
+            }
+            
+            Table.enter("Function_main",Table.getCurrentScope(),false,false);
+            Table.insert("this", -1, classname);
+            // Insert the parameter "args" of type String[]
+            String param = n.f11.accept(this, Table);
+            // Visit variable declarations and statement
+            n.f14.accept(this, Table);
+            n.f15.accept(this, Table);
 
-    } catch (Exception e) {
-        // Handle any exceptions or log them
-        System.err.println("Error during semantic analysis: " + e.getMessage());
-        throw e;  // Rethrow exception to ensure error is propagated
+        } catch (Exception e) {
+            // Handle any exceptions or log them
+            System.err.println("Error during semantic analysis: " + e.getMessage());
+            throw e;  // Rethrow exception to ensure error is propagated
+        }
+        Table.exit();
+        Table.exit();
+        return null;
     }
-    Table.exit();
-    Table.exit();
-    return null;
-}
 
     /**
      * f0 -> "class"
@@ -150,7 +151,7 @@ public String visit(MainClass n, Scopes Table) throws Exception {
             if(Table.varExistsInCurrentScope(var) != false){
                 throw new Exception("Variable already exists in current scope:" + Table.getClassName());
             }
-            Table.insert(var, -1, type);
+            Table.insert(var, 0, type);
         } catch (Exception e) {
             System.err.println(e);
             throw e;
@@ -198,7 +199,7 @@ public String visit(MainClass n, Scopes Table) throws Exception {
             if(Table.methodExists(Table.getCurrentScope(), Id, types)){
                 if(!Table.isValidOverride(Table.getCurrentScope(), Id, retType, types)){
                     Table.exit();
-                    throw new Exception("Method: "+ Id+ "already exists");
+                    throw new Exception("Method: "+ Id+ " invalid override");
                 }
                 override = true;
             }
@@ -277,7 +278,10 @@ public String visit(MainClass n, Scopes Table) throws Exception {
     public String visit(IntegerType n, Scopes Table) {
         return "int";
     }
-
+    @Override
+    public String visit(BooleanArrayType n, Scopes Table){
+        return "boolean[]";
+    }
     @Override
     public String visit(Identifier n, Scopes Table) {
         return n.f0.toString();

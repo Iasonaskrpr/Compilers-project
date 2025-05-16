@@ -22,6 +22,10 @@ public class Scopes {
         }
         return false;
     }
+    public boolean enterScopeByName(String cls){
+        this.currentScope = tables.get(cls);
+        return this.currentScope!=null;
+    }
     public String getClassName(){
         return this.currentScope.getName();
     }
@@ -31,9 +35,9 @@ public class Scopes {
             currentScope.addMethod();
         }
     }
-    public void insert(String name, int size, String type) {
+    public void insert(String name,String type) {
         if (currentScope != null) {
-            currentScope.insert(name, size, type);
+            currentScope.insert(name, type);
             if(!name.equals("this")){
                 if(type.equals("boolean")){currentScope.addBool();}
                 else if(type.equals("int")){currentScope.addInt();}
@@ -63,24 +67,15 @@ public class Scopes {
         return (scope != null) ? scope.lookup(name) : null;
     }
 
-    // ========= Array Size =========
-    public int arraySize(String name) {
-        return arraySize(name, currentScope);
-    }
 
-    public int arraySize(String name, ST scope) {
-        Info i = safeLookup(name, scope);
-        return (i != null && "int".equals(i.getType()) && i.getSize() >= 1) ? i.getSize() : -1;
-    }
-
-    // ========= Type Checks =========
+     // ========= Type Checks =========
     public boolean isInt(String name) {
         return isInt(name, currentScope);
     }
 
     public boolean isInt(String name, ST scope) {
         Info i = safeLookup(name, scope);
-        return i != null && "int".equals(i.getType()) && i.getSize() == -1;
+        return i != null && "int".equals(i.getType());
     }
 
     public boolean isBool(String name) {
@@ -89,7 +84,7 @@ public class Scopes {
 
     public boolean isBool(String name, ST scope) {
         Info i = safeLookup(name, scope);
-        return i != null && "boolean".equals(i.getType()) && i.getSize() == -1;
+        return i != null && "boolean".equals(i.getType());
     }
 
     public boolean isUninitializedArray(String name) {
@@ -98,7 +93,7 @@ public class Scopes {
 
     public boolean isUninitializedArray(String name, ST scope) {
         Info i = safeLookup(name, scope);
-        return i != null && i.getSize() == 0;
+        return i != null;
     }
 
     // ========= Existence =========
@@ -140,14 +135,6 @@ public class Scopes {
             return method.getRetType();
         }
         return null;
-    }
-    public boolean InitiazeArray(String name,int size){
-        Info arr = this.currentScope.lookup(name);
-        if (arr != null && arr.getType().equals("int[]") && arr.getSize() != -1) {
-            arr.changeSize(size);
-            return true;
-        }
-        return false;
     }
     public boolean ClassExists(String Name){
         return this.tables.containsKey(Name);

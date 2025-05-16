@@ -1,0 +1,373 @@
+import symbolTable.ST;
+import symbolTable.Scopes;
+import symbolTable.Info;
+import syntaxtree.*;
+import visitor.GJDepthFirst;
+
+
+class MyVisitor extends GJDepthFirst<String, Scopes>{
+    /**
+     * f0 -> "class"
+     * f1 -> Identifier()
+     * f2 -> "{"
+     * f3 -> "public"
+     * f4 -> "static"
+     * f5 -> "void"
+     * f6 -> "main"
+     * f7 -> "("
+     * f8 -> "String"
+     * f9 -> "["
+     * f10 -> "]"
+     * f11 -> Identifier()
+     * f12 -> ")"
+     * f13 -> "{"
+     * f14 -> ( VarDeclaration() )*
+     * f15 -> ( Statement() )*
+     * f16 -> "}"
+     * f17 -> "}"
+     */
+    @Override
+    public String visit(MainClass n, Scopes Table) throws Exception {
+        try {
+            String cls = n.f1.accept(this,Table);
+            if(!Table.enterScopeByName("Function_main")){
+                throw new Exception("Unexpected error: Couldn't find "+cls+" class");
+            }
+            n.f14.accept(this,Table);
+            n.f15.accept(this,Table);
+
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        return null;
+    }
+
+    /**
+     * f0 -> "class"
+     * f1 -> Identifier()
+     * f2 -> "{"
+     * f3 -> ( VarDeclaration() )*
+     * f4 -> ( MethodDeclaration() )*
+     * f5 -> "}"
+     */
+    @Override
+    public String visit(ClassDeclaration n, Scopes Table) throws Exception {
+        try {
+            String classname = n.f1.accept(this, Table);
+            if(!Table.enterScopeByName(classname)){
+                throw new Exception("Unexpected error: Couldn't find "+classname+" class");
+            }
+            n.f3.accept(this,Table);
+            n.f4.accept(this,Table);
+
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
+        return null;
+    }
+
+    /**
+     * f0 -> "class"
+     * f1 -> Identifier()
+     * f2 -> "extends"
+     * f3 -> Identifier()
+     * f4 -> "{"
+     * f5 -> ( VarDeclaration() )*
+     * f6 -> ( MethodDeclaration() )*
+     * f7 -> "}"
+     */
+    @Override
+    public String visit(ClassExtendsDeclaration n, Scopes Table) throws Exception {
+        try {
+            String classname = n.f1.accept(this, Table);
+            if(!Table.enterScopeByName(classname)){
+                throw new Exception("Unexpected error: Couldn't find "+classname+" class");
+            }
+            n.f5.accept(this,Table);
+            n.f6.accept(this,Table);
+
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        return null;
+    }
+
+    /**
+     * f0 -> "public"
+     * f1 -> Type()
+     * f2 -> Identifier()
+     * f3 -> "("
+     * f4 -> ( FormalParameterList() )?
+     * f5 -> ")"
+     * f6 -> "{"
+     * f7 -> ( VarDeclaration() )*
+     * f8 -> ( Statement() )*
+     * f9 -> "return"
+     * f10 -> Expression()
+     * f11 -> ";"
+     * f12 -> "}"
+     */
+    @Override
+    public String visit(MethodDeclaration n, Scopes Table) throws Exception {
+        try {
+            String retType = n.f1.accept(this,Table);
+            String methodName = n.f2.accept(this, Table);
+            if(!Table.enterScopeByName(Table.getClassName()+"_Function_"+methodName)){
+                throw new Exception("Unexpected error: Couldn't find "+methodName+" class");
+            }
+            n.f7.accept(this,Table);
+            n.f8.accept(this,Table);
+            String _ret = n.f10.accept(this,Table);
+            if(!retType.equals(_ret)){
+                throw new Exception("Semantic analysis failed: Incorrect return type at function-> "+ methodName);
+            }
+            Table.exit();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        
+        return null;
+    }
+    @Override
+    public String visit(WhileStatement n,Scopes Table)throws Exception{
+        try {
+            if(!n.f2.accept(this,Table).equals("boolean")){
+                throw new Exception("Samentic error analysis: while statement expected boolean");
+            }
+            n.f4.accept(this,Table);
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        return null;
+    }
+    @Override
+    public String visit(IfStatement n,Scopes Table)throws Exception{
+        try {
+            if(!n.f2.accept(this,Table).equals("boolean")){
+                throw new Exception("Samentic error analysis: while statement expected boolean");
+            }
+            n.f4.accept(this,Table);
+            n.f6.accept(this,Table);
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        return null;
+    }
+    @Override
+    public String visit(PrintStatement n,Scopes Table)throws Exception{
+        try {
+            if(!n.f2.accept(this,Table).equals("int")){
+                throw new Exception("Semantic error analysis: print statement expected int");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return null;
+    }
+    @Override
+    public String visit(AssignmentStatement n,Scopes Table)throws Exception{
+        String id = n.f0.accept(this,Table);
+        Info varData = Table.lookup(id);
+        try {
+            if(varData == null){
+                throw new Exception("Semantic error analysis: "+id+" Doesn't exist at "+ Table.getClassName());
+            }
+            String exp = n.f2.accept(this,Table);
+            if(!exp.equals(varData.getType())){
+                throw new Exception("Semantic error analysis: "+id+" is of type "+varData.getType()+ " but type "+exp+" was assigned");
+            }
+            
+         } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+         }
+         return varData.getType();
+    }
+    @Override
+    public String visit(ArrayAssignmentStatement n,Scopes Table)throws Exception{
+        String id = n.f0.accept(this,Table);
+        Info varData = Table.lookup(id);
+        try {
+            if(varData == null || (!varData.getType().equals("int[]")&&!varData.getType().equals("boolean[]"))){
+                throw new Exception("Semantic error analysis: "+id+" is not an array ");
+            }
+            String type = n.f2.accept(this,Table);
+            if(!type.equals("int")){
+                throw new Exception("Semantic error analysis: Array index is not an integer");
+            }
+            String alloc = n.f5.accept(this,Table);
+            if(varData.getType().equals("int[]")&&!alloc.equals("int")){
+                throw new Exception("Semantic error analysis: Array is of type int but assignment of "+ alloc +"was given");
+            }
+            if(varData.getType().equals("boolean[]")&&!alloc.equals("boolean")){
+                throw new Exception("Semantic error analysis: Array is of type boolean but assignment of "+ alloc +"was given");
+            }
+
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return null;
+    }
+    @Override
+    public String visit(IntegerArrayAllocationExpression n,Scopes Table)throws Exception{
+        try {
+            String alloc = n.f3.accept(this,Table);
+            if(!alloc.equals("int")){
+                throw new Exception("Semantic analysis error: Array allocation expression expected int");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "int[]";
+    }
+    @Override
+    public String visit(BooleanArrayAllocationExpression n,Scopes Table)throws Exception{
+        try {
+            String alloc = n.f3.accept(this,Table);
+            if(!alloc.equals("int")){
+                throw new Exception("Semantic analysis error: Array allocation expression expected int");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "boolean[]";
+    }
+    @Override
+    public String visit(ArrayLookup n, Scopes Table)throws Exception{
+        String id = n.f0.accept(this,Table);
+        Info varData = Table.lookup(id); 
+        String type;
+        try {
+            if(varData == null){
+                throw new Exception("Semantic error analysis: "+id+" doesn't exist ");
+            }
+            type = varData.getType();
+            String alloc = n.f2.accept(this,Table);
+            if(type.equals("int[]")){
+                if(!alloc.equals("int")){
+                    throw new Exception("Semantic error analysis: "+id+" is of type int");
+                }
+            }
+            else if(type.equals("boolean[]")){
+                 if(!alloc.equals("boolean")){
+                    throw new Exception("Semantic error analysis: "+id+" is of type boolean");
+                }
+            }
+            else{
+                throw new Exception("Semantic error analysis: "+id+" is not an array ");
+            }
+            
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return type;
+    }
+    @Override
+    public String visit(ArrayLength n,Scopes Table)throws Exception{
+        String id = n.f0.accept(this,Table);
+        Info varData = Table.lookup(id);
+        try {
+            if(varData == null || (!varData.getType().equals("int[]")&&!varData.getType().equals("boolean[]"))){
+                throw new Exception("Semantic error analysis: "+id+" is not an array ");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "int";
+    }
+    @Override
+    public String visit(Expression n,Scopes Table) throws Exception{
+        return n.f0.accept(this,Table);
+    }
+    @Override
+    public String visit(ArrayType n, Scopes Table) {
+        return n.f0.accept(this,Table);
+    }
+    @Override
+    public String visit(BooleanType n, Scopes Table) {
+        return "boolean";
+    }
+    @Override
+    public String visit(IntegerType n, Scopes Table) {
+        return "int";
+    }
+    @Override
+    public String visit(BooleanArrayType n, Scopes Table){
+        return "boolean[]";
+    }
+    @Override
+    public String visit(Identifier n, Scopes Table) {
+        return n.f0.toString();
+    }
+    @Override
+    public String visit(CompareExpression n, Scopes Table) throws Exception{
+        return "boolean";
+    }
+    @Override
+    public String visit(IntegerLiteral n, Scopes Table) throws Exception {
+        return "int";
+    }
+    @Override
+    public String visit(TrueLiteral n ,Scopes Table){
+        return "boolean";
+    }
+    @Override
+    public String visit(FalseLiteral n ,Scopes Table){
+        return "boolean";
+    }
+    @Override
+    public String visit(ThisExpression n ,Scopes Table){
+        return n.f0.toString();
+    }
+    @Override
+    public String visit(AllocationExpression n ,Scopes Table)throws Exception{
+        String alloc = n.f1.accept(this,Table);
+        try {
+            if(!Table.ClassExists(alloc)){
+                throw new Exception("Semantic analysis error: Can't allocate if it is not class");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return alloc;
+    }
+    @Override
+    public String visit(NotExpression n, Scopes Table) throws Exception{
+        String tp = n.f1.accept(this,Table);
+        try {
+            if(!tp.equals("boolean")){
+                throw new Exception("Semantic analysis error: not expression expects boolean but type "+ tp + " was given");
+            }
+
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "boolean";
+    }
+    @Override
+    public String visit(Clause n,Scopes Table)throws Exception{
+        return n.f0.accept(this,Table);
+    }
+    @Override
+    public String visit(BracketExpression n, Scopes Table)throws Exception{
+        return n.f1.accept(this,Table);
+    }
+    @Override
+    public String visit(Statement n,Scopes Table)throws Exception{
+        return n.f0.accept(this,Table);
+    }
+    @Override
+    public String visit(Type n, Scopes Table)throws Exception{
+        return n.f0.accept(this,Table);
+    }
+   
+}
