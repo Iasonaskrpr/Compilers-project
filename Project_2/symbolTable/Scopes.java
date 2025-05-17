@@ -120,7 +120,6 @@ public class Scopes {
     }
     public boolean methodExists(ST classScope, String methodName, List<String> paramTypes) {
         Info method = (classScope != null) ? classScope.lookup(methodName) : null;
-
         if(method != null && method.isMethod()) {
             return true;
         }

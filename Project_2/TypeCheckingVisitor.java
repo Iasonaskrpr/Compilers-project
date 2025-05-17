@@ -1,12 +1,11 @@
 import symbolTable.Scopes;
 import symbolTable.Info;
+import symbolTable.ST;
 import syntaxtree.*;
 import visitor.GJDepthFirst;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.table.AbstractTableModel;
 
 
 class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
@@ -126,8 +125,12 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
             n.f7.accept(this,Table);
             n.f8.accept(this,Table);
             String _ret = n.f10.accept(this,Table);
+            Info var = Table.lookup(_ret);
+            if(var != null){
+                _ret = var.getType();
+            }
             if(!retType.equals(_ret)){
-                throw new Exception("Semantic analysis failed: Incorrect return type at function-> "+ methodName);
+                throw new Exception("Semantic analysis failed: Method "+ methodName +" expected "+retType +" but "+_ret+ " was given");
             }
             Table.exit();
         } catch (Exception e) {
@@ -141,8 +144,12 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(WhileStatement n,Scopes Table)throws Exception{
         try {
             String type = n.f2.accept(this,Table);
+            Info var = Table.lookup(type);
+            if(var!=null){
+                type = var.getType();
+            }
             if(!type.equals("boolean")){
-                throw new Exception("Samentic error analysis: while statement expected boolean but "+ type +" was given");
+                throw new Exception("Semantic analysis error: while statement expected boolean but "+ type +" was given");
             }
             n.f4.accept(this,Table);
         } catch (Exception e) {
@@ -154,8 +161,13 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     @Override
     public String visit(IfStatement n,Scopes Table)throws Exception{
         try {
-            if(!n.f2.accept(this,Table).equals("boolean")){
-                throw new Exception("Samentic error analysis: while statement expected boolean");
+            String type = n.f2.accept(this,Table);
+            Info var = Table.lookup(type);
+            if(var!=null){
+                type = var.getType();
+            }
+            if(!type.equals("boolean")){
+                throw new Exception("Semantic analysis error: if statement expected boolean");
             }
             n.f4.accept(this,Table);
             n.f6.accept(this,Table);
@@ -168,8 +180,13 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     @Override
     public String visit(PrintStatement n,Scopes Table)throws Exception{
         try {
-            if(!n.f2.accept(this,Table).equals("int")){
-                throw new Exception("Semantic error analysis: print statement expected int");
+            String tp = n.f2.accept(this,Table);
+            Info var = Table.lookup(tp);
+            if(var!=null){
+                tp = var.getType();
+            }
+            if(!tp.equals("int")){
+                throw new Exception("Semantic analysis error: print statement expected int but "+tp+" was given");
             }
         } catch (Exception e) {
             System.err.println(e);
@@ -183,7 +200,7 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
         Info varData = Table.lookup(id);
         try {
             if(varData == null){
-                throw new Exception("Semantic error analysis: "+id+" Doesn't exist at "+ Table.getClassName());
+                throw new Exception("Semantic analysis error: "+id+" Doesn't exist at "+ Table.getClassName());
             }
             String exp = n.f2.accept(this,Table);
             Info var = Table.lookup(exp);
@@ -191,7 +208,7 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
                 exp = var.getType();
             }
             if(!exp.equals(varData.getType())){
-                throw new Exception("Semantic error analysis: "+id+" is of type "+varData.getType()+ " but type "+exp+" was assigned");
+                throw new Exception("Semantic analysis error: "+id+" is of type "+varData.getType()+ " but type "+exp+" was assigned");
             }
             
          } catch (Exception e) {
@@ -207,7 +224,7 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
         Info var;
         try {
             if(varData == null || (!varData.getType().equals("int[]")&&!varData.getType().equals("boolean[]"))){
-                throw new Exception("Semantic error analysis: "+id+" is not an array ");
+                throw new Exception("Semantic analysis error: "+id+" is not an array ");
             }
             String type = n.f2.accept(this,Table);
             var = Table.lookup(type);
@@ -215,7 +232,7 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
                 type = var.getType();
             } 
             if(!type.equals("int")){
-                throw new Exception("Semantic error analysis: Array index is not an integer");
+                throw new Exception("Semantic analysis error: Array index is not an integer");
             }
             String alloc = n.f5.accept(this,Table);
             var = Table.lookup(alloc);
@@ -223,10 +240,10 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
                 alloc = var.getType();
             }
             if(varData.getType().equals("int[]")&&!alloc.equals("int")){
-                throw new Exception("Semantic error analysis: Array is of type int but assignment of "+ alloc +"was given");
+                throw new Exception("Semantic analysis error: Array is of type int but assignment of "+ alloc +"was given");
             }
             if(varData.getType().equals("boolean[]")&&!alloc.equals("boolean")){
-                throw new Exception("Semantic error analysis: Array is of type boolean but assignment of "+ alloc +"was given");
+                throw new Exception("Semantic analysis error: Array is of type boolean but assignment of "+ alloc +"was given");
             }
 
         } catch (Exception e) {
@@ -376,6 +393,10 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(NotExpression n, Scopes Table) throws Exception{
         String tp = n.f1.accept(this,Table);
         try {
+            Info var = Table.lookup(tp);
+            if(var!=null){
+                tp = var.getType();
+            }
             if(!tp.equals("boolean")){
                 throw new Exception("Semantic analysis error: not expression expects boolean but type "+ tp + " was given");
             }
@@ -574,41 +595,55 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(MessageSend n,Scopes Table)throws Exception{
         String id = n.f0.accept(this,Table);
         String retType;
+        String classType;
         try {
             Info varData = Table.lookup(id);
             if(varData == null){
-                throw new Exception("Semantic analysis error: Item "+id+" doesn't exist");
+                ST cls = Table.getClassScope(id);
+                if(cls == null){
+                    throw new Exception("Semantic analysis error: Item "+id+" doesn't exist");
+                }
+                classType = id;
+            }
+            else{
+                classType = varData.getType();
             }
             String meth = n.f2.accept(this,Table);
-            String argumentList = n.f4.present() ? n.f4.accept(this, null) : null;
-            
+            String argumentList = n.f4.present() ? n.f4.accept(this, Table) : null;
             if(argumentList!=null){
                 List<String> types = new ArrayList<>();
                 for (String arg : argumentList.split(",")) {
                     types.add(arg.trim());
                 }
-                if (!Table.methodExists(Table.getCurrentScope(), meth, types)) {
+                if (!Table.methodExists(Table.getClassScope(classType), meth, types)) {
                     throw new Exception("Semantic analysis error: method " + meth + " with parameters " + types + " doesn't exist");
                 }
-                retType = Table.getMethodReturnType(Table.getClassName(), meth, types);
+                retType = Table.getMethodReturnType(classType, meth, types);
             }
             else{
-                if(!Table.methodExists(Table.getCurrentScope(), meth, null)){
+                if(!Table.methodExists(Table.getClassScope(classType), meth, null)){
                     throw new Exception("Semantic analysis error: method "+meth+" doesn't exist");
                 }
-                retType = Table.getMethodReturnType(Table.getClassName(), meth, null);
+                retType = Table.getMethodReturnType(classType, meth, null);
             }
             
         } catch (Exception e) {
             System.err.println(e);
             throw e;
         }
-        System.out.println(retType);
         return retType;
     }
     @Override
     public String visit(ExpressionList n, Scopes Table)throws Exception{
-        return n.f0.accept(this,Table) + n.f1.accept(this,Table);
+        String exp1 = n.f0.accept(this,Table);
+        String exp2 = n.f1.accept(this,Table);
+        if(exp1 == null){
+            return "";
+        }
+        else if(exp2 == null){
+            return exp1;
+        }
+        return exp1 + exp2;
     }
     @Override
     public String visit(ExpressionTail n,Scopes Table)throws Exception{
