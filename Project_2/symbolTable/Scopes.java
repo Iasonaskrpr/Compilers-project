@@ -134,7 +134,7 @@ public class Scopes {
         if (method != null && method.isMethod() && method.getParamTypes().equals(paramTypes)) {
             return method.getRetType();
         }
-        return null;
+        return method.getRetType();
     }
     public boolean ClassExists(String Name){
         return this.tables.containsKey(Name);

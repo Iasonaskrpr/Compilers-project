@@ -1,11 +1,15 @@
-import symbolTable.ST;
 import symbolTable.Scopes;
 import symbolTable.Info;
 import syntaxtree.*;
 import visitor.GJDepthFirst;
 
+import java.util.ArrayList;
+import java.util.List;
 
-class MyVisitor extends GJDepthFirst<String, Scopes>{
+import javax.swing.table.AbstractTableModel;
+
+
+class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     /**
      * f0 -> "class"
      * f1 -> Identifier()
@@ -38,6 +42,7 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
 
         } catch (Exception e) {
             System.err.println(e);
+            throw e;
         }
         return null;
     }
@@ -62,6 +67,7 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
 
         } catch (Exception e) {
             System.err.println(e);
+            throw e;
         }
 
         return null;
@@ -89,6 +95,7 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
 
         } catch (Exception e) {
             System.err.println(e);
+            throw e;
         }
         return null;
     }
@@ -125,6 +132,7 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
             Table.exit();
         } catch (Exception e) {
             System.err.println(e);
+            throw e;
         }
         
         return null;
@@ -132,12 +140,14 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
     @Override
     public String visit(WhileStatement n,Scopes Table)throws Exception{
         try {
-            if(!n.f2.accept(this,Table).equals("boolean")){
-                throw new Exception("Samentic error analysis: while statement expected boolean");
+            String type = n.f2.accept(this,Table);
+            if(!type.equals("boolean")){
+                throw new Exception("Samentic error analysis: while statement expected boolean but "+ type +" was given");
             }
             n.f4.accept(this,Table);
         } catch (Exception e) {
             System.err.println(e);
+            throw e;
         }
         return null;
     }
@@ -151,6 +161,7 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
             n.f6.accept(this,Table);
         } catch (Exception e) {
             System.err.println(e);
+            throw e;
         }
         return null;
     }
@@ -175,6 +186,10 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
                 throw new Exception("Semantic error analysis: "+id+" Doesn't exist at "+ Table.getClassName());
             }
             String exp = n.f2.accept(this,Table);
+            Info var = Table.lookup(exp);
+            if(var!=null){
+                exp = var.getType();
+            }
             if(!exp.equals(varData.getType())){
                 throw new Exception("Semantic error analysis: "+id+" is of type "+varData.getType()+ " but type "+exp+" was assigned");
             }
@@ -189,15 +204,24 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(ArrayAssignmentStatement n,Scopes Table)throws Exception{
         String id = n.f0.accept(this,Table);
         Info varData = Table.lookup(id);
+        Info var;
         try {
             if(varData == null || (!varData.getType().equals("int[]")&&!varData.getType().equals("boolean[]"))){
                 throw new Exception("Semantic error analysis: "+id+" is not an array ");
             }
             String type = n.f2.accept(this,Table);
+            var = Table.lookup(type);
+            if(var!=null){
+                type = var.getType();
+            } 
             if(!type.equals("int")){
                 throw new Exception("Semantic error analysis: Array index is not an integer");
             }
             String alloc = n.f5.accept(this,Table);
+            var = Table.lookup(alloc);
+            if(var!=null){
+                alloc = var.getType();
+            }
             if(varData.getType().equals("int[]")&&!alloc.equals("int")){
                 throw new Exception("Semantic error analysis: Array is of type int but assignment of "+ alloc +"was given");
             }
@@ -215,8 +239,12 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(IntegerArrayAllocationExpression n,Scopes Table)throws Exception{
         try {
             String alloc = n.f3.accept(this,Table);
+            Info sz = Table.lookup(alloc);
+            if(sz != null){
+                alloc = sz.getType();
+            }
             if(!alloc.equals("int")){
-                throw new Exception("Semantic analysis error: Array allocation expression expected int");
+                throw new Exception("Semantic analysis error: Array allocation expression expected int but "+alloc+" was given");
             }
         } catch (Exception e) {
             System.err.println(e);
@@ -228,8 +256,12 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(BooleanArrayAllocationExpression n,Scopes Table)throws Exception{
         try {
             String alloc = n.f3.accept(this,Table);
+            Info sz = Table.lookup(alloc);
+            if(sz != null){
+                alloc = sz.getType();
+            }
             if(!alloc.equals("int")){
-                throw new Exception("Semantic analysis error: Array allocation expression expected int");
+                throw new Exception("Semantic analysis error: Array allocation expression expected int but "+alloc+" was given");
             }
         } catch (Exception e) {
             System.err.println(e);
@@ -242,20 +274,25 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
         String id = n.f0.accept(this,Table);
         Info varData = Table.lookup(id); 
         String type;
+        String alloc;
         try {
             if(varData == null){
                 throw new Exception("Semantic error analysis: "+id+" doesn't exist ");
             }
             type = varData.getType();
-            String alloc = n.f2.accept(this,Table);
+            alloc = n.f2.accept(this,Table);
+            Info all = Table.lookup(alloc);
+            if(all!=null){
+                alloc = all.getType();
+            }
             if(type.equals("int[]")){
                 if(!alloc.equals("int")){
-                    throw new Exception("Semantic error analysis: "+id+" is of type int");
+                    throw new Exception("Semantic error analysis: "+id+" is of type int but "+alloc +" was given");
                 }
             }
             else if(type.equals("boolean[]")){
                  if(!alloc.equals("boolean")){
-                    throw new Exception("Semantic error analysis: "+id+" is of type boolean");
+                    throw new Exception("Semantic error analysis: "+id+" is of type boolean but "+alloc +" was given");
                 }
             }
             else{
@@ -266,7 +303,7 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
             System.err.println(e);
             throw e;
         }
-        return type;
+        return alloc;
     }
     @Override
     public String visit(ArrayLength n,Scopes Table)throws Exception{
@@ -287,7 +324,7 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
         return n.f0.accept(this,Table);
     }
     @Override
-    public String visit(ArrayType n, Scopes Table) {
+    public String visit(ArrayType n, Scopes Table) throws Exception{
         return n.f0.accept(this,Table);
     }
     @Override
@@ -305,10 +342,6 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
     @Override
     public String visit(Identifier n, Scopes Table) {
         return n.f0.toString();
-    }
-    @Override
-    public String visit(CompareExpression n, Scopes Table) throws Exception{
-        return "boolean";
     }
     @Override
     public String visit(IntegerLiteral n, Scopes Table) throws Exception {
@@ -369,5 +402,220 @@ class MyVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(Type n, Scopes Table)throws Exception{
         return n.f0.accept(this,Table);
     }
-   
+    @Override
+    public String visit(Block n,Scopes Table)throws Exception{
+        return n.f1.accept(this,Table);
+    }
+    @Override
+    public String visit(PrimaryExpression n,Scopes Table)throws Exception{
+        return n.f0.accept(this,Table);
+    }
+    @Override
+    public String visit(TimesExpression n,Scopes Table)throws Exception{
+        String type1 = n.f0.accept(this,Table);
+        String type2 = n.f2.accept(this,Table);
+        try {
+            Info var1 = Table.lookup(type1);
+            Info var2 = Table.lookup(type2);
+            if(var1 != null){
+                if(var1.getType().equals("int")){
+                    type1 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Times operator expects integers");
+                }
+            }
+            if(var2 != null){
+                if(var2.getType().equals("int")){
+                    type2 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Times operator expects integers");
+                }
+            }
+            if(!type1.equals("int")||!type2.equals("int")){
+                throw new Exception("Semantic analysis error: Times operator expects integers but "+type1+ " * "+ type2+" was given");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "int";
+    }
+    @Override
+    public String visit(PlusExpression n,Scopes Table)throws Exception{
+        String type1 = n.f0.accept(this,Table);
+        String type2 = n.f2.accept(this,Table);
+        try {
+            Info var1 = Table.lookup(type1);
+            Info var2 = Table.lookup(type2);
+            if(var1 != null){
+                if(var1.getType().equals("int")){
+                    type1 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Plus operator expects integers");
+                }
+            }
+            if(var2 != null){
+                if(var2.getType().equals("int")){
+                    type2 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Plus operator expects integers");
+                }
+            }
+            if(!type1.equals("int")||!type2.equals("int")){
+                throw new Exception("Semantic analysis error: Plus operator expects integers but "+type1+ " + "+ type2+" was given");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "int";
+    }
+    @Override
+    public String visit(MinusExpression n,Scopes Table)throws Exception{
+        String type1 = n.f0.accept(this,Table);
+        String type2 = n.f2.accept(this,Table);
+        try {
+            Info var1 = Table.lookup(type1);
+            Info var2 = Table.lookup(type2);
+            if(var1 != null){
+                if(var1.getType().equals("int")){
+                    type1 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Minus operator expects integers");
+                }
+            }
+            if(var2 != null){
+                if(var2.getType().equals("int")){
+                    type2 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Minus operator expects integers");
+                }
+            }
+            if(!type1.equals("int")||!type2.equals("int")){
+                throw new Exception("Semantic analysis error: Minus operator expects integers but "+type1+ " - "+ type2+" was given");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "int";
+    }
+    @Override
+    public String visit(CompareExpression n,Scopes Table)throws Exception{
+        String type1 = n.f0.accept(this,Table);
+        String type2 = n.f2.accept(this,Table);
+        try {
+            Info var1 = Table.lookup(type1);
+            Info var2 = Table.lookup(type2);
+            if(var1 != null){
+                if(var1.getType().equals("int")){
+                    type1 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Compare operator expects integers");
+                }
+            }
+            if(var2 != null){
+                if(var2.getType().equals("int")){
+                    type2 = "int";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Compare operator expects integers");
+                }
+            }
+            if(!type1.equals("int")||!type2.equals("int")){
+                throw new Exception("Semantic analysis error: Compare operator expects integers but "+type1+ " < "+ type2+" was given");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "boolean";
+    }
+    @Override
+    public String visit(AndExpression n,Scopes Table)throws Exception{
+        String type1 = n.f0.accept(this,Table);
+        String type2 = n.f2.accept(this,Table);
+        try {
+            Info var1 = Table.lookup(type1);
+            Info var2 = Table.lookup(type2);
+            if(var1 != null){
+                if(var1.getType().equals("boolean")){
+                    type1 = "boolean";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Plus operator expects boolean");
+                }
+            }
+            if(var2 != null){
+                if(var2.getType().equals("boolean")){
+                    type2 = "boolean";
+                }
+                else{
+                    throw new Exception("Semantic analysis error: Plus operator expects boolean");
+                }
+            }
+            if(!type1.equals("boolean")||!type2.equals("boolean")){
+                throw new Exception("Semantic analysis error: Plus operator expects boolean but "+type1+ " && "+ type2+" was given");
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        return "boolean";
+    }
+    @Override
+    public String visit(MessageSend n,Scopes Table)throws Exception{
+        String id = n.f0.accept(this,Table);
+        String retType;
+        try {
+            Info varData = Table.lookup(id);
+            if(varData == null){
+                throw new Exception("Semantic analysis error: Item "+id+" doesn't exist");
+            }
+            String meth = n.f2.accept(this,Table);
+            String argumentList = n.f4.present() ? n.f4.accept(this, null) : null;
+            
+            if(argumentList!=null){
+                List<String> types = new ArrayList<>();
+                for (String arg : argumentList.split(",")) {
+                    types.add(arg.trim());
+                }
+                if (!Table.methodExists(Table.getCurrentScope(), meth, types)) {
+                    throw new Exception("Semantic analysis error: method " + meth + " with parameters " + types + " doesn't exist");
+                }
+                retType = Table.getMethodReturnType(Table.getClassName(), meth, types);
+            }
+            else{
+                if(!Table.methodExists(Table.getCurrentScope(), meth, null)){
+                    throw new Exception("Semantic analysis error: method "+meth+" doesn't exist");
+                }
+                retType = Table.getMethodReturnType(Table.getClassName(), meth, null);
+            }
+            
+        } catch (Exception e) {
+            System.err.println(e);
+            throw e;
+        }
+        System.out.println(retType);
+        return retType;
+    }
+    @Override
+    public String visit(ExpressionList n, Scopes Table)throws Exception{
+        return n.f0.accept(this,Table) + n.f1.accept(this,Table);
+    }
+    @Override
+    public String visit(ExpressionTail n,Scopes Table)throws Exception{
+        return n.f0.accept(this,Table);
+    }
+    @Override
+    public String visit(ExpressionTerm n,Scopes Table)throws Exception{
+        return ","+n.f1.accept(this,Table);
+    }
 }

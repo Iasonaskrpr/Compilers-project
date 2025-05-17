@@ -18,12 +18,14 @@ public class TestSemanticAnalyzer {
             MiniJavaParser parser = new MiniJavaParser(input);
             Goal root = parser.Goal(); // Start symbol for MiniJava
 
-            // Set up Scopes and visitor
+            // Step 1: Build symbol table
             Scopes scopes = new Scopes();
-            SymbolTableVisitor visitor = new SymbolTableVisitor();
+            SymbolTableVisitor symbolVisitor = new SymbolTableVisitor();
+            root.accept(symbolVisitor, scopes);
 
-            // Visit the AST
-            root.accept(visitor, scopes);
+            // Step 2: Type checking
+            TypeCheckingVisitor typeVisitor = new TypeCheckingVisitor();
+            root.accept(typeVisitor, scopes);
 
             // If no exceptions, success
             System.out.println("Semantic analysis completed successfully.");

@@ -5,13 +5,12 @@ import java.util.regex.Pattern;
 
 import symbolTable.ST;
 import symbolTable.Scopes;
-import syntaxtree.AndExpression;
+
 import syntaxtree.ArrayType;
 import syntaxtree.BooleanArrayType;
 import syntaxtree.BooleanType;
 import syntaxtree.ClassDeclaration;
 import syntaxtree.ClassExtendsDeclaration;
-import syntaxtree.CompareExpression;
 import syntaxtree.Expression;
 import syntaxtree.FormalParameter;
 import syntaxtree.FormalParameterList;
@@ -23,7 +22,6 @@ import syntaxtree.IntegerType;
 import syntaxtree.MainClass;
 import syntaxtree.MethodDeclaration;
 import syntaxtree.Node;
-import syntaxtree.PrintStatement;
 import syntaxtree.VarDeclaration;
 import visitor.GJDepthFirst;
 class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
@@ -57,9 +55,9 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
             }
             
             Table.enter("Function_main",Table.getCurrentScope(),false,false);
-            Table.insert("this", -1, classname);
+            Table.insert("this", classname);
             // Insert the parameter "args" of type String[]
-            String param = n.f11.accept(this, Table);
+            n.f11.accept(this, Table);
             // Visit variable declarations and statement
             n.f14.accept(this, Table);
             n.f15.accept(this, Table);
@@ -90,7 +88,7 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
             if (Table.enter(classname, null,true,true) == false) {
                 throw new Exception("Class " + classname + " already exists in scope.");
             }
-            Table.insert("this", -1, classname);
+            Table.insert("this",  classname);
             n.f3.accept(this,Table);
             n.f4.accept(this,Table);
 
@@ -127,7 +125,7 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
             if(Table.enter(classname, subScope,false,true) == false){
                 throw new Exception("Class " + classname + " already exists.");
             }
-            Table.insert("this", -1, classname);
+            Table.insert("this",  classname);
             n.f5.accept(this,Table);
             n.f6.accept(this,Table);
             Table.exit();
@@ -151,7 +149,7 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
             if(Table.varExistsInCurrentScope(var) != false){
                 throw new Exception("Variable already exists in current scope:" + Table.getClassName());
             }
-            Table.insert(var, 0, type);
+            Table.insert(var, type);
         } catch (Exception e) {
             System.err.println(e);
             throw e;
@@ -191,7 +189,7 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
                 Matcher matcher = pattern.matcher(argumentList);
                 while (matcher.find()) {
                     if(Table.varExistsInCurrentScope(matcher.group(2))){throw new Exception("Variable: "+ matcher.group(2)+" already exists " + Table.getClassName());}
-                    Table.insert(matcher.group(2), -1, matcher.group(1));
+                    Table.insert(matcher.group(2), matcher.group(1));
                     types.add(matcher.group(1));
                 }
             
