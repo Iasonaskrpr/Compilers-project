@@ -130,6 +130,7 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
                 _ret = var.getType();
             }
             if(!retType.equals(_ret)){
+                if(!Table.isSubtype(retType,_ret))
                 throw new Exception("Semantic analysis failed: Method "+ methodName +" expected "+retType +" but "+_ret+ " was given");
             }
             Table.exit();
@@ -208,7 +209,9 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
                 exp = var.getType();
             }
             if(!exp.equals(varData.getType())){
-                throw new Exception("Semantic analysis error: "+id+" is of type "+varData.getType()+ " but type "+exp+" was assigned");
+                if(!Table.isSubtype(varData.getType(), exp)){
+                    throw new Exception("Semantic analysis error: "+id+" is of type "+varData.getType()+ " but type "+exp+" was assigned");
+                }
             }
             
          } catch (Exception e) {
@@ -596,6 +599,8 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
         String id = n.f0.accept(this,Table);
         String retType;
         String classType;
+        Info var;
+        List<String> types = new ArrayList<>();
         try {
             Info varData = Table.lookup(id);
             if(varData == null){
@@ -611,20 +616,23 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
             String meth = n.f2.accept(this,Table);
             String argumentList = n.f4.present() ? n.f4.accept(this, Table) : null;
             if(argumentList!=null){
-                List<String> types = new ArrayList<>();
+                
                 for (String arg : argumentList.split(",")) {
-                    types.add(arg.trim());
+                    var = Table.lookup(arg);
+                    if(var!=null){types.add(var.getType());}
+                    else{types.add(arg.trim());}
                 }
+
                 if (!Table.methodExists(Table.getClassScope(classType), meth, types)) {
                     throw new Exception("Semantic analysis error: method " + meth + " with parameters " + types + " doesn't exist");
                 }
                 retType = Table.getMethodReturnType(classType, meth, types);
             }
             else{
-                if(!Table.methodExists(Table.getClassScope(classType), meth, null)){
+                if(!Table.methodExists(Table.getClassScope(classType), meth, types)){
                     throw new Exception("Semantic analysis error: method "+meth+" doesn't exist");
                 }
-                retType = Table.getMethodReturnType(classType, meth, null);
+                retType = Table.getMethodReturnType(classType, meth, types);
             }
             
         } catch (Exception e) {
@@ -634,20 +642,28 @@ class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
         return retType;
     }
     @Override
-    public String visit(ExpressionList n, Scopes Table)throws Exception{
-        String exp1 = n.f0.accept(this,Table);
-        String exp2 = n.f1.accept(this,Table);
-        if(exp1 == null){
+    public String visit(ExpressionList n, Scopes Table) throws Exception {
+        String exp1 = n.f0.accept(this, Table); // first expression
+        String exp2 = n.f1.accept(this, Table); // rest of the expressions with commas
+
+        if (exp1 == null) {
             return "";
-        }
-        else if(exp2 == null){
+        } else if (exp2 == null || exp2.isEmpty()) {
             return exp1;
         }
+
         return exp1 + exp2;
     }
     @Override
-    public String visit(ExpressionTail n,Scopes Table)throws Exception{
-        return n.f0.accept(this,Table);
+    public String visit(ExpressionTail n, Scopes Table) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for (Node node : n.f0.nodes) { // f0 is a NodeListOptional
+            String term = node.accept(this, Table);
+            if (term != null) {
+                sb.append(term);
+            }
+        }
+        return sb.toString();
     }
     @Override
     public String visit(ExpressionTerm n,Scopes Table)throws Exception{

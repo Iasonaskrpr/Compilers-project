@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class Scopes {
     private final Map<String, ST> tables; // ClassName → SymbolTable
     private ST currentScope; 
@@ -120,12 +121,29 @@ public class Scopes {
     }
     public boolean methodExists(ST classScope, String methodName, List<String> paramTypes) {
         Info method = (classScope != null) ? classScope.lookup(methodName) : null;
-        if(method != null && method.isMethod()) {
-            return true;
+
+        if (method != null && method.isMethod()) {
+        List<String> param = method.getParamTypes();  // expected parameter types
+        if (param.size() != paramTypes.size()) return false;
+
+        for (int i = 0; i < param.size(); i++) {
+            String expected = param.get(i);
+            String actual = paramTypes.get(i);  // type of the actual argument
+            if (!isSubtype(expected, actual)) {
+                return false;
+            }
         }
+        return true;  // all parameters match
+    }
         return false;
     }
-
+    public boolean methodExistsForOverride(ST classScope, String methodName, List<String> paramTypes) {
+        Info method = (classScope != null) ? classScope.lookup(methodName) : null;
+        if(method != null && method.isMethod()) {
+            return true;
+        } 
+        return false;
+    }
     public String getMethodReturnType(String className, String methodName, List<String> paramTypes) {
         ST classScope = getClassScope(className);
         Info method = (classScope != null) ? classScope.lookup(methodName) : null;
@@ -137,10 +155,6 @@ public class Scopes {
     }
     public boolean ClassExists(String Name){
         return this.tables.containsKey(Name);
-    }
-    public boolean IsArgList(String Name){
-        Info i = this.lookup(Name);
-        return i.getType().equals("String[]");
     }
     public boolean varExistsInCurrentScope(String name) {
         if (currentScope == null) return false;
@@ -169,5 +183,19 @@ public class Scopes {
         for (Map.Entry<String,ST> i : this.tables.entrySet()){
             i.getValue().PrintOffsets(i.getKey());
         }
+    }
+    public boolean isSubtype(String superClass,String subClass){
+        if (superClass.equals(subClass)) return true;
+        ST sub = tables.get(subClass);
+        if(sub!=null){
+            sub.getParent();
+        }
+        while(sub!=null){
+            if(sub.getName().equals(superClass)){
+                return true;
+            }
+            sub = sub.getParent();
+        }
+        return false;
     }
 }

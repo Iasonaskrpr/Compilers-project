@@ -194,7 +194,7 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
                 }
             
             } 
-            if(Table.methodExists(Table.getCurrentScope(), Id, types)){
+            if(Table.methodExistsForOverride(Table.getCurrentScope(), Id, types)){
                 if(!Table.isValidOverride(Table.getCurrentScope(), Id, retType, types)){
                     Table.exit();
                     throw new Exception("Method: "+ Id+ " invalid override");

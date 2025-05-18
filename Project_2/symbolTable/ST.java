@@ -49,7 +49,6 @@ public class ST {
         Info info = table.get(name);
         return (info != null && info.getRetType() != null) ? info.getRetType() : null;
     }
-
     public ST getParent() {
         return this.parent;
     }
