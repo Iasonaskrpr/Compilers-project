@@ -108,10 +108,9 @@ Performs type checking using the Symbol table provided by the last visitor.
 - Replaces variable names with their declared types before comparisons
 - Throws exceptions on mismatches
 
-# Main
+# Semantic Analyzer
 
-# Run semantic analysis on one or more MiniJava source files:
-java SemanticAnalyzer <MiniJavaSourceFile1> <MiniJavaSourceFile2> ...
+Runs semantic analysis on one or more MiniJava source files by calling both visitors
 
 # Output:
 - Success or failure per file
@@ -120,7 +119,7 @@ java SemanticAnalyzer <MiniJavaSourceFile1> <MiniJavaSourceFile2> ...
 # Usage
 
 ```bash```
-  java SemanticAnalyzer <MiniJavaSourceFile1> <MiniJavaSourceFile2> ...
+  java SemanticAnalyzer MiniJavaSourceFile1 MiniJavaSourceFile2 ...
 
 # Test Script Usage
 
