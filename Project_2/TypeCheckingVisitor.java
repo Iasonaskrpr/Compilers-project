@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
+public class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     /**
      * f0 -> "class"
      * f1 -> Identifier()

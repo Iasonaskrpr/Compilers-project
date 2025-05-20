@@ -71,7 +71,7 @@ public class ST {
         System.out.println("-----------Class " + cls + "-----------");
 
         // Sort and print variables
-        System.out.println("---Variables---");
+        System.out.println("--Variables---");
         table.entrySet().stream()
             .filter(e -> !e.getValue().isMethod() && !e.getKey().equals("this"))
             .sorted(Comparator.comparingInt(e -> e.getValue().getOffset()))

@@ -24,7 +24,7 @@ import syntaxtree.MethodDeclaration;
 import syntaxtree.Node;
 import syntaxtree.VarDeclaration;
 import visitor.GJDepthFirst;
-class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
+public class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
     /**
      * f0 -> "class"
      * f1 -> Identifier()
@@ -50,20 +50,17 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
         String classname = n.f1.accept(this, Table); // Class name extraction
         try {
             // Check if class already exists in scope
-            if (Table.enter(classname, null,true,true) == false) {
+            if (Table.enter(classname, null,true,false) == false) {
                 throw new Exception("Class " + classname + " already exists in scope.");
             }
             
             Table.enter("Function_main",Table.getCurrentScope(),false,false);
             Table.insert("this", classname);
-            // Insert the parameter "args" of type String[]
             n.f11.accept(this, Table);
-            // Visit variable declarations and statement
             n.f14.accept(this, Table);
             n.f15.accept(this, Table);
 
         } catch (Exception e) {
-            // Handle any exceptions or log them
             System.err.println("Error during semantic analysis: " + e.getMessage());
             throw e;  // Rethrow exception to ensure error is propagated
         }
@@ -88,13 +85,14 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
             if (Table.enter(classname, null,true,true) == false) {
                 throw new Exception("Class " + classname + " already exists in scope.");
             }
+            // We insert the "this" variable of the class but we dont count it in the offset, it is just there to make implementation easier
             Table.insert("this",  classname);
             n.f3.accept(this,Table);
             n.f4.accept(this,Table);
 
         } catch (Exception e) {
             System.err.println("Error during semantic analysis: " + e.getMessage());
-            throw e;  // Rethrow exception to ensure error is propagated
+            throw e;
         }
         Table.exit();
 
@@ -113,25 +111,28 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
      * f6 -> ( MethodDeclaration() )*
      * f7 -> "}"
      */
+    //We check if the class exists and if it does we enter the scope
     @Override
     public String visit(ClassExtendsDeclaration n, Scopes Table) throws Exception {
         String classname = n.f1.accept(this, Table);
         String subtype = n.f3.accept(this,Table);
         ST subScope;
         try {
+            // We check if the superclass exists and if it does we enter the scope with superclass as parent
             if((subScope = Table.getClassScope(subtype)) == null ){
                 throw new Exception("Class " + subtype + " doesn't exist.");
             }
             if(Table.enter(classname, subScope,false,true) == false){
                 throw new Exception("Class " + classname + " already exists.");
             }
+            // We insert the "this" variable of the class but we dont count it in the offset, it is just there to make implementation easier
             Table.insert("this",  classname);
             n.f5.accept(this,Table);
             n.f6.accept(this,Table);
             Table.exit();
         } catch (Exception e) {
             System.err.println("Error during semantic analysis: " + e.getMessage());
-            throw e;  // Rethrow exception to ensure error is propagated
+            throw e;
         }
         return null;
     }
@@ -141,6 +142,7 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
     * f1 -> Identifier()
     * f2 -> ";"
     */
+   //We get the type and the variable name and if it exists raise exception
    @Override
    public String visit(VarDeclaration n, Scopes Table) throws Exception {
         String type = n.f0.accept(this, Table);
@@ -193,7 +195,8 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
                     types.add(matcher.group(1));
                 }
             
-            } 
+            }
+            // We check if method exists in the current scope or it's parents scope and if it does we check if the override is valid
             if(Table.methodExistsForOverride(Table.getCurrentScope(), Id, types)){
                 if(!Table.isValidOverride(Table.getCurrentScope(), Id, retType, types)){
                     Table.exit();
@@ -205,8 +208,8 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
             n.f7.accept(this,Table);
             n.f8.accept(this,Table);
             Table.exit();
+            //We don't insert the method if it's an override 
             if(!override){Table.insert(Id,retType,types);}
-            
         }
         catch(Exception e){
             System.err.println("Semantic error: " + e);
@@ -263,7 +266,7 @@ class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
         String name = n.f1.accept(this, null);
         return type + " " + name;
     }
-
+    // Type visitor methods
     @Override
     public String visit(ArrayType n, Scopes Table) {
         return "int[]";
