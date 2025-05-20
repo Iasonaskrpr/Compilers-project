@@ -31,7 +31,7 @@ public class SemanticAnalyzer {
                 root.accept(typeVisitor, scopes);
 
                 System.out.println("Semantic analysis completed successfully for: " + filename);
-                scopes.PrintOffset(); // Optional: show offsets per file
+                scopes.PrintOffset();
 
             } catch (Exception e) {
                 System.err.println("Semantic analysis failed for: " + filename);

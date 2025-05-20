@@ -88,15 +88,6 @@ public class Scopes {
         return i != null && "boolean".equals(i.getType());
     }
 
-    public boolean isUninitializedArray(String name) {
-        return isUninitializedArray(name, currentScope);
-    }
-
-    public boolean isUninitializedArray(String name, ST scope) {
-        Info i = safeLookup(name, scope);
-        return i != null;
-    }
-
     // ========= Existence =========
     public boolean exists(String name) {
         return exists(name, currentScope);

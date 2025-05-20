@@ -1,6 +1,157 @@
 # Compilers Project
 
+## Project 2 
+## Overview
+I was tasked with creating a parser that performs semantic analysis for MiniJava. For this I made two visitors, one which creates the symbol table and one which performs type checking.
 
+## Implementation
+
+# Symbol Table
+I seperated the symbol table implementation in three files, Scopes which has a map with all symbol tables linked with the function name or class name, ST which implements the symbol table with a map that connects variable and method names with information about itself and Info which has all the information used to perform type checking.
+
+# Scopes
+Manages scoped symbol tables for a MiniJava-like compiler. Tracks class-level scopes, handles variable/method declarations, and supports inheritance-aware type and method checks.
+
+## Features
+- Create/switch scopes (`enter`, `exit`, `enterScopeByName`)
+- Insert variables and methods (`insert`)
+- Lookup symbols (`lookup`, `getDeclaredType`)
+- Type checks (`isInt`, `isBool`, etc.)
+- Method validation (`methodExists`, `isValidOverride`)
+- Inheritance support (`isSubtype`)
+- Offset tracking for code generation (`PrintOffset`)
+
+# Info
+
+Stores metadata for symbols (variables or methods) within a scope.
+
+## Features
+- Differentiates methods from variables
+- Holds:
+  - `type`: data type or "method"
+  - `retType`: method return type
+  - `paramTypes`: list of parameter types for methods
+  - `offset`: memory layout offset
+
+# ST
+
+Represents a symbol table (`ST`) for a class or method in MiniJava, storing variable and method declarations with type and offset info.
+
+## Features
+- Stores:
+  - Variables with type and offset
+  - Methods with return type, parameter types, and offset
+- Supports hierarchical scopes via parent linkage
+- Tracks offsets separately for variables and methods
+- Can print memory layout (offsets) per class
+
+## Key Methods
+- `insert(name, type)` – Add a variable
+- `insertMethod(name, retType, paramTypes)` – Add a method
+- `lookup(name)` – Recursive symbol lookup
+- `PrintOffsets(className)` – Displays memory layout for variables/methods
+- `addPointer()`, `addBool()`, `addInt()`, `addMethod()` – Offset updates by type
+
+## Usage
+Used in semantic analysis to:
+- Track variable/method declarations
+- Resolve names
+- Manage class/method inheritance and offsets
+
+## Visitors
+
+# SymbolTableVisitor
+
+Builds the symbol table and performs some semantic checks.
+
+## ✅ Features
+- Handles `MainClass`, `ClassDeclaration`, and `ClassExtendsDeclaration`
+- Supports method declarations, parameters, local variables
+- Adds `this` in class/method scopes
+- Validates method overrides
+- Prevents duplicate declarations in scope
+
+## 🔄 Key Behaviors
+- Uses `Scopes` to manage scope stack
+- Method entries stored as `Class_Function_Name`
+- Parameters parsed into type lists for comparison
+- Method override rules: same name, return type, and parameter types
+
+## 🔧 Dependencies
+- `Scopes`, `ST`, `Info`: symbol table structure
+- `syntaxtree.*`: JTB-generated AST classes
+
+## 📌 Notes
+- This visitor is mainly used to populate the symbol table. It only checks for duplicate declarations and ensures that method overrides are valid.
+
+# TypeCheckingVisitor
+
+Performs type checking using the Symbol table provided by the last visitor.
+
+## ✅ Features
+- Verifies return types in methods
+- Checks boolean conditions in `if`/`while`
+- Validates types in:
+  - Print statements (`int`)
+  - Assignments (including subtyping)
+  - Array operations (indexing, allocation, lookup, length)
+  - Arithmetic (`+`, `-`, `*` → `int`)
+  - Comparisons (`<` → `boolean`)
+  - Logical AND (`&&` → `boolean`)
+  - `!` (logical NOT → `boolean`)
+  - Method calls (existence, parameter types, return type)
+- Ensures class allocation targets valid classes
+
+## 🔄 How It Works
+- Uses `Scopes` to enter existing scopes (`enterScopeByName`)
+- Resolves identifiers via `Table.lookup(...)`
+- Replaces variable names with their declared types before comparisons
+- Throws exceptions on mismatches
+
+# Main
+
+# Run semantic analysis on one or more MiniJava source files:
+java SemanticAnalyzer <MiniJavaSourceFile1> <MiniJavaSourceFile2> ...
+
+# Output:
+- Success or failure per file
+- Prints semantic errors if any
+- Prints offset info
+# Usage
+
+```bash```
+  java SemanticAnalyzer <MiniJavaSourceFile1> <MiniJavaSourceFile2> ...
+
+# Test Script Usage
+
+I have included bass script which runs all tests provided and returns if it succeded or failed the test.
+
+- **Purpose:** Runs `SemanticAnalyzer` on `.java` files in `TestFiles`  
+- **Checks:**  
+  - If matching `.txt` file exists in `TestFiles/offset-examples`, expects success (exit code 0)  
+  - Otherwise, expects failure (non-zero exit)  
+- **Output:** Shows pass/fail per test and summary count  
+
+---
+
+**Run:**  
+```bash```
+./test_script.sh
+
+# Usage
+
+- **Compile:**  
+  `make` or `make compile`  
+  Runs JTB, JavaCC, and compiles Java files.
+
+- **Clean:**  
+  `make clean`  
+  Removes generated files and `.class` files.
+
+---
+
+
+## Project 1
 ## Part1
 
 
