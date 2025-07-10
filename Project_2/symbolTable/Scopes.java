@@ -189,4 +189,13 @@ public class Scopes {
         }
         return false;
     }
+    public Map<String,Map<String,Integer>> getVTables(){
+        Map<String, Map<String,Integer>> VTables = new HashMap<>();
+        //Iterate over each symbol table and get offset of methods and add to v-table, return it and give it as an argument to the constructor of the file that calls the IR visitor which starts
+        //by creating vtables and declaring necessary methods and the calling the visitor
+        for(Map.Entry<String,ST> set : this.tables.entrySet()){
+            Map<String, Integer> table = new HashMap<>();
+
+        }
+    }
 }

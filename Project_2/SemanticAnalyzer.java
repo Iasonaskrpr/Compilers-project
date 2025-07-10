@@ -1,6 +1,4 @@
-import java.io.FileInputStream;
-import java.io.InputStream;
-
+import java.io.*;
 import symbolTable.Scopes;
 import syntaxtree.Goal;
 
@@ -39,7 +37,18 @@ public class SemanticAnalyzer {
                 e.printStackTrace();
                 System.exit(1);
             }
-
+            try{
+                PrintStream originalOut = System.out;
+                PrintStream outFile = new PrintStream(new FileOutputStream("IRFiles/IR.ll"));
+                System.setOut(outFile);
+                
+                System.setOut(originalOut);
+            }
+            catch(Exception e){
+                System.err.println("Failed to translate to IR: "+e.getMessage());
+                e.printStackTrace();
+                System.exit(1);
+            }
             System.out.println("----------------------------------------");
         }
         System.exit(0);

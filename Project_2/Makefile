@@ -9,6 +9,7 @@ compile:
 	java -jar $(JTB_JAR) -te $(JTB_INPUT)
 	java -jar $(JAVACC_JAR) $(JTB_OUTPUT)
 	javac -cp . symbolTable/*.java visitor/*.java *.java
+	mkdir IRFiles
 
 clean:
 	rm -rf *.class syntaxtree visitor $(JTB_OUTPUT) *~
