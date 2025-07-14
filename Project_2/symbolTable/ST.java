@@ -110,4 +110,10 @@ public class ST {
     public int getMethod(){
         return this.methodOffset;
     }
+    public Map<String, Info> getTable(){
+        return this.table;
+    }
+    public boolean isClass(){
+        return this.classFlag;
+    }
 }

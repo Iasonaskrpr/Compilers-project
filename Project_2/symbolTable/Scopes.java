@@ -1,8 +1,7 @@
 package symbolTable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
+import java.util.stream.Collectors;
+import IRGeneration.FunctionVInfo;
 
 public class Scopes {
     private final Map<String, ST> tables; // ClassName → SymbolTable
@@ -189,13 +188,48 @@ public class Scopes {
         }
         return false;
     }
-    public Map<String,Map<String,Integer>> getVTables(){
-        Map<String, Map<String,Integer>> VTables = new HashMap<>();
-        //Iterate over each symbol table and get offset of methods and add to v-table, return it and give it as an argument to the constructor of the file that calls the IR visitor which starts
-        //by creating vtables and declaring necessary methods and the calling the visitor
-        for(Map.Entry<String,ST> set : this.tables.entrySet()){
-            Map<String, Integer> table = new HashMap<>();
+    public Map<String, Map<String, FunctionVInfo>> getVTables() {
+        Map<String, Map<String, FunctionVInfo>> VTables = new HashMap<>();
 
+        for (Map.Entry<String, ST> set : this.tables.entrySet()) {
+            String className = set.getKey();
+            ST symbol_table = set.getValue();
+
+            if (symbol_table.isClass()) {
+                // Use a temporary HashMap to collect functions first
+                Map<String, FunctionVInfo> functionsMap = new HashMap<>();
+
+                // Traverse class hierarchy to collect methods
+                while (symbol_table != null) {
+                    for (Map.Entry<String, Info> set2 : symbol_table.getTable().entrySet()) {
+                        Info var = set2.getValue();
+                        if (var.getType().equals("method")) {
+                            // Create FunctionVInfo (assuming a constructor from Info)
+                            FunctionVInfo funcInfo = new FunctionVInfo(
+                                var.getOffset(), 
+                                var.getRetType(),    
+                                var.getParamTypes()        
+                            );
+                            functionsMap.put(set2.getKey(), funcInfo);
+                        }
+                    }
+                    symbol_table = symbol_table.getParent();
+                }
+                LinkedHashMap<String, FunctionVInfo> sortedByOffset = functionsMap.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByValue(
+                        Comparator.comparingInt(FunctionVInfo::getOffset)
+                    ))
+                    .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,   
+                        LinkedHashMap::new    
+                    ));
+                VTables.put(className, sortedByOffset);
+            }
         }
+        return VTables;
     }
+
 }

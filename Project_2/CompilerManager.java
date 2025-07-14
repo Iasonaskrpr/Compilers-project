@@ -1,11 +1,14 @@
 import java.io.*;
+import java.util.Map;
+import IRGeneration.*;
 import symbolTable.Scopes;
 import syntaxtree.Goal;
-
-public class SemanticAnalyzer {
+import SemanticCheckingVisitors.*;
+//Calls visitors that perform semantic analysis and generates LLVM IR
+public class CompilerManager {
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: java TestSemanticAnalyzer <MiniJavaSourceFile1> <MiniJavaSourceFile2> ...");
+            System.out.println("Usage: java CompilerManager <MiniJavaSourceFile1> <MiniJavaSourceFile2> ...");
             System.exit(1);
         }
 
@@ -29,23 +32,12 @@ public class SemanticAnalyzer {
                 root.accept(typeVisitor, scopes);
 
                 System.out.println("Semantic analysis completed successfully for: " + filename);
-                scopes.PrintOffset();
-
+                Map<String ,Map<String , FunctionVInfo >> vtable = scopes.getVTables();
+                IRVisitor irvisitor = new IRVisitor();
+                
             } catch (Exception e) {
                 System.err.println("Semantic analysis failed for: " + filename);
                 System.err.println("Reason: " + e.getMessage());
-                e.printStackTrace();
-                System.exit(1);
-            }
-            try{
-                PrintStream originalOut = System.out;
-                PrintStream outFile = new PrintStream(new FileOutputStream("IRFiles/IR.ll"));
-                System.setOut(outFile);
-                
-                System.setOut(originalOut);
-            }
-            catch(Exception e){
-                System.err.println("Failed to translate to IR: "+e.getMessage());
                 e.printStackTrace();
                 System.exit(1);
             }

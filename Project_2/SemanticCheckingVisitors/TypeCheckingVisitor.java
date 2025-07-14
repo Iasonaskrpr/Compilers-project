@@ -1,3 +1,4 @@
+package SemanticCheckingVisitors;
 import symbolTable.Scopes;
 import symbolTable.Info;
 import symbolTable.ST;
