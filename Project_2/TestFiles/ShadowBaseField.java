@@ -23,12 +23,15 @@ class A {
 
 
 class B extends A {
-
     int x;
-
-    public int getX(){
+    
+    public int gety(){
         x = 1;
         return x;
     }
+    
 
+}
+class C extends B{
+    int y;
 }

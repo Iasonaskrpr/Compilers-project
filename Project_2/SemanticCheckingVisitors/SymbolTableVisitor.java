@@ -209,8 +209,7 @@ public class SymbolTableVisitor extends GJDepthFirst<String, Scopes>{
             n.f7.accept(this,Table);
             n.f8.accept(this,Table);
             Table.exit();
-            //We don't insert the method if it's an override 
-            if(!override){Table.insert(Id,retType,types);}
+            Table.insert(Id,retType,types,override);
         }
         catch(Exception e){
             System.err.println("Semantic error: " + e);

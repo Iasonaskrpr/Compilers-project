@@ -33,7 +33,9 @@ public class ST {
     public void insertMethod(String name, String retType, List<String> paramTypes) {
         table.put(name, new Info(retType, paramTypes,this.methodOffset));
     }
-
+    public void insertMethod(String name, String retType, List<String> paramTypes,int offset) {
+        table.put(name, new Info(retType, paramTypes,offset));
+    }
     public Info lookup(String name) {
         Info info = table.get(name);
         if (info != null) return info;

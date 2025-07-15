@@ -5,8 +5,8 @@ OFFSET_DIR="$TEST_DIR/offset-examples"
 CORRECT=0
 TOTAL=0
 
-# Compile the SemanticAnalyzer
-javac SemanticAnalyzer.java || exit 1
+# Compile the CompilerManager
+javac CompilerManager.java || exit 1
 
 for java_file in "$TEST_DIR"/*.java; do
     filename=$(basename "$java_file")
@@ -17,7 +17,7 @@ for java_file in "$TEST_DIR"/*.java; do
     TOTAL=$((TOTAL + 1))
 
     # Run and capture exit code
-    java SemanticAnalyzer "$java_file" >/dev/null 2>&1
+    java CompilerManager "$java_file" >/dev/null 2>&1
     status=$?
 
     if [[ -f "$expected_file" ]]; then

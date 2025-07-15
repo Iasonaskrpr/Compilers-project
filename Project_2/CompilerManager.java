@@ -1,9 +1,11 @@
 import java.io.*;
 import java.util.Map;
+
 import IRGeneration.*;
 import symbolTable.Scopes;
 import syntaxtree.Goal;
 import SemanticCheckingVisitors.*;
+import syntaxtree.VarDeclaration;
 //Calls visitors that perform semantic analysis and generates LLVM IR
 public class CompilerManager {
     public static void main(String[] args) {
@@ -33,7 +35,27 @@ public class CompilerManager {
 
                 System.out.println("Semantic analysis completed successfully for: " + filename);
                 Map<String ,Map<String , FunctionVInfo >> vtable = scopes.getVTables();
+                for (Map.Entry<String, Map<String, FunctionVInfo>> classEntry : vtable.entrySet()) {
+                    String className = classEntry.getKey();
+                    Map<String, FunctionVInfo> functions = classEntry.getValue();
+                    System.out.println("Class: " + className);
+                    for (Map.Entry<String, FunctionVInfo> funcEntry : functions.entrySet()) {
+                        String functionName = funcEntry.getKey();
+                        FunctionVInfo info = funcEntry.getValue();
+                        System.out.println("Function: " + functionName);
+                        System.out.println("Offset: " + info.getOffset());
+                        System.out.println("Return Type: " + info.getRet());
+                        System.out.println("Arguments: " + info.getArguments());
+                        if(info.isInherited()){
+                            System.out.println("Inherited by: "+info.getParent());
+                        }
+                        System.out.println("-----------------------------");
+                    }
+                }
+                //Step 3: IR generation
+                IRHelper
                 IRVisitor irvisitor = new IRVisitor();
+                irvisitor.start(vtable);
                 
             } catch (Exception e) {
                 System.err.println("Semantic analysis failed for: " + filename);

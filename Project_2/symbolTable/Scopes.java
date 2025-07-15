@@ -29,10 +29,24 @@ public class Scopes {
     public String getClassName(){
         return this.currentScope.getName();
     }
-    public void insert(String name, String retType, List<String> paramTypes){
+    public void insert(String name, String retType, List<String> paramTypes,boolean override){
         if (currentScope != null) {
-            currentScope.insertMethod(name, retType,paramTypes);
-            currentScope.addMethod();
+            ST parentScope = currentScope.getParent();
+
+            if(override){
+                while(parentScope!=null){
+                    Info method = parentScope.lookup(name);
+                    if (method != null){
+                        currentScope.insertMethod(name, retType, paramTypes, method.getOffset());
+                        return;
+                    }
+                    parentScope.getParent();
+                }
+            }
+            else{
+                currentScope.insertMethod(name, retType,paramTypes);
+                currentScope.addMethod();
+            }
         }
     }
     public void insert(String name,String type) {
@@ -190,30 +204,31 @@ public class Scopes {
     }
     public Map<String, Map<String, FunctionVInfo>> getVTables() {
         Map<String, Map<String, FunctionVInfo>> VTables = new HashMap<>();
-
         for (Map.Entry<String, ST> set : this.tables.entrySet()) {
+            boolean inherit = false;
             String className = set.getKey();
             ST symbol_table = set.getValue();
-
             if (symbol_table.isClass()) {
-                // Use a temporary HashMap to collect functions first
                 Map<String, FunctionVInfo> functionsMap = new HashMap<>();
-
-                // Traverse class hierarchy to collect methods
                 while (symbol_table != null) {
                     for (Map.Entry<String, Info> set2 : symbol_table.getTable().entrySet()) {
                         Info var = set2.getValue();
                         if (var.getType().equals("method")) {
-                            // Create FunctionVInfo (assuming a constructor from Info)
-                            FunctionVInfo funcInfo = new FunctionVInfo(
-                                var.getOffset(), 
-                                var.getRetType(),    
-                                var.getParamTypes()        
-                            );
-                            functionsMap.put(set2.getKey(), funcInfo);
+                            String methodName = set2.getKey();
+                            if (!inherit || !functionsMap.containsKey(methodName)) {
+                                FunctionVInfo funcInfo = new FunctionVInfo(
+                                    var.getOffset(), 
+                                    var.getRetType(),    
+                                    var.getParamTypes(),
+                                    inherit,             // true if inherited, false if declared in current class
+                                    symbol_table.getName()        
+                                );
+                                functionsMap.put(methodName, funcInfo);
+                            }
                         }
                     }
                     symbol_table = symbol_table.getParent();
+                    inherit = true;
                 }
                 LinkedHashMap<String, FunctionVInfo> sortedByOffset = functionsMap.entrySet()
                     .stream()
