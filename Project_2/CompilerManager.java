@@ -1,11 +1,9 @@
 import java.io.*;
 import java.util.Map;
-
 import IRGeneration.*;
 import symbolTable.Scopes;
 import syntaxtree.Goal;
 import SemanticCheckingVisitors.*;
-import syntaxtree.VarDeclaration;
 //Calls visitors that perform semantic analysis and generates LLVM IR
 public class CompilerManager {
     public static void main(String[] args) {
@@ -53,9 +51,12 @@ public class CompilerManager {
                     }
                 }
                 //Step 3: IR generation
-                IRHelper
-                IRVisitor irvisitor = new IRVisitor();
-                irvisitor.start(vtable);
+                filename = filename.substring(filename.lastIndexOf('/') + 1);
+                // Remove the ".java" extension
+                if (filename.endsWith(".java")) {
+                    filename = filename.substring(0, filename.length() - 5);
+                }
+                IRHelper irhelp = new IRHelper("IRFiles/"+ filename + ".ll",vtable);
                 
             } catch (Exception e) {
                 System.err.println("Semantic analysis failed for: " + filename);

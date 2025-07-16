@@ -360,6 +360,10 @@ public class TypeCheckingVisitor extends GJDepthFirst<String, Scopes>{
     public String visit(BooleanArrayType n, Scopes Table){
         return "boolean[]";
     }
+    @Override 
+    public String visit(IntegerArrayType n , Scopes Table){
+        return "int[]";
+    }
     @Override
     public String visit(Identifier n, Scopes Table) {
         return n.f0.toString();
