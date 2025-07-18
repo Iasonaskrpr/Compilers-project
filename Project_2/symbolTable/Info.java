@@ -13,7 +13,7 @@ public class Info {
         this.paramTypes = paramTypes;
         this.offset = offset;
     }
-    // Constructor for arrays
+    // Constructor for variables
     Info(String type, int offset) {
         this.type = type;
         this.offset = offset;

@@ -3,11 +3,11 @@ import java.io.*;
 import java.util.*;
 public class IRHelper{
     private OutputStream f;
-
     private int labelcount; 
     private int varcount;
+    private final Map<String,ClassVariables> Vars;
     // Initializes variables and opens a new output stream
-    public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable) {
+    public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable,Map<String,ClassVariables> Vars) {
         labelcount = 0;
         varcount = 0;
         if (!filename.endsWith(".ll")) {
@@ -18,6 +18,7 @@ public class IRHelper{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.Vars = Vars;
         this.startGeneration(vtable);
     }
     public String getLLVMType(String var){
@@ -65,7 +66,7 @@ public class IRHelper{
     }
     // Emits vtable and necessary functions
     private void startGeneration(Map<String ,Map<String , FunctionVInfo>> vtable){
-
+        //TODO: Extract all class and variables and create a type for each one
         for(Map.Entry<String, Map<String, FunctionVInfo>> classEntry : vtable.entrySet()){
             String entries = Integer.toString(classEntry.getValue().size());
             String tablename = "@."+classEntry.getKey()+"_vtable = global [" + entries +" x i8*] [";
@@ -91,6 +92,23 @@ public class IRHelper{
             tablename = tablename.substring(0,tablename.length()-1); //Drop last comma
             tablename = tablename+ "]\n";
             this.emit(tablename);
+        }
+        for(Map.Entry<String,ClassVariables> cls : Vars.entrySet()){
+            String classDecl = "%class."+cls.getKey()+" = type{";
+            String Parent = cls.getValue().getSuper();
+            if(Parent != null){
+                classDecl += " %class."+Parent+",";
+            }
+            Map<String,VarInfo> varTable = cls.getValue().getVarMap();
+            for(Map.Entry<String,VarInfo> varEntry : varTable.entrySet()){
+                String type = getLLVMType(varEntry.getValue().getType());
+                classDecl += " "+ type+",";
+            }
+            if(classDecl.endsWith(",")){
+                classDecl = classDecl.substring(0, classDecl.length() - 1);
+            }
+            classDecl += " }\n";
+            this.emit(classDecl);
         }
         this.emit("declare i8* @calloc(i32, i32)\n");
         this.emit("declare i32 @printf(i8*, ...)\n");

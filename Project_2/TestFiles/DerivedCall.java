@@ -15,6 +15,7 @@ class A {
 }
 
 class B extends A {
+	int a;
 	int b;
 }
 

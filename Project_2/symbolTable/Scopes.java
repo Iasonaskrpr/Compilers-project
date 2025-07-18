@@ -1,7 +1,10 @@
 package symbolTable;
 import java.util.*;
 import java.util.stream.Collectors;
+
 import IRGeneration.FunctionVInfo;
+import IRGeneration.ClassVariables;
+import jdk.jshell.VarSnippet;
 
 public class Scopes {
     private final Map<String, ST> tables; // ClassName → SymbolTable
@@ -245,6 +248,31 @@ public class Scopes {
             }
         }
         return VTables;
+    }
+    public Map<String, ClassVariables> getClasses(){
+        Map<String,ClassVariables> Classes = new HashMap<>();
+        for(Map.Entry<String, ST> set : this.tables.entrySet()){
+            ST symbol_table = set.getValue();
+            if (symbol_table.isClass()) {
+                String classname = set.getKey();
+                String Parent = null;
+                int offset = 0;
+                if(symbol_table.getParent()!=null){
+                    Parent = symbol_table.getParent().getName();
+                    offset +=1;
+                }
+                ClassVariables varTable = new ClassVariables(Parent);
+                for (Map.Entry<String, Info> set2 : symbol_table.getTable().entrySet()) {
+                    Info var = set2.getValue();
+                    if (!var.getType().equals("method")&&!set2.getKey().equals("this")) {
+                        String varName = set2.getKey();
+                        varTable.addVariable(varName, offset++, var.getType(),symbol_table.getName());
+                    }
+                }
+            Classes.put(classname,varTable);
+            }
+        }
+        return Classes;
     }
 
 }

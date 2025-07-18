@@ -4,7 +4,7 @@ TEST_DIR="TestFiles"
 OFFSET_DIR="$TEST_DIR/offset-examples"
 CORRECT=0
 TOTAL=0
-
+#TODO: Add execution of java testfiles and IR files and compare results with diff
 # Compile the CompilerManager
 javac CompilerManager.java || exit 1
 

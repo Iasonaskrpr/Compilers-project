@@ -30,36 +30,24 @@ public class CompilerManager {
                 // Step 2: Type checking
                 TypeCheckingVisitor typeVisitor = new TypeCheckingVisitor();
                 root.accept(typeVisitor, scopes);
-
                 System.out.println("Semantic analysis completed successfully for: " + filename);
-                Map<String ,Map<String , FunctionVInfo >> vtable = scopes.getVTables();
-                for (Map.Entry<String, Map<String, FunctionVInfo>> classEntry : vtable.entrySet()) {
-                    String className = classEntry.getKey();
-                    Map<String, FunctionVInfo> functions = classEntry.getValue();
-                    System.out.println("Class: " + className);
-                    for (Map.Entry<String, FunctionVInfo> funcEntry : functions.entrySet()) {
-                        String functionName = funcEntry.getKey();
-                        FunctionVInfo info = funcEntry.getValue();
-                        System.out.println("Function: " + functionName);
-                        System.out.println("Offset: " + info.getOffset());
-                        System.out.println("Return Type: " + info.getRet());
-                        System.out.println("Arguments: " + info.getArguments());
-                        if(info.isInherited()){
-                            System.out.println("Inherited by: "+info.getParent());
-                        }
-                        System.out.println("-----------------------------");
-                    }
-                }
+                
                 //Step 3: IR generation
+                Map<String ,Map<String , FunctionVInfo >> vtable = scopes.getVTables();
+                Map<String,ClassVariables> classes = scopes.getClasses();
+                
                 filename = filename.substring(filename.lastIndexOf('/') + 1);
                 // Remove the ".java" extension
                 if (filename.endsWith(".java")) {
                     filename = filename.substring(0, filename.length() - 5);
                 }
-                IRHelper irhelp = new IRHelper("IRFiles/"+ filename + ".ll",vtable);
+                IRHelper irhelp = new IRHelper("IRFiles/"+ filename + ".ll",vtable,classes);
+                // IRVisitor irVisitor = new IRVisitor();
+                // root.accept(irVisitor,irhelp);
+                System.out.println("Generated IR code for "+filename+".java");
                 
             } catch (Exception e) {
-                System.err.println("Semantic analysis failed for: " + filename);
+                System.err.println("Semantic analysis failed for: " + filename+".java");
                 System.err.println("Reason: " + e.getMessage());
                 e.printStackTrace();
                 System.exit(1);
