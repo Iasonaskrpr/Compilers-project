@@ -3,13 +3,19 @@ import java.io.*;
 import java.util.*;
 public class IRHelper{
     private OutputStream f;
-    private int labelcount; 
+    private int iflabelcount; 
+    private int ooblabelcount;
+    private int looplabelcount;
     private int varcount;
     private final Map<String,ClassVariables> Vars;
+    private int block_count; //Used to keep track of blocks 
     // Initializes variables and opens a new output stream
     public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable,Map<String,ClassVariables> Vars) {
-        labelcount = 0;
+        iflabelcount = 0;
+        looplabelcount = 0;
+        ooblabelcount = 0;
         varcount = 0;
+        block_count = 0;
         if (!filename.endsWith(".ll")) {
             throw new IllegalArgumentException("Filename must end with .ll");
         }
@@ -45,6 +51,7 @@ public class IRHelper{
     }
     // Emits command to the .ll file
     public void emit(String command){
+        command = "\t".repeat(this.block_count)+command;
         try{
             f.write(command.getBytes());
         }
@@ -52,10 +59,30 @@ public class IRHelper{
             e.printStackTrace();
         }
     }
-    // Generates a new label
-    public String new_label(){
-        String label = "L"+labelcount+":";
-        labelcount += 1;
+    //Emit without the tabs
+    public void emitlabel(String label){
+        label = "\n"+label+":\n"; //Added spaces to make block easier to spot
+        try{
+            f.write(label.getBytes());
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    // Generates a new if label
+    public String new_if_label(){
+        String label = "if"+iflabelcount;
+        iflabelcount += 1;
+        return label;
+    }
+    public String new_oob_label(){
+        String label = "oob"+ooblabelcount;
+        ooblabelcount += 1;
+        return label;
+    }
+    public String new_loop_label(){
+        String label = "loop"+looplabelcount;
+        looplabelcount += 1;
         return label;
     }
     // Generates a new variable
@@ -110,14 +137,21 @@ public class IRHelper{
             classDecl += " }\n";
             this.emit(classDecl);
         }
+        this.emit("%IntArray = type { i32, i32* }\n");
+        this.emit("%BooleanArray = type { i32, i8* }\n");
         this.emit("declare i8* @calloc(i32, i32)\n");
         this.emit("declare i32 @printf(i8*, ...)\n");
         this.emit("declare void @exit(i32)\n");
-        this.emit("@_cint = constant [4 x i8] c\"%d\0a\00\"\n");
-        this.emit("@_cOOB = constant [15 x i8] c\"Out of bounds\0a\00\"\n");
-        this.emit("%IntArray = type { i32, i32* }\n");
-        this.emit("%BooleanArray = type { i32, i8* }\n");
+        this.emit("@_cint = constant [4 x i8] c\"%d\\0A\\00\"\n");
+        this.emit("@_cOOB = constant [15 x i8] c\"Out of bounds\\0A\\00\"\n");
         this.emit("define void @print_int(i32 %i) {\n\t%_str = bitcast [4 x i8]* @_cint to i8*\n\tcall i32 (i8*, ...) @printf(i8* %_str, i32 %i)\n\tret void\n}\n");
-        this.emit("define void @throw_oob() {\n\t%_str = bitcast [15 x i8]* @_cOOB to i8*\n\tcall i32 (i8*, ...) @printf(i8* %_str)\n\tcall void @exit(i32 1)\n\tret void\n}");
+        this.emit("define void @throw_oob() {\n\t%_str = bitcast [15 x i8]* @_cOOB to i8*\n\tcall i32 (i8*, ...) @printf(i8* %_str)\n\tcall void @exit(i32 1)\n\tret void\n}\n");
+    }
+    //Used to keep track of blocks to produce clean and readable llvm code with correct indentation
+    public void enter_block(){
+        block_count+=1;
+    }
+    public void exit_block(){
+        block_count-=1;
     }
 }
