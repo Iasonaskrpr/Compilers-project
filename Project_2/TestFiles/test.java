@@ -1,6 +1,8 @@
 class test {
 	public static void main(String[] a){
-		System.out.println(12);
-		
-	}
+		if(true)
+			System.out.println(12);
+		else
+			System.out.println(13);
+	}	
 }

@@ -17,6 +17,14 @@ define void @throw_oob() {
 	ret void
 }
 define i32 @main(){
-	call void (i32) @print_int(i32 12)
+	br i1 1, label %if0, label %if1
+
+if0:
+	call void @print_int(i32 12)
+	br label %if2
+if1:
+	call void @print_int(i32 13)
+	br label %if2
+if2:
 	ret i32 0
 }

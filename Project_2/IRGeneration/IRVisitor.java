@@ -54,11 +54,15 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
         String var = n.f2.accept(this,ir);
         String _if = ir.new_if_label();
         String _else = ir.new_if_label();
+        String end = ir.new_if_label();
         ir.emit("br i1 "+var+", label %"+_if+", label %"+_else+"\n");
         ir.emitlabel(_if);
         n.f4.accept(this,ir);
+        ir.emit("br label %"+end);
         ir.emitlabel(_else);
         n.f6.accept(this,ir);
+        ir.emit("br label %"+end);
+        ir.emitlabel(end);
         return null;
     }
     /**
@@ -118,7 +122,7 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
     @Override
     public String visit(PrintStatement n, IRHelper ir) throws Exception{
         String var = n.f2.accept(this,ir);  
-        ir.emit("call void (i32) @print_int(i32 "+var+")\n");
+        ir.emit("call void @print_int(i32 "+var+")\n");
         return null;
     }
     /**
