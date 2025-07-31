@@ -14,9 +14,9 @@ public class IRData{
         return this.type;
     }
     public boolean isId(){
-        return this.data.equals("id");
+        return this.type.equals("id");
     }
     public boolean isNum(){
-        return this.data.equals("num");
+        return this.type.equals("num");
     }
 }

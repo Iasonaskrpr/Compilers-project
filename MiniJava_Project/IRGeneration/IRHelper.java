@@ -171,7 +171,7 @@ public class IRHelper{
     public String idToTempVar(IRData var){ //Generates a temporary variable and returns it to whoever needs it
         String tempVar = this.new_var();
         String type = getVariableType(var.getData()); //Get the variable type
-        this.emit(tempVar+" = load "+ type +", ptr %"+var.getData()); 
+        this.emit(tempVar+" = load "+ type +", ptr %"+var.getData()+"\n"); 
         return tempVar;
     }
 }

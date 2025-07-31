@@ -17,13 +17,23 @@ define void @throw_oob() {
 	ret void
 }
 define i32 @main(){
-	br i1 1, label %if0, label %if1
+	%x = alloca i32
+	%y = alloca i32
+	store i32 3, ptr %y
+	%_0 = load i32, ptr %y
+	%_1 = add i32 %_0, 3
+	store i32 %_1, ptr %x
+	%_2 = load i32, ptr %x
+	%_3 = icmp slt i32 %_2, 10
+	br i1 %_3, label %if0, label %if1
 
 if0:
-	call void @print_int(i32 12)
+	%_4 = load i32, ptr %y
+	call void @print_int(i32 %_4)
 	br label %if2
 if1:
-	call void @print_int(i32 13)
+	%_5 = load i32, ptr %x
+	call void @print_int(i32 %_5)
 	br label %if2
 if2:
 	ret i32 0

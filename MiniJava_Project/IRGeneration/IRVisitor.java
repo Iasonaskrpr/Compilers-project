@@ -1,6 +1,7 @@
 package IRGeneration;
 import syntaxtree.AndExpression;
 import syntaxtree.ArrayType;
+import syntaxtree.AssignmentStatement;
 import syntaxtree.BooleanArrayType;
 import syntaxtree.BooleanType;
 import syntaxtree.CompareExpression;
@@ -11,8 +12,11 @@ import syntaxtree.IntegerArrayType;
 import syntaxtree.IntegerLiteral;
 import syntaxtree.IntegerType;
 import syntaxtree.MainClass;
+import syntaxtree.MinusExpression;
+import syntaxtree.PlusExpression;
 import syntaxtree.PrintStatement;
 import syntaxtree.Statement;
+import syntaxtree.TimesExpression;
 import syntaxtree.TrueLiteral;
 import syntaxtree.Type;
 import syntaxtree.VarDeclaration;
@@ -112,14 +116,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     @Override
     public IRData visit(VarDeclaration n,IRHelper ir) throws Exception{
         IRData tp = n.f0.accept(this,ir);
-        String type = ir.getLLVMType(tp.getData());
-        if(type.equals("i8*")){
+        String type = tp.getData();
+        if(tp.isId()){
             type = "%class."+tp.getData();
         }
         IRData id = n.f1.accept(this,ir);
         String var = id.getData();
         ir.addVariable(var, type);
-        ir.emit("%"+var+" = alloca "+type);
+        ir.emit("%"+var+" = alloca "+type+"\n");
         return null;
     }
     /**
@@ -143,6 +147,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(PrintStatement n, IRHelper ir) throws Exception{
         IRData data = n.f2.accept(this,ir);
         String var = data.getData();
+        if(data.isId()){
+            var = ir.idToTempVar(data);
+        }
         ir.emit("call void @print_int(i32 "+var+")\n");
         return null;
     }
@@ -180,6 +187,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         //TODO: Add support for Identifiers
         IRData left = n.f0.accept(this, ir);
         String leftBool = left.getData();
+        if(left.isId()){
+            leftBool = ir.idToTempVar(left);
+        }
         String leftCheck = ir.new_var();      
         String rightCheck = ir.new_var();     
         String result = ir.new_var();         
@@ -193,6 +203,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         ir.emitlabel(evalRightLabel);
         IRData right = n.f2.accept(this, ir);
         String rightBool = right.getData();
+        if(right.isId()){
+            rightBool = ir.idToTempVar(right);
+        }
         ir.emit(rightCheck + " = icmp ne i1 " + rightBool + ", 0\n");
         ir.emit("br label %" + mergeLabel + "\n");
         ir.emitlabel(mergeLabel);
@@ -200,7 +213,61 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         IRData ret = new IRData(result,"id");
         return ret;
     }
-
+    @Override
+    public IRData visit(PlusExpression n, IRHelper ir)throws Exception{
+        IRData left = n.f0.accept(this,ir);
+        String leftVar = left.getData();
+        if(left.isId()){
+            leftVar = ir.idToTempVar(left);
+        }
+        IRData right = n.f2.accept(this,ir);
+        String rightVar = right.getData();
+        if(right.isId()){
+            rightVar = ir.idToTempVar(right);
+        }
+        String lhs = ir.new_var();
+        ir.emit(lhs+" = add i32 "+leftVar+", "+rightVar+"\n");
+        return new IRData(lhs,"id");
+    }
+    @Override
+    public IRData visit(MinusExpression n, IRHelper ir)throws Exception{
+        IRData left = n.f0.accept(this,ir);
+        String leftVar = left.getData();
+        if(left.isId()){
+            leftVar = ir.idToTempVar(left);
+        }
+        IRData right = n.f2.accept(this,ir);
+        String rightVar = right.getData();
+        if(right.isId()){
+            rightVar = ir.idToTempVar(right);
+        }
+        String lhs = ir.new_var();
+        ir.emit(lhs+" = sub i32 "+leftVar+", "+rightVar+"\n");
+        return new IRData(lhs,"id");
+    }
+    @Override
+    public IRData visit(TimesExpression n, IRHelper ir)throws Exception{
+        IRData left = n.f0.accept(this,ir);
+        String leftVar = left.getData();
+        if(left.isId()){
+            leftVar = ir.idToTempVar(left);
+        }
+        IRData right = n.f2.accept(this,ir);
+        String rightVar = right.getData();
+        if(right.isId()){
+            rightVar = ir.idToTempVar(right);
+        }
+        String lhs = ir.new_var();
+        ir.emit(lhs+" = mul i32 "+leftVar+", "+rightVar+"\n");
+        return new IRData(lhs,"id");
+    }
+    @Override
+    public IRData visit(AssignmentStatement n, IRHelper ir) throws Exception{
+        String lhs = n.f0.accept(this,ir).getData();
+        String rhs = n.f2.accept(this,ir).getData();
+        ir.emit("store "+ir.getVariableType(lhs)+" "+rhs+", ptr %"+lhs+"\n");
+        return null;
+    }
     /**
      * Type ::= ArrayType | BooleanType | IntegerType | Identifier
      * f0 -> ArrayType() | BooleanType() | IntegerType() | Identifier() 
