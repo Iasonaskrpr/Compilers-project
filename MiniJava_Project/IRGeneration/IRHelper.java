@@ -45,10 +45,10 @@ public class IRHelper{
                 retType = "i1";
                 break;
             case "boolean[]":
-                retType = "%BooleanArray*";
+                retType = "%BooleanArray";
                 break;
             case "int[]":
-                retType = "%IntArray*";
+                retType = "%IntArray";
                 break;
             default:
                 // Returns a class pointer
@@ -169,9 +169,14 @@ public class IRHelper{
         return VariableTypes.get(var);
     }
     public String idToTempVar(IRData var){ //Generates a temporary variable and returns it to whoever needs it
-        String tempVar = this.new_var();
-        String type = getVariableType(var.getData()); //Get the variable type
-        this.emit(tempVar+" = load "+ type +", ptr %"+var.getData()+"\n"); 
-        return tempVar;
+        if(this.VariableTypes.containsKey(var.getData())){//Return original variable in case it is not a java variable
+            String tempVar = this.new_var();
+            String type = getVariableType(var.getData()); //Get the variable type
+
+            this.emit(tempVar+" = load "+ type +", "+type+"* %"+var.getData()+"\n"); 
+            return tempVar;
+            }
+        return var.getData();
+        
     }
 }
