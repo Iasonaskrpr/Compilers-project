@@ -1,7 +1,7 @@
-JTB_JAR = /home/jason/Compilers_1/Project_2/Necessary_files/jtb132di.jar
-JAVACC_JAR = /home/jason/Compilers_1/Project_2/Necessary_files/javacc5.jar
-JTB_INPUT = /home/jason/Compilers_1/Project_2/Necessary_files/minijava.jj
-JTB_OUTPUT = /home/jason/Compilers_1/Project_2/Necessary_files/minijava-jtb.jj
+JTB_JAR = Necessary_files/jtb132di.jar
+JAVACC_JAR = Necessary_files/javacc5.jar
+JTB_INPUT = Necessary_files/minijava.jj
+JTB_OUTPUT = Necessary_files/minijava-jtb.jj
 all: compile
 
 compile:

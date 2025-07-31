@@ -1,6 +1,10 @@
 package IRGeneration;
-import java.io.*;
-import java.util.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 public class IRHelper{
     private OutputStream f;
     private int iflabelcount; 
@@ -8,7 +12,9 @@ public class IRHelper{
     private int looplabelcount;
     private int varcount;
     private final Map<String,ClassVariables> Vars;
+    private final Map<String ,Map<String , FunctionVInfo>> vtable;
     private int block_count; //Used to keep track of blocks 
+    private Map<String,String> VariableTypes; //Used to store variables of the method
     // Initializes variables and opens a new output stream
     public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable,Map<String,ClassVariables> Vars) {
         iflabelcount = 0;
@@ -16,6 +22,8 @@ public class IRHelper{
         ooblabelcount = 0;
         varcount = 0;
         block_count = 0;
+        VariableTypes = new HashMap<>();
+        this.vtable = vtable;
         if (!filename.endsWith(".ll")) {
             throw new IllegalArgumentException("Filename must end with .ll");
         }
@@ -153,5 +161,17 @@ public class IRHelper{
     }
     public void exit_block(){
         block_count-=1;
+    }
+    public void addVariable(String var,String type){
+        VariableTypes.put(var, type);
+    }
+    public String getVariableType(String var){
+        return VariableTypes.get(var);
+    }
+    public String idToTempVar(IRData var){ //Generates a temporary variable and returns it to whoever needs it
+        String tempVar = this.new_var();
+        String type = getVariableType(var.getData()); //Get the variable type
+        this.emit(tempVar+" = load "+ type +", ptr %"+var.getData()); 
+        return tempVar;
     }
 }

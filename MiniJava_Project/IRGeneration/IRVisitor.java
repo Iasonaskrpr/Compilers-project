@@ -1,12 +1,25 @@
 package IRGeneration;
-import java.io.*;
-import java.time.chrono.IsoEra;
-import java.util.*;
-
-import syntaxtree.*;
+import syntaxtree.AndExpression;
+import syntaxtree.ArrayType;
+import syntaxtree.BooleanArrayType;
+import syntaxtree.BooleanType;
+import syntaxtree.CompareExpression;
+import syntaxtree.FalseLiteral;
+import syntaxtree.Identifier;
+import syntaxtree.IfStatement;
+import syntaxtree.IntegerArrayType;
+import syntaxtree.IntegerLiteral;
+import syntaxtree.IntegerType;
+import syntaxtree.MainClass;
+import syntaxtree.PrintStatement;
+import syntaxtree.Statement;
+import syntaxtree.TrueLiteral;
+import syntaxtree.Type;
+import syntaxtree.VarDeclaration;
+import syntaxtree.WhileStatement;
 import visitor.GJDepthFirst;
 
-public class IRVisitor extends GJDepthFirst<String,IRHelper>{
+public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     /**
      * MainClass ::= "class" Identifier "{" "public" "static" "void" "main" "(" "String" "[" "]" Identifier ")" "{" ( VarDeclaration )* ( Statement )* "}" "}"
      * f0 -> "class"
@@ -29,7 +42,7 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      * f17 -> "}"
      */ 
     @Override
-    public String visit(MainClass n, IRHelper ir) throws Exception{
+    public IRData visit(MainClass n, IRHelper ir) throws Exception{
         ir.emit("define i32 @main(){\n");
         ir.enter_block();
         n.f14.accept(this,ir);
@@ -50,8 +63,9 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      * f6 -> Statement()
      */
     @Override
-    public String visit(IfStatement n, IRHelper ir)throws Exception{
-        String var = n.f2.accept(this,ir);
+    public IRData visit(IfStatement n, IRHelper ir)throws Exception{
+        IRData expr = n.f2.accept(this,ir);
+        String var = expr.getData();
         String _if = ir.new_if_label();
         String _else = ir.new_if_label();
         String end = ir.new_if_label();
@@ -74,13 +88,14 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      * f4 -> Statement()
      */
     @Override
-    public String visit(WhileStatement n,IRHelper ir) throws Exception{
+    public IRData visit(WhileStatement n,IRHelper ir) throws Exception{
         String condition = ir.new_loop_label();
         String body = ir.new_loop_label();
         String end = ir.new_loop_label();
         ir.emit("br label %"+condition+"\n");
         ir.emitlabel(condition);
-        String var = n.f2.accept(this,ir);
+        IRData expr = n.f2.accept(this,ir);
+        String var = expr.getData();
         ir.emit("br i1 "+var+", label %"+body+", label %"+end+"\n");
         ir.emitlabel(body);
         n.f4.accept(this,ir);
@@ -95,19 +110,24 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      * f2 -> ";"
      */
     @Override
-    public String visit(VarDeclaration n,IRHelper ir) throws Exception{
-        //TODO
-        String type = n.f0.accept(this,ir);
-        String var = n.f1.accept(this,ir);
-        
-        return var;
+    public IRData visit(VarDeclaration n,IRHelper ir) throws Exception{
+        IRData tp = n.f0.accept(this,ir);
+        String type = ir.getLLVMType(tp.getData());
+        if(type.equals("i8*")){
+            type = "%class."+tp.getData();
+        }
+        IRData id = n.f1.accept(this,ir);
+        String var = id.getData();
+        ir.addVariable(var, type);
+        ir.emit("%"+var+" = alloca "+type);
+        return null;
     }
     /**
      * Statement ::= Block | AssignmentStatement | ArrayAssignmentStatement | IfStatement | WhileStatement | PrintStatement
      * f0 -> Block | AssignmentStatement | ArrayAssignmentStatement | IfStatement | WhileStatement | PrintStatement
      */
     @Override
-    public String visit(Statement n, IRHelper ir) throws Exception{
+    public IRData visit(Statement n, IRHelper ir) throws Exception{
         return n.f0.accept(this,ir);
     }
 
@@ -120,8 +140,9 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      * f4 -> ";"
      */
     @Override
-    public String visit(PrintStatement n, IRHelper ir) throws Exception{
-        String var = n.f2.accept(this,ir);  
+    public IRData visit(PrintStatement n, IRHelper ir) throws Exception{
+        IRData data = n.f2.accept(this,ir);
+        String var = data.getData();
         ir.emit("call void @print_int(i32 "+var+")\n");
         return null;
     }
@@ -132,12 +153,21 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      * f2 -> PrimaryExpression()
      */
     @Override
-    public String visit(CompareExpression n,IRHelper ir) throws Exception{
-        String var1 = n.f0.accept(this,ir);
-        String var2 = n.f2.accept(this,ir);
+    public IRData visit(CompareExpression n,IRHelper ir) throws Exception{
+        IRData left = n.f0.accept(this,ir);
+        String leftVar = left.getData();
+        if(left.isId()){
+            leftVar = ir.idToTempVar(left);
+        }
+        IRData right = n.f2.accept(this,ir);
+        String rightVar = right.getData();
+        if(right.isId()){
+            rightVar = ir.idToTempVar(right);
+        }
         String cond = ir.new_var();
-        ir.emit(cond+" = icmp slt i32 "+var1+", "+var2+"\n");
-        return cond;
+        ir.emit(cond+" = icmp slt i32 "+leftVar+", "+rightVar+"\n");
+        IRData ret = new IRData(cond,"id");
+        return ret;
     }
     /**
      * AndExpression ::= Clause "&&" Clause
@@ -146,8 +176,10 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      * f2 -> Clause()
      */
     @Override
-    public String visit(AndExpression n, IRHelper ir) throws Exception {
-        String leftBool = n.f0.accept(this, ir);
+    public IRData visit(AndExpression n, IRHelper ir) throws Exception {
+        //TODO: Add support for Identifiers
+        IRData left = n.f0.accept(this, ir);
+        String leftBool = left.getData();
         String leftCheck = ir.new_var();      
         String rightCheck = ir.new_var();     
         String result = ir.new_var();         
@@ -159,12 +191,14 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
         ir.emit(leftCheck + " = icmp ne i1 " + leftBool + ", 0\n");
         ir.emit("br i1 " + leftCheck + ", label " + evalRightLabel + ", label " + mergeLabel + "\n");
         ir.emitlabel(evalRightLabel);
-        String rightBool = n.f2.accept(this, ir);
+        IRData right = n.f2.accept(this, ir);
+        String rightBool = right.getData();
         ir.emit(rightCheck + " = icmp ne i1 " + rightBool + ", 0\n");
         ir.emit("br label %" + mergeLabel + "\n");
         ir.emitlabel(mergeLabel);
         ir.emit(result + " = phi i1 [false, %" + checkLeftLabel + "], [" + rightCheck + ", %" + evalRightLabel + "]\n");
-        return result;
+        IRData ret = new IRData(result,"id");
+        return ret;
     }
 
     /**
@@ -173,43 +207,43 @@ public class IRVisitor extends GJDepthFirst<String,IRHelper>{
      */
 
     @Override
-    public String visit(Type n, IRHelper ir) throws Exception{
+    public IRData visit(Type n, IRHelper ir) throws Exception{
         return n.f0.accept(this,ir);
     }
     @Override
-    public String visit(ArrayType n,IRHelper ir) throws Exception{
+    public IRData visit(ArrayType n,IRHelper ir) throws Exception{
         return n.f0.accept(this,ir);
     }
     @Override
-    public String visit(IntegerArrayType n, IRHelper ir) {
-        return ir.getLLVMType("int[]");
+    public IRData visit(IntegerArrayType n, IRHelper ir) {
+        return new IRData(ir.getLLVMType("int[]"),"type");
     }
     @Override
-    public String visit(BooleanArrayType n, IRHelper ir) {
-        return ir.getLLVMType("boolean[]");
+    public IRData visit(BooleanArrayType n, IRHelper ir) {
+        return new IRData(ir.getLLVMType("boolean[]"),"type");
     }
     @Override
-    public String visit(IntegerType n,IRHelper ir) {
-        return ir.getLLVMType("int");
+    public IRData visit(IntegerType n,IRHelper ir) {
+        return new IRData(ir.getLLVMType("int"),"type");
     }
     @Override
-    public String visit(BooleanType n, IRHelper ir){
-        return ir.getLLVMType("boolean");
+    public IRData visit(BooleanType n, IRHelper ir){
+        return new IRData(ir.getLLVMType("boolean"),"type");
     }
     @Override
-    public String visit(Identifier n, IRHelper ir){
-        return n.f0.toString();
+    public IRData visit(Identifier n, IRHelper ir){
+        return new IRData(n.f0.toString(),"id");
     }
     @Override
-    public String visit(IntegerLiteral n, IRHelper ir){
-        return n.f0.toString();
+    public IRData visit(IntegerLiteral n, IRHelper ir){
+        return new IRData(n.f0.toString(),"num");
     }
     @Override
-    public String visit(TrueLiteral n,IRHelper ir){
-        return "1";
+    public IRData visit(TrueLiteral n,IRHelper ir){
+        return new IRData("1","bool");
     }
     @Override
-    public String visit(FalseLiteral n,IRHelper ir){
-        return "0";
+    public IRData visit(FalseLiteral n,IRHelper ir){
+        return new IRData("0","bool");
     }
 }
