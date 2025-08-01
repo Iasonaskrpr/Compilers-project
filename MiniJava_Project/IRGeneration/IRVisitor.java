@@ -1,8 +1,13 @@
 package IRGeneration;
 import syntaxtree.AndExpression;
+import syntaxtree.ArrayAllocationExpression;
+import syntaxtree.ArrayAssignmentStatement;
+import syntaxtree.ArrayLength;
+import syntaxtree.ArrayLookup;
 import syntaxtree.ArrayType;
 import syntaxtree.AssignmentStatement;
 import syntaxtree.Block;
+import syntaxtree.BooleanArrayAllocationExpression;
 import syntaxtree.BooleanArrayType;
 import syntaxtree.BooleanType;
 import syntaxtree.BracketExpression;
@@ -11,6 +16,7 @@ import syntaxtree.CompareExpression;
 import syntaxtree.FalseLiteral;
 import syntaxtree.Identifier;
 import syntaxtree.IfStatement;
+import syntaxtree.IntegerArrayAllocationExpression;
 import syntaxtree.IntegerArrayType;
 import syntaxtree.IntegerLiteral;
 import syntaxtree.IntegerType;
@@ -139,7 +145,153 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(Statement n, IRHelper ir) throws Exception{
         return n.f0.accept(this,ir);
     }
-
+    /**
+     * ArrayAllocationExpression ::= BooleanArrayAllocationExpression | IntegerArrayAllocationExpression
+     * f0 -> BooleanArrayAllocationExpression()
+     */
+    @Override
+    public IRData visit(ArrayAllocationExpression n,IRHelper ir) throws Exception{
+        return n.f0.accept(this,ir);
+    }
+    @Override
+    public IRData visit(IntegerArrayAllocationExpression n,IRHelper ir) throws Exception{
+        return new IRData(n.f3.accept(this,ir).getData(),"num");
+    }
+    @Override
+    public IRData visit(BooleanArrayAllocationExpression n,IRHelper ir) throws Exception{
+        return new IRData(n.f3.accept(this,ir).getData(),"num");
+    }
+    /**
+     * ArrayAssignmentStatement ::= Identifier "[" Expression "]" "=" Expression ";"
+     * f0 -> Identifier()
+     * f1 -> "["
+     * f2 -> Expression()
+     * f3 -> "]"
+     * f4 -> "="
+     * f5 -> Expression()
+     * f6 -> ";"
+     */
+    @Override
+    public IRData visit(ArrayAssignmentStatement n,IRHelper ir) throws Exception{
+        IRData arr = n.f0.accept(this,ir);
+        IRData i = n.f2.accept(this,ir);
+        String L1 = ir.new_oob_label();
+        String L2 = ir.new_oob_label();
+        String L3 = ir.new_oob_label();
+        String index;
+        if(i.isNum()){
+            index = ir.new_var();
+            ir.emit(index+" = add i32 0, "+i.getData()+"\n");
+        } 
+        else{
+            index =i.getData();
+        }
+        String val = n.f5.accept(this,ir).getData();
+        String size_ptr = ir.new_var();
+        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr.getData())+", "+ir.getVariableType(arr.getData())+"* %"+arr.getData()+", i32 0, i32 0\n");
+        String size = ir.new_var();
+        ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
+        String oob_checker = ir.new_var();
+        ir.emit(oob_checker + " = icmp lt i32 "+index+", "+size+"\n");
+        ir.emit("br i1 "+oob_checker+", label %"+L1+", label %"+L2+"\n");
+        ir.emitlabel(L1);
+        String data_ptr_ptr = ir.new_var();
+        String data_ptr = ir.new_var();
+        String data = ir.new_var();
+        if(ir.getVariableType(arr.getData()).equals("%IntArray")){
+            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr + " = load i32*, i32** " + data_ptr_ptr + "\n");
+            ir.emit(data + " = getelementptr i32, i32* "+data_ptr+", i32 "+ index + "\n");
+            ir.emit("store i32 " + val + ", i32* " + data + "\n");
+            ir.emit("br label %"+L3+"\n");
+        }
+        else if(ir.getVariableType(arr.getData()).equals("%BooleanArray")){
+            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr + " = load i8*, i8** " + data_ptr_ptr + "\n");
+             ir.emit(data + " = getelementptr i8, i8* "+data_ptr+", i32 "+ index + "\n");
+            String valExt = ir.new_var();
+            ir.emit(valExt + " = zext i1 "+val+" to i8\n");
+            ir.emit("store i8 " + valExt + ", i8* " + data + "\n");
+            ir.emit("br label %"+L3+"\n");
+        }
+        ir.emitlabel(L2);
+        ir.emit("call void @throw_oob()\n");
+        ir.emit("br label %"+L3+"\n");
+        ir.emitlabel(L3);
+        return null;
+    }
+    /**
+     * ArrayLength ::= Identifier() "." "length"
+     * f0 -> Identifier()
+     * f1 -> "."
+     * f2 -> "length"
+     */
+    @Override
+    public IRData visit(ArrayLength n, IRHelper ir) throws Exception{
+        IRData arr = n.f0.accept(this,ir);
+        String size_ptr = ir.new_var();
+        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr.getData())+", "+ir.getVariableType(arr.getData())+"* %"+arr.getData()+", i32 0, i32 0\n");
+        String size = ir.new_var();
+        ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
+        return new IRData(size,"id");
+    }
+    /**
+     * ArrayLookup ::= Identifier() "[" Expression() "]"
+     * f0 -> Identifier()
+     * f1 -> "["
+     * f2 -> Expression()
+     * f3 -> "]"
+     */
+    @Override
+    public IRData visit(ArrayLookup n, IRHelper ir) throws Exception{
+        IRData arr = n.f0.accept(this,ir);
+        IRData i = n.f2.accept(this,ir);
+        String L1 = ir.new_oob_label();
+        String L2 = ir.new_oob_label();
+        String L3 = ir.new_oob_label();
+        String index;
+        if(i.isNum()){
+            index = ir.new_var();
+            ir.emit(index+" = add i32 0, "+i.getData()+"\n");
+        } 
+        else{
+            index =i.getData();
+        }
+        String size_ptr = ir.new_var();
+        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr.getData())+", "+ir.getVariableType(arr.getData())+"* %"+arr.getData()+", i32 0, i32 0\n");
+        String size = ir.new_var();
+        ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
+        String oob_checker = ir.new_var();
+        ir.emit(oob_checker + " = icmp lt i32 "+index+", "+size+"\n");
+        ir.emit("br i1 "+oob_checker+", label %"+L1+", label %"+L2+"\n");
+        ir.emitlabel(L1);
+        String data_ptr_ptr = ir.new_var();
+        String data_ptr = ir.new_var();
+        String data = ir.new_var();
+        String val = ir.new_var();
+        if(ir.getVariableType(arr.getData()).equals("%IntArray")){
+            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr + " = load i32*, i32** " + data_ptr_ptr + "\n");
+            ir.emit(data + " = getelementptr i32, i32* "+data_ptr+", i32 "+ index + "\n");
+            ir.emit(val + " = load i32, i32* " + data + "\n");
+            ir.emit("br label %"+L3+"\n");
+        }
+        else if(ir.getVariableType(arr.getData()).equals("%BooleanArray")){
+            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr + " = load i8*, i8** " + data_ptr_ptr + "\n");
+            ir.emit(data + " = getelementptr i8, i8* "+data_ptr+", i32 "+ index + "\n");
+            String valLong = ir.new_var();
+            ir.emit(valLong + " = load i8, i8* " + data + "\n");
+            ir.emit(val + " = icmp ne i8 "+ valLong + ", 0\n"); //Convert to i1 from i8
+            ir.emit("br label %"+L3+"\n");
+        }
+        ir.emitlabel(L2);
+        ir.emit("call void @throw_oob()\n");
+        ir.emit("br label %"+L3+"\n");
+        ir.emitlabel(L3);
+        IRData ret = new IRData(val,"id");
+        return ret;
+    }
     /**
      * PrintStatement ::= "System.out.println" "(" Expression ")" ";"
      * f0 -> "System.out.println"
