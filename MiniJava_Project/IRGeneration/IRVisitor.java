@@ -186,29 +186,33 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         else{
             index =i.getData();
         }
-        String val = n.f5.accept(this,ir).getData();
+        IRData valData = n.f5.accept(this,ir);
+        String val = valData.getData();
+        if(valData.isId()){
+            val = ir.idToTempVar(valData);
+        }
         String size_ptr = ir.new_var();
         ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr.getData())+", "+ir.getVariableType(arr.getData())+"* %"+arr.getData()+", i32 0, i32 0\n");
         String size = ir.new_var();
         ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
         String oob_checker = ir.new_var();
-        ir.emit(oob_checker + " = icmp lt i32 "+index+", "+size+"\n");
+        ir.emit(oob_checker + " = icmp slt i32 "+index+", "+size+"\n");
         ir.emit("br i1 "+oob_checker+", label %"+L1+", label %"+L2+"\n");
         ir.emitlabel(L1);
         String data_ptr_ptr = ir.new_var();
         String data_ptr = ir.new_var();
         String data = ir.new_var();
         if(ir.getVariableType(arr.getData()).equals("%IntArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* %"+arr.getData()+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i32*, i32** " + data_ptr_ptr + "\n");
             ir.emit(data + " = getelementptr i32, i32* "+data_ptr+", i32 "+ index + "\n");
             ir.emit("store i32 " + val + ", i32* " + data + "\n");
             ir.emit("br label %"+L3+"\n");
         }
         else if(ir.getVariableType(arr.getData()).equals("%BooleanArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* %"+arr.getData()+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i8*, i8** " + data_ptr_ptr + "\n");
-             ir.emit(data + " = getelementptr i8, i8* "+data_ptr+", i32 "+ index + "\n");
+            ir.emit(data + " = getelementptr i8, i8* "+data_ptr+", i32 "+ index + "\n");
             String valExt = ir.new_var();
             ir.emit(valExt + " = zext i1 "+val+" to i8\n");
             ir.emit("store i8 " + valExt + ", i8* " + data + "\n");
@@ -262,7 +266,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String size = ir.new_var();
         ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
         String oob_checker = ir.new_var();
-        ir.emit(oob_checker + " = icmp lt i32 "+index+", "+size+"\n");
+        ir.emit(oob_checker + " = icmp slt i32 "+index+", "+size+"\n");
         ir.emit("br i1 "+oob_checker+", label %"+L1+", label %"+L2+"\n");
         ir.emitlabel(L1);
         String data_ptr_ptr = ir.new_var();
@@ -270,14 +274,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String data = ir.new_var();
         String val = ir.new_var();
         if(ir.getVariableType(arr.getData()).equals("%IntArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* %"+arr.getData()+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i32*, i32** " + data_ptr_ptr + "\n");
             ir.emit(data + " = getelementptr i32, i32* "+data_ptr+", i32 "+ index + "\n");
             ir.emit(val + " = load i32, i32* " + data + "\n");
             ir.emit("br label %"+L3+"\n");
         }
         else if(ir.getVariableType(arr.getData()).equals("%BooleanArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* "+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* %"+arr.getData()+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i8*, i8** " + data_ptr_ptr + "\n");
             ir.emit(data + " = getelementptr i8, i8* "+data_ptr+", i32 "+ index + "\n");
             String valLong = ir.new_var();
