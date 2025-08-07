@@ -1,3 +1,5 @@
+@.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*)* @Greeter.sayHello to i8*)]
+%class.Greeter = type{ i32, i32, i32 }
 %IntArray = type { i32, i32* }
 %BooleanArray = type { i32, i8* }
 declare i8* @calloc(i32, i32)
@@ -136,4 +138,10 @@ if5:
 end:
 	call void @throw_oob()
 	ret i32 1
+}
+define i32 @Greeter.sayHello(i8* this) {
+	store i32 8, i32* %x
+	%_46 = load i32, i32* %x
+	call void @print_int(i32 %_46)
+	ret num 0
 }

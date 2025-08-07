@@ -1,6 +1,6 @@
 class BubbleSort{
     public static void main(String[] a){
-
+	System.out.println(new BBS().Start(10));
     }
 }
 
@@ -13,7 +13,16 @@ class BBS{
     int[] number ;
     int size ;
 
-    
+    // Invoke the Initialization, Sort and Printing
+    // Methods
+    public int Start(int sz){
+	//int[] aux01 ;
+	int aux2;
+	//aux2 = this.Init(sz);
+	//aux01 = this.Sort();
+	//aux2 = this.Print();
+	return 0 ;
+    }
 
  
     // Sort array of integers using Bublesort method

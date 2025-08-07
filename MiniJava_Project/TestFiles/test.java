@@ -18,3 +18,15 @@ class test {
 			System.out.println(i[3]);
 	}	
 }
+class Greeter {
+    int x;
+	int y;
+	int z;
+    public int sayHello() {
+		x = 8;
+        System.out.println(x);
+		return 0;
+    }
+
+}
+

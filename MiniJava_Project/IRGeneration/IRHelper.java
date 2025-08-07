@@ -170,19 +170,14 @@ public class IRHelper{
     }
     public String getVariableType(String var){
         String ret = VariableTypes.get(var);
-        for (ClassVariables key : Vars.values()) {
-            for(String k : key.getVarMap().keySet()){
-                System.out.println(k);
-            }
-        }
         if(ret == null){
             VarInfo classVar = this.getClassVar(var);
-            //return classVar.getType();
+            return classVar.getType();
         }
         return ret;
     }
     public void exitClass(){
-        Vars.clear();
+        VariableTypes.clear();
     }
     public String idToTempVar(IRData var){ //Generates a temporary variable and returns it to whoever needs it
         if(this.VariableTypes.containsKey(var.getData())){//Return original variable in case it is not a java variable
@@ -193,7 +188,7 @@ public class IRHelper{
             }
         VarInfo classVar = this.getClassVar(var.getData());
         if(classVar != null){
-            System.out.println(classVar.getOffset());
+            //TODO
         }
         return var.getData();
         
