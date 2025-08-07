@@ -63,6 +63,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         n.f14.accept(this,ir);
         n.f15.accept(this,ir);
         ir.emit("ret i32 0\n");
+        ir.emitlabel("end");
+        ir.emit("call void @throw_oob()\n");
+        ir.emit("ret i32 1\n");
         ir.exit_block();
         ir.emit("}\n");
         return null;
@@ -219,8 +222,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit("br label %"+L3+"\n");
         }
         ir.emitlabel(L2);
-        ir.emit("call void @throw_oob()\n");
-        ir.emit("br label %"+L3+"\n");
+        ir.emit("br label %end\n");
         ir.emitlabel(L3);
         return null;
     }
@@ -290,8 +292,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit("br label %"+L3+"\n");
         }
         ir.emitlabel(L2);
-        ir.emit("call void @throw_oob()\n");
-        ir.emit("br label %"+L3+"\n");
+        ir.emit("br label %end\n");
         ir.emitlabel(L3);
         IRData ret = new IRData(val,"id");
         return ret;
@@ -486,15 +487,28 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         IRData rightHand = n.f2.accept(this,ir);
         String rhs = rightHand.getData();
         if(ir.getVariableType(lhs).equals("%IntArray") && rightHand.isNum()){
+            String SzPtr = ir.new_var();
+            ir.emit(SzPtr+" = getelementptr %IntArray, %IntArray* %"+lhs+", i32 0, i32 0\n");
+            ir.emit("store i32 "+ rhs+", i32* "+SzPtr+"\n");
+            String ArrPtrRaw = ir.new_var();
             String ArrPtr = ir.new_var();
-            ir.emit(ArrPtr+" = getelementptr %IntArray, %IntArray* %"+lhs+", i32 0, i32 0\n");
-            ir.emit("store i32 "+ rhs+", i32* "+ArrPtr+"\n");
+            String ArrFieldptr = ir.new_var();
+            ir.emit(ArrPtrRaw + " = call i8* @calloc(i32 "+rhs+", i32 4)\n");
+            ir.emit(ArrPtr + " = bitcast i8* " + ArrPtrRaw + " to i32*\n");
+            ir.emit(ArrFieldptr +" = getelementptr %IntArray, %IntArray* %"+lhs+", i32 0, i32 1\n");
+            ir.emit("store i32* " +ArrPtr+ ", i32** "+ArrFieldptr+"\n");
             return null;
         }
         else if(ir.getVariableType(lhs).equals("%BooleanArray") && rightHand.isNum()){
+            String SzPtr = ir.new_var();
+            ir.emit(SzPtr+" = getelementptr %BooleanArray, %BooleanArray* %"+lhs+", i32 0, i32 0\n");
+            ir.emit("store i32 "+ rhs+", i32* "+SzPtr+"\n");
+            String ArrPtrRaw = ir.new_var();
             String ArrPtr = ir.new_var();
-            ir.emit(ArrPtr+" = getelementptr %BooleanArray, %BooleanArray* %"+lhs+", i32 0, i32 0\n");
-            ir.emit("store i32 "+ rhs+", i32* "+ArrPtr+"\n");
+            String ArrFieldptr = ir.new_var();
+            ir.emit(ArrPtrRaw + " = call i8* @calloc(i32 "+rhs+", i32 1)\n");
+            ir.emit(ArrFieldptr +" = getelementptr %BooleanArray, %BooleanArray* %"+lhs+", i32 0, i32 1\n");
+            ir.emit("store i8* " +ArrPtr+ ", i8** "+ArrFieldptr+"\n");
             return null;
         }
         ir.emit("store "+ir.getVariableType(lhs)+" "+rhs+", "+ir.getVariableType(lhs)+"* %"+lhs+"\n");

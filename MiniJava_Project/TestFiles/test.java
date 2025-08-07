@@ -12,8 +12,8 @@ class test {
 		z = y<4;
 		i[4] = 25;
 		i[3] = x;
-		if(!(t && z))
-			System.out.println(i[4]);
+		if((t && z))
+			System.out.println(i[8]);
 		else
 			System.out.println(i[3]);
 	}	

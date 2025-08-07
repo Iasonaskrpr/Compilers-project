@@ -24,113 +24,116 @@ define i32 @main(){
 	%t = alloca i1
 	%_0 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
 	store i32 15, i32* %_0
+	%_1 = call i8* @calloc(i32 15, i32 4)
+	%_2 = bitcast i8* %_1 to i32*
+	%_3 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+	store i32* %_2, i32** %_3
 	store i32 3, i32* %y
-	%_1 = load i32, i32* %y
-	%_2 = add i32 %_1, 3
-	store i32 %_2, i32* %x
-	%_3 = load i32, i32* %x
-	%_4 = icmp slt i32 %_3, 10
-	store i1 %_4, i1* %t
-	%_5 = load i32, i32* %y
-	%_6 = icmp slt i32 %_5, 4
-	store i1 %_6, i1* %z
-	%_7 = add i32 0, 4
-	%_8 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_9 = load i32, i32* %_8
-	%_10 = icmp slt i32 %_7, %_9
-	br i1 %_10, label %oob0, label %oob1
+	%_4 = load i32, i32* %y
+	%_5 = add i32 %_4, 3
+	store i32 %_5, i32* %x
+	%_6 = load i32, i32* %x
+	%_7 = icmp slt i32 %_6, 10
+	store i1 %_7, i1* %t
+	%_8 = load i32, i32* %y
+	%_9 = icmp slt i32 %_8, 4
+	store i1 %_9, i1* %z
+	%_10 = add i32 0, 4
+	%_11 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+	%_12 = load i32, i32* %_11
+	%_13 = icmp slt i32 %_10, %_12
+	br i1 %_13, label %oob0, label %oob1
 
 oob0:
-	%_11 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_12 = load i32*, i32** %_11
-	%_13 = getelementptr i32, i32* %_12, i32 %_7
-	store i32 25, i32* %_13
+	%_14 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+	%_15 = load i32*, i32** %_14
+	%_16 = getelementptr i32, i32* %_15, i32 %_10
+	store i32 25, i32* %_16
 	br label %oob2
 
 oob1:
-	call void @throw_oob()
-	br label %oob2
+	br label %end
 
 oob2:
-	%_14 = add i32 0, 3
-	%_15 = load i32, i32* %x
-	%_16 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_17 = load i32, i32* %_16
-	%_18 = icmp slt i32 %_14, %_17
-	br i1 %_18, label %oob3, label %oob4
+	%_17 = add i32 0, 3
+	%_18 = load i32, i32* %x
+	%_19 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+	%_20 = load i32, i32* %_19
+	%_21 = icmp slt i32 %_17, %_20
+	br i1 %_21, label %oob3, label %oob4
 
 oob3:
-	%_19 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_20 = load i32*, i32** %_19
-	%_21 = getelementptr i32, i32* %_20, i32 %_14
-	store i32 %_15, i32* %_21
+	%_22 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+	%_23 = load i32*, i32** %_22
+	%_24 = getelementptr i32, i32* %_23, i32 %_17
+	store i32 %_18, i32* %_24
 	br label %oob5
 
 oob4:
-	call void @throw_oob()
-	br label %oob5
+	br label %end
 
 oob5:
-	%_22 = load i1, i1* %t
+	%_25 = load i1, i1* %t
 	br label %if0
 if0:
-	%_23 = icmp ne i1 %_22, 0
-	br i1 %_23, label %if1, label %if2
+	%_26 = icmp ne i1 %_25, 0
+	br i1 %_26, label %if1, label %if2
 
 if1:
-	%_26 = load i1, i1* %z
-	%_24 = icmp ne i1 %_26, 0
+	%_29 = load i1, i1* %z
+	%_27 = icmp ne i1 %_29, 0
 	br label %if2
 
 if2:
-	%_25 = phi i1 [false, %if0], [%_24, %if1]
-	%_27 = xor i1 %_25, true
-	br i1 %_27, label %if3, label %if4
+	%_28 = phi i1 [false, %if0], [%_27, %if1]
+	br i1 %_28, label %if3, label %if4
 
 if3:
-	%_28 = add i32 0, 4
-	%_29 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_30 = load i32, i32* %_29
-	%_31 = icmp slt i32 %_28, %_30
-	br i1 %_31, label %oob6, label %oob7
+	%_30 = add i32 0, 8
+	%_31 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+	%_32 = load i32, i32* %_31
+	%_33 = icmp slt i32 %_30, %_32
+	br i1 %_33, label %oob6, label %oob7
 
 oob6:
-	%_32 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_33 = load i32*, i32** %_32
-	%_34 = getelementptr i32, i32* %_33, i32 %_28
-	%_35 = load i32, i32* %_34
+	%_34 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+	%_35 = load i32*, i32** %_34
+	%_36 = getelementptr i32, i32* %_35, i32 %_30
+	%_37 = load i32, i32* %_36
 	br label %oob8
 
 oob7:
-	call void @throw_oob()
-	br label %oob8
+	br label %end
 
 oob8:
-	call void @print_int(i32 %_35)
+	call void @print_int(i32 %_37)
 	br label %if5
 
 if4:
-	%_36 = add i32 0, 3
-	%_37 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_38 = load i32, i32* %_37
-	%_39 = icmp slt i32 %_36, %_38
-	br i1 %_39, label %oob9, label %oob10
+	%_38 = add i32 0, 3
+	%_39 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+	%_40 = load i32, i32* %_39
+	%_41 = icmp slt i32 %_38, %_40
+	br i1 %_41, label %oob9, label %oob10
 
 oob9:
-	%_40 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_41 = load i32*, i32** %_40
-	%_42 = getelementptr i32, i32* %_41, i32 %_36
-	%_43 = load i32, i32* %_42
+	%_42 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+	%_43 = load i32*, i32** %_42
+	%_44 = getelementptr i32, i32* %_43, i32 %_38
+	%_45 = load i32, i32* %_44
 	br label %oob11
 
 oob10:
-	call void @throw_oob()
-	br label %oob11
+	br label %end
 
 oob11:
-	call void @print_int(i32 %_43)
+	call void @print_int(i32 %_45)
 	br label %if5
 
 if5:
 	ret i32 0
+
+end:
+	call void @throw_oob()
+	ret i32 1
 }
