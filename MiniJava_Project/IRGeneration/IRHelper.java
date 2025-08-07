@@ -15,6 +15,7 @@ public class IRHelper{
     private final Map<String ,Map<String , FunctionVInfo>> vtable;
     private int block_count; //Used to keep track of blocks 
     private Map<String,String> VariableTypes; //Used to store variables of the method
+    private String CurClass;
     // Initializes variables and opens a new output stream
     public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable,Map<String,ClassVariables> Vars) {
         iflabelcount = 0;
@@ -178,5 +179,11 @@ public class IRHelper{
             }
         return var.getData();
         
+    }
+    public void EnterClass(String cls){
+        this.CurClass = cls;
+    }
+    public String getCurClass(){
+        return this.CurClass;
     }
 }

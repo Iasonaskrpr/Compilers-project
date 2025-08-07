@@ -11,9 +11,15 @@ import syntaxtree.BooleanArrayAllocationExpression;
 import syntaxtree.BooleanArrayType;
 import syntaxtree.BooleanType;
 import syntaxtree.BracketExpression;
+import syntaxtree.ClassDeclaration;
+import syntaxtree.ClassExtendsDeclaration;
 import syntaxtree.Clause;
 import syntaxtree.CompareExpression;
 import syntaxtree.FalseLiteral;
+import syntaxtree.FormalParameter;
+import syntaxtree.FormalParameterList;
+import syntaxtree.FormalParameterTail;
+import syntaxtree.FormalParameterTerm;
 import syntaxtree.Identifier;
 import syntaxtree.IfStatement;
 import syntaxtree.IntegerArrayAllocationExpression;
@@ -21,6 +27,7 @@ import syntaxtree.IntegerArrayType;
 import syntaxtree.IntegerLiteral;
 import syntaxtree.IntegerType;
 import syntaxtree.MainClass;
+import syntaxtree.MethodDeclaration;
 import syntaxtree.MinusExpression;
 import syntaxtree.NotExpression;
 import syntaxtree.PlusExpression;
@@ -30,6 +37,7 @@ import syntaxtree.Statement;
 import syntaxtree.TimesExpression;
 import syntaxtree.TrueLiteral;
 import syntaxtree.Type;
+import syntaxtree.TypeDeclaration;
 import syntaxtree.VarDeclaration;
 import syntaxtree.WhileStatement;
 import visitor.GJDepthFirst;
@@ -71,6 +79,126 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         return null;
     }
     /**
+     * TypeDeclaration ::= ClassDeclaration | ClassExtendsDeclaration
+     * f0 -> ClassDeclaration()
+     */
+    @Override
+    public IRData visit(TypeDeclaration n, IRHelper ir) throws Exception{
+        return n.f0.accept(this,ir);
+    }
+    /**
+     * ClassDeclaration ::= "class" Identifier "{" ( VarDeclaration )* ( MethodDeclaration )* "}"
+     * f0 -> "class"
+     * f1 -> Identifier()
+     * f2 -> "{"
+     * f3 -> ( VarDeclaration )*
+     * f4 -> ( MethodDeclaration )*
+     * f5 -> "}"
+     */
+    @Override
+    public IRData visit(ClassDeclaration n, IRHelper ir) throws Exception{
+        IRData Class = n.f1.accept(this, ir);
+        ir.EnterClass(Class.getData());
+        n.f3.accept(this,ir);
+        n.f4.accept(this,ir);
+        return null;
+    }
+    /**
+     * ClassExtendsDeclaration ::= "class" Identifier "extends" Identifier "{" ( VarDeclaration )* ( MethodDeclaration )* "}"
+     * f0 -> "class"
+     * f1 -> Identifier()
+     * f2 -> "extends"
+     * f3 -> Identifier()
+     * f4 -> "{"
+     * f5 -> ( VarDeclaration )*
+     * f6 -> ( MethodDeclaration )*
+     * f7 -> "}"
+     */
+    @Override
+    public IRData visit(ClassExtendsDeclaration n, IRHelper ir) throws Exception{
+        IRData Class = n.f1.accept(this, ir);
+        ir.EnterClass(Class.getData());
+        ir.enter_block();
+        n.f5.accept(this,ir);
+        n.f6.accept(this,ir);
+        ir.exit_block();
+        return null;
+    }
+    /**
+     * MethodDeclaration ::= "public" Type Identifier "(" ( FormalParameterList )? ")" "{" ( VarDeclaration )* ( Statement )* "return" Expression ";" "}"
+     * f0 -> "public"
+     * f1 -> Type()
+     * f2 -> Identifier()
+     * f3 -> "("
+     * f4 -> ( FormalParameterList )?
+     * f5 -> ")"
+     * f6 -> "{"
+     * f7 -> ( VarDeclaration )*
+     * f8 -> ( Statement )*
+     * f9 -> "return"
+     * f10 -> Expression()
+     * f11 -> ";"
+     * f12 -> "}"
+     */
+    @Override
+    public IRData visit(MethodDeclaration n, IRHelper ir) throws Exception{
+        String retType = n.f1.accept(this,ir).getData();
+        String MethName = n.f2.accept(this,ir).getData();
+        ir.emit("define " + retType + " @"+ir.getCurClass()+"."+MethName+"(i8* this");
+        n.f4.accept(this,ir);
+        ir.emit(") {\n");
+        ir.enter_block();
+        n.f7.accept(this,ir);
+        n.f8.accept(this,ir);
+        IRData ret = n.f10.accept(this,ir);
+        ir.emit("ret "+ ret.getType() + " "+ ret.getData()+"\n");
+        ir.exit_block();
+        ir.emit("}\n");
+        return null; 
+    }
+    /**
+     * FormalParameterList ::= FormalParameter FormalParameterTail
+     * f0 -> FormalParameter()
+     * f1 -> FormalParameterTail()
+     */
+    @Override
+    public IRData visit(FormalParameterList n, IRHelper ir) throws Exception{
+        n.f0.accept(this,ir);
+        n.f1.accept(this,ir);
+        return null;
+    }
+    /**
+     * FormalParameter ::= Type Identifier
+     * f0 -> Type()
+     * f1 -> Identifier()
+     */
+    @Override 
+    public IRData visit(FormalParameter n, IRHelper ir) throws Exception {
+        String type = n.f0.accept(this,ir).getData();
+        String id = n.f1.accept(this,ir).getData();
+        ir.emit(", "+type+" %."+id);
+        return null;
+    }
+    /**
+     * FormalParameterTail ::= ( FormalParameterTerm )*
+     * f0 -> ( FormalParameterTerm )*
+     */
+    @Override
+    public IRData visit(FormalParameterTail n, IRHelper ir) throws Exception{
+        n.f0.accept(this,ir);
+        return null;
+    }
+    /**
+     * FormalParameterTerm ::= "," FormalParameter
+     * f0 -> ","
+     * f1 -> FormalParameter()
+     */
+    @Override
+    public IRData visit(FormalParameterTerm n, IRHelper ir) throws Exception{
+        n.f1.accept(this,ir);
+        return null;
+    }
+    /**
      * IfStatement ::= "if" "(" Expression ")" Statement "else" Statement
      * f0 -> "if"
      * f1 -> "("
@@ -88,6 +216,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String _else = ir.new_if_label();
         String end = ir.new_if_label();
         ir.emit("br i1 "+var+", label %"+_if+", label %"+_else+"\n");
+        ir.enter_block();
         ir.emitlabel(_if);
         n.f4.accept(this,ir);
         ir.emit("br label %"+end+"\n");
@@ -95,6 +224,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         n.f6.accept(this,ir);
         ir.emit("br label %"+end+"\n");
         ir.emitlabel(end);
+        ir.exit_block();
         return null;
     }
     /**
@@ -111,6 +241,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String body = ir.new_loop_label();
         String end = ir.new_loop_label();
         ir.emit("br label %"+condition+"\n");
+        ir.enter_block();
         ir.emitlabel(condition);
         IRData expr = n.f2.accept(this,ir);
         String var = expr.getData();
@@ -119,6 +250,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         n.f4.accept(this,ir);
         ir.emit("br label %"+condition+"\n");
         ir.emitlabel(end);
+        ir.exit_block();
         return null;
     }
     /**
