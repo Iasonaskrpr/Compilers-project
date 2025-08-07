@@ -16,6 +16,9 @@ public class ClassVariables{
             Variables.put(name,v);
         }
     }
+    public VarInfo getVar(String name){
+        return Variables.get(name);
+    }
     public int getVarOffset(String name){
         return Variables.get(name).getOffset();
     }

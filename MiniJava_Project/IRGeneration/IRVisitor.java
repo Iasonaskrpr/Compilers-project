@@ -75,6 +75,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         ir.emit("call void @throw_oob()\n");
         ir.emit("ret i32 1\n");
         ir.exit_block();
+        ir.exitClass();
         ir.emit("}\n");
         return null;
     }
@@ -99,8 +100,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(ClassDeclaration n, IRHelper ir) throws Exception{
         IRData Class = n.f1.accept(this, ir);
         ir.EnterClass(Class.getData());
+        ir.toggleEmit();
         n.f3.accept(this,ir);
+        ir.toggleEmit();
         n.f4.accept(this,ir);
+        ir.exitClass();
         return null;
     }
     /**
@@ -118,10 +122,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(ClassExtendsDeclaration n, IRHelper ir) throws Exception{
         IRData Class = n.f1.accept(this, ir);
         ir.EnterClass(Class.getData());
-        ir.enter_block();
+        ir.toggleEmit();
         n.f5.accept(this,ir);
+        ir.toggleEmit();
         n.f6.accept(this,ir);
-        ir.exit_block();
+        ir.exitClass();
         return null;
     }
     /**
@@ -176,7 +181,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(FormalParameter n, IRHelper ir) throws Exception {
         String type = n.f0.accept(this,ir).getData();
         String id = n.f1.accept(this,ir).getData();
-        ir.emit(", "+type+" %."+id);
+        ir.emit(", "+type+" %"+id);
         return null;
     }
     /**
@@ -268,8 +273,10 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         IRData id = n.f1.accept(this,ir);
         String var = id.getData();
-        ir.addVariable(var, type);
-        ir.emit("%"+var+" = alloca "+type+"\n");
+        if(ir.shouldEmit()){
+            ir.addVariable(var, type);
+            ir.emit("%"+var+" = alloca "+type+"\n");
+        }
         return null;
     }
     /**

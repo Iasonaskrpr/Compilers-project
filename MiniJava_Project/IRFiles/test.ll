@@ -89,46 +89,46 @@ if2:
 	br i1 %_28, label %if3, label %if4
 
 if3:
-	%_30 = add i32 0, 8
-	%_31 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_32 = load i32, i32* %_31
-	%_33 = icmp slt i32 %_30, %_32
-	br i1 %_33, label %oob6, label %oob7
+		%_30 = add i32 0, 8
+		%_31 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+		%_32 = load i32, i32* %_31
+		%_33 = icmp slt i32 %_30, %_32
+		br i1 %_33, label %oob6, label %oob7
 
 oob6:
-	%_34 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_35 = load i32*, i32** %_34
-	%_36 = getelementptr i32, i32* %_35, i32 %_30
-	%_37 = load i32, i32* %_36
-	br label %oob8
+		%_34 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+		%_35 = load i32*, i32** %_34
+		%_36 = getelementptr i32, i32* %_35, i32 %_30
+		%_37 = load i32, i32* %_36
+		br label %oob8
 
 oob7:
-	br label %end
+		br label %end
 
 oob8:
-	call void @print_int(i32 %_37)
-	br label %if5
+		call void @print_int(i32 %_37)
+		br label %if5
 
 if4:
-	%_38 = add i32 0, 3
-	%_39 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_40 = load i32, i32* %_39
-	%_41 = icmp slt i32 %_38, %_40
-	br i1 %_41, label %oob9, label %oob10
+		%_38 = add i32 0, 3
+		%_39 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+		%_40 = load i32, i32* %_39
+		%_41 = icmp slt i32 %_38, %_40
+		br i1 %_41, label %oob9, label %oob10
 
 oob9:
-	%_42 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_43 = load i32*, i32** %_42
-	%_44 = getelementptr i32, i32* %_43, i32 %_38
-	%_45 = load i32, i32* %_44
-	br label %oob11
+		%_42 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+		%_43 = load i32*, i32** %_42
+		%_44 = getelementptr i32, i32* %_43, i32 %_38
+		%_45 = load i32, i32* %_44
+		br label %oob11
 
 oob10:
-	br label %end
+		br label %end
 
 oob11:
-	call void @print_int(i32 %_45)
-	br label %if5
+		call void @print_int(i32 %_45)
+		br label %if5
 
 if5:
 	ret i32 0

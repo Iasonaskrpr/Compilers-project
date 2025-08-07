@@ -15,6 +15,7 @@ public class IRHelper{
     private final Map<String ,Map<String , FunctionVInfo>> vtable;
     private int block_count; //Used to keep track of blocks 
     private Map<String,String> VariableTypes; //Used to store variables of the method
+    private boolean emit;
     private String CurClass;
     // Initializes variables and opens a new output stream
     public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable,Map<String,ClassVariables> Vars) {
@@ -24,6 +25,7 @@ public class IRHelper{
         varcount = 0;
         block_count = 0;
         VariableTypes = new HashMap<>();
+        emit = true;
         this.vtable = vtable;
         if (!filename.endsWith(".ll")) {
             throw new IllegalArgumentException("Filename must end with .ll");
@@ -167,16 +169,32 @@ public class IRHelper{
         VariableTypes.put(var, type);
     }
     public String getVariableType(String var){
-        return VariableTypes.get(var);
+        String ret = VariableTypes.get(var);
+        for (ClassVariables key : Vars.values()) {
+            for(String k : key.getVarMap().keySet()){
+                System.out.println(k);
+            }
+        }
+        if(ret == null){
+            VarInfo classVar = this.getClassVar(var);
+            //return classVar.getType();
+        }
+        return ret;
+    }
+    public void exitClass(){
+        Vars.clear();
     }
     public String idToTempVar(IRData var){ //Generates a temporary variable and returns it to whoever needs it
         if(this.VariableTypes.containsKey(var.getData())){//Return original variable in case it is not a java variable
             String tempVar = this.new_var();
             String type = getVariableType(var.getData()); //Get the variable type
-
             this.emit(tempVar+" = load "+ type +", "+type+"* %"+var.getData()+"\n"); 
             return tempVar;
             }
+        VarInfo classVar = this.getClassVar(var.getData());
+        if(classVar != null){
+            System.out.println(classVar.getOffset());
+        }
         return var.getData();
         
     }
@@ -185,5 +203,19 @@ public class IRHelper{
     }
     public String getCurClass(){
         return this.CurClass;
+    }
+    public void toggleEmit(){
+        this.emit = !this.emit;
+    }
+    public boolean shouldEmit(){
+        return this.emit;
+    }
+    public VarInfo getClassVar(String name){
+        ClassVariables cls = this.Vars.get(CurClass);
+        if(cls != null){
+            VarInfo var = cls.getVar(name);
+            return var;
+        }
+        return null;
     }
 }
