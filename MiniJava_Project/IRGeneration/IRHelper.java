@@ -204,7 +204,7 @@ public class IRHelper{
                 String ptr = new_var();
                 String retVar = new_var();
                 this.emit(command);
-                this.emit(ptr+" = getelementptr "+getLLVMType(classVar.getType())+", %class."+cls+"* "+tmp+", i32 0, i32 "+ Vars.get(cls).getVar(var.getData()).getOffset() +"\n");
+                this.emit(ptr+" = getelementptr %class."+cls+", %class."+cls+"* "+tmp+", i32 0, i32 "+ Vars.get(cls).getVar(var.getData()).getOffset() +"\n");
                 this.emit(retVar+ " = load "+getLLVMType(classVar.getType())+", "+getLLVMType(classVar.getType())+"* "+ptr+"\n");
                 return retVar;
             }
@@ -250,7 +250,7 @@ public class IRHelper{
             if(classVar != null){
                 String retVar = new_var();
                 this.emit(command);
-                this.emit(retVar + " = getelementptr "+getLLVMType(classVar.getType())+", %class."+cls+"* "+ tmp+", i32 0, i32 "+ classVar.getOffset()+"\n");
+                this.emit(retVar + " = getelementptr %class."+cls+", %class."+cls+"* "+ tmp+", i32 0, i32 "+ classVar.getOffset()+"\n");
                 return retVar;
             }
             String oldtmp = tmp;

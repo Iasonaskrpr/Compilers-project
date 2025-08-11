@@ -19,7 +19,7 @@ class test {
 	}	
 }
 class Greeter {
-    int x;
+    int[] x;
 	int y;
 	int z;
     public int sayHello() {
@@ -31,7 +31,8 @@ class Greeter {
 class broaderGreeter extends Greeter{
 	int k;
 	public int dontsayHello() {
-		y = 8;
+		x = new int[15];
+		x[5] = 8;
         System.out.println(9);
 		return 0;
     }

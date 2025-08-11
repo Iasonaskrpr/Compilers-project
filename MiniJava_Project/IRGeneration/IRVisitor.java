@@ -628,6 +628,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         IRData rightHand = n.f2.accept(this,ir);
         String rhs = rightHand.getData();
         if(ir.getVariableType(left).equals("%IntArray") && rightHand.isNum()){
+            String l = ir.classVarToTempVar(left);
+            if(l != null){
+                lhs = l;
+                lhs = lhs.substring(1);
+            }
             String SzPtr = ir.new_var();
             ir.emit(SzPtr+" = getelementptr %IntArray, %IntArray* %"+lhs+", i32 0, i32 0\n");
             ir.emit("store i32 "+ rhs+", i32* "+SzPtr+"\n");
@@ -641,6 +646,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             return null;
         }
         else if(ir.getVariableType(left).equals("%BooleanArray") && rightHand.isNum()){
+            String l = ir.classVarToTempVar(left);
+            if(l != null){
+                lhs = l;
+                lhs = lhs.substring(1);
+            }
             String SzPtr = ir.new_var();
             ir.emit(SzPtr+" = getelementptr %BooleanArray, %BooleanArray* %"+lhs+", i32 0, i32 0\n");
             ir.emit("store i32 "+ rhs+", i32* "+SzPtr+"\n");
@@ -653,7 +663,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             return null;
         }
         String l = ir.classVarToTempVar(left);
-        System.out.println(l);
         if(l == null){
             ir.emit("store "+ir.getVariableType(left)+" "+rhs+", "+ir.getVariableType(left)+"* %"+lhs+"\n");
         }

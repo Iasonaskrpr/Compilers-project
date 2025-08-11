@@ -1,7 +1,7 @@
 @.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*)* @Greeter.sayHello to i8*),i8* bitcast (i32 (i8*)* @broaderGreeter.dontsayHello to i8*)]
 @.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*)* @Greeter.sayHello to i8*)]
 %class.broaderGreeter = type{ %class.Greeter, i32 }
-%class.Greeter = type{ i32, i32, i32 }
+%class.Greeter = type{ %IntArray, i32, i32 }
 %IntArray = type { i32, i32* }
 %BooleanArray = type { i32, i8* }
 declare i8* @calloc(i32, i32)
@@ -142,17 +142,39 @@ end:
 	ret i32 1
 }
 define i32 @Greeter.sayHello(%class.Greeter* %this) {
-		%_46 = getelementptr i32, %class.Greeter* %this, i32 0, i32 1
+		%_46 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
 	store i32 8, i32* %_46
-		%_47 = getelementptr i32, %class.Greeter* %this, i32 0, i32 1
+		%_47 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
 	%_48 = load i32, i32* %_47
 	call void @print_int(i32 %_48)
 	ret i32 0
 }
 define i32 @broaderGreeter.dontsayHello(%class.broaderGreeter* %this) {
 		%_49 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_50 = getelementptr i32, %class.Greeter* %_49, i32 0, i32 1
-	store i32 8, i32* %_50
+	%_50 = getelementptr %class.Greeter, %class.Greeter* %_49, i32 0, i32 0
+	%_51 = getelementptr %IntArray, %IntArray* %_50, i32 0, i32 0
+	store i32 15, i32* %_51
+	%_52 = call i8* @calloc(i32 15, i32 4)
+	%_53 = bitcast i8* %_52 to i32*
+	%_54 = getelementptr %IntArray, %IntArray* %_50, i32 0, i32 1
+	store i32* %_53, i32** %_54
+	%_55 = add i32 0, 5
+	%_56 = getelementptr %IntArray, %IntArray* %x, i32 0, i32 0
+	%_57 = load i32, i32* %_56
+	%_58 = icmp slt i32 %_55, %_57
+	br i1 %_58, label %oob12, label %oob13
+
+oob12:
+	%_59 = getelementptr %IntArray, %IntArray* %x, i32 0, i32 1
+	%_60 = load i32*, i32** %_59
+	%_61 = getelementptr i32, i32* %_60, i32 %_55
+	store i32 8, i32* %_61
+	br label %oob14
+
+oob13:
+	br label %end
+
+oob14:
 	call void @print_int(i32 9)
 	ret i32 0
 }
