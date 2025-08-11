@@ -198,7 +198,6 @@ public class IRHelper{
         String tmp = "%this";
         String command = "";
         while(Vars.containsKey(cls)){
-            System.out.println(cls);
             classVar = this.getClassVar(var.getData(),cls);
             if(classVar != null){
                 String ptr = new_var();

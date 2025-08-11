@@ -1,4 +1,6 @@
 package IRGeneration;
+import java.lang.reflect.AnnotatedTypeVariable;
+
 import syntaxtree.AndExpression;
 import syntaxtree.ArrayAllocationExpression;
 import syntaxtree.ArrayAssignmentStatement;
@@ -158,6 +160,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         IRData ret = n.f10.accept(this,ir);
         if(ret.isNum()){ir.emit("ret i32 "+ ret.getData()+"\n");}
         else{ir.emit("ret "+ ret.getType() + " "+ ret.getData()+"\n");}
+        ir.emitlabel("end");
+        ir.emit("call void @throw_oob()\n");
+        ir.emit("ret i32 1\n");
         ir.exit_block();
         ir.emit("}\n");
         return null; 
@@ -316,6 +321,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(ArrayAssignmentStatement n,IRHelper ir) throws Exception{
+        //EDIT HERE
         IRData arr = n.f0.accept(this,ir);
         IRData i = n.f2.accept(this,ir);
         String L1 = ir.new_oob_label();
@@ -331,11 +337,17 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         IRData valData = n.f5.accept(this,ir);
         String val = valData.getData();
+        String var = arr.getData();
+        String cls = ir.classVarToTempVar(arr);
+        if(cls != null){
+            var = cls;
+            var = var.substring(1);
+        }
         if(valData.isId()){
             val = ir.idToTempVar(valData);
         }
         String size_ptr = ir.new_var();
-        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr)+", "+ir.getVariableType(arr)+"* %"+arr.getData()+", i32 0, i32 0\n");
+        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr)+", "+ir.getVariableType(arr)+"* %"+var+", i32 0, i32 0\n");
         String size = ir.new_var();
         ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
         String oob_checker = ir.new_var();
@@ -346,14 +358,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String data_ptr = ir.new_var();
         String data = ir.new_var();
         if(ir.getVariableType(arr).equals("%IntArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* %"+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* %"+var+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i32*, i32** " + data_ptr_ptr + "\n");
             ir.emit(data + " = getelementptr i32, i32* "+data_ptr+", i32 "+ index + "\n");
             ir.emit("store i32 " + val + ", i32* " + data + "\n");
             ir.emit("br label %"+L3+"\n");
         }
         else if(ir.getVariableType(arr).equals("%BooleanArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* %"+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* %"+var+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i8*, i8** " + data_ptr_ptr + "\n");
             ir.emit(data + " = getelementptr i8, i8* "+data_ptr+", i32 "+ index + "\n");
             String valExt = ir.new_var();
@@ -374,9 +386,16 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(ArrayLength n, IRHelper ir) throws Exception{
+        //Edit
         IRData arr = n.f0.accept(this,ir);
         String size_ptr = ir.new_var();
-        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr)+", "+ir.getVariableType(arr)+"* %"+arr.getData()+", i32 0, i32 0\n");
+        String var = arr.getData();
+        String cls = ir.classVarToTempVar(arr);
+        if(cls != null){
+            var = cls;
+            var = var.substring(1);
+        }
+        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr)+", "+ir.getVariableType(arr)+"* %"+var+", i32 0, i32 0\n");
         String size = ir.new_var();
         ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
         return new IRData(size,"id");
@@ -403,8 +422,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         else{
             index =i.getData();
         }
+        String var = arr.getData();
+        String cls = ir.classVarToTempVar(arr);
+        if(cls != null){
+            var = cls;
+            var = var.substring(1);
+        }
         String size_ptr = ir.new_var();
-        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr)+", "+ir.getVariableType(arr)+"* %"+arr.getData()+", i32 0, i32 0\n");
+        ir.emit(size_ptr+" = getelementptr "+ir.getVariableType(arr)+", "+ir.getVariableType(arr)+"* %"+var+", i32 0, i32 0\n");
         String size = ir.new_var();
         ir.emit(size+" = load i32, i32* "+size_ptr+"\n");
         String oob_checker = ir.new_var();
@@ -416,14 +441,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String data = ir.new_var();
         String val = ir.new_var();
         if(ir.getVariableType(arr).equals("%IntArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* %"+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %IntArray, %IntArray* %"+var+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i32*, i32** " + data_ptr_ptr + "\n");
             ir.emit(data + " = getelementptr i32, i32* "+data_ptr+", i32 "+ index + "\n");
             ir.emit(val + " = load i32, i32* " + data + "\n");
             ir.emit("br label %"+L3+"\n");
         }
         else if(ir.getVariableType(arr).equals("%BooleanArray")){
-            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* %"+arr.getData()+", i32 0, i32 1\n");
+            ir.emit(data_ptr_ptr + " = getelementptr %BooleanArray, %BooleanArray* %"+var+", i32 0, i32 1\n");
             ir.emit(data_ptr + " = load i8*, i8** " + data_ptr_ptr + "\n");
             ir.emit(data + " = getelementptr i8, i8* "+data_ptr+", i32 "+ index + "\n");
             String valLong = ir.new_var();

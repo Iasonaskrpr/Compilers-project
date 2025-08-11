@@ -148,6 +148,10 @@ define i32 @Greeter.sayHello(%class.Greeter* %this) {
 	%_48 = load i32, i32* %_47
 	call void @print_int(i32 %_48)
 	ret i32 0
+
+end:
+	call void @throw_oob()
+	ret i32 1
 }
 define i32 @broaderGreeter.dontsayHello(%class.broaderGreeter* %this) {
 		%_49 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
@@ -159,22 +163,47 @@ define i32 @broaderGreeter.dontsayHello(%class.broaderGreeter* %this) {
 	%_54 = getelementptr %IntArray, %IntArray* %_50, i32 0, i32 1
 	store i32* %_53, i32** %_54
 	%_55 = add i32 0, 5
-	%_56 = getelementptr %IntArray, %IntArray* %x, i32 0, i32 0
-	%_57 = load i32, i32* %_56
-	%_58 = icmp slt i32 %_55, %_57
-	br i1 %_58, label %oob12, label %oob13
+		%_56 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_57 = getelementptr %class.Greeter, %class.Greeter* %_56, i32 0, i32 0
+	%_58 = getelementptr %IntArray, %IntArray* %_57, i32 0, i32 0
+	%_59 = load i32, i32* %_58
+	%_60 = icmp slt i32 %_55, %_59
+	br i1 %_60, label %oob12, label %oob13
 
 oob12:
-	%_59 = getelementptr %IntArray, %IntArray* %x, i32 0, i32 1
-	%_60 = load i32*, i32** %_59
-	%_61 = getelementptr i32, i32* %_60, i32 %_55
-	store i32 8, i32* %_61
+	%_61 = getelementptr %IntArray, %IntArray* %_57, i32 0, i32 1
+	%_62 = load i32*, i32** %_61
+	%_63 = getelementptr i32, i32* %_62, i32 %_55
+	store i32 8, i32* %_63
 	br label %oob14
 
 oob13:
 	br label %end
 
 oob14:
-	call void @print_int(i32 9)
+	%_64 = add i32 0, 5
+		%_65 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_66 = getelementptr %class.Greeter, %class.Greeter* %_65, i32 0, i32 0
+	%_67 = getelementptr %IntArray, %IntArray* %_66, i32 0, i32 0
+	%_68 = load i32, i32* %_67
+	%_69 = icmp slt i32 %_64, %_68
+	br i1 %_69, label %oob15, label %oob16
+
+oob15:
+	%_70 = getelementptr %IntArray, %IntArray* %_66, i32 0, i32 1
+	%_71 = load i32*, i32** %_70
+	%_72 = getelementptr i32, i32* %_71, i32 %_64
+	%_73 = load i32, i32* %_72
+	br label %oob17
+
+oob16:
+	br label %end
+
+oob17:
+	call void @print_int(i32 %_73)
 	ret i32 0
+
+end:
+	call void @throw_oob()
+	ret i32 1
 }

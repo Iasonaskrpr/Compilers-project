@@ -33,7 +33,7 @@ class broaderGreeter extends Greeter{
 	public int dontsayHello() {
 		x = new int[15];
 		x[5] = 8;
-        System.out.println(9);
+        System.out.println(x[5]);
 		return 0;
     }
 }
