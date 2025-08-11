@@ -23,10 +23,17 @@ class Greeter {
 	int y;
 	int z;
     public int sayHello() {
-		x = 8;
-        System.out.println(x);
+		y = 8;
+        System.out.println(y);
 		return 0;
     }
-
+}
+class broaderGreeter extends Greeter{
+	int k;
+	public int dontsayHello() {
+		y = 8;
+        System.out.println(9);
+		return 0;
+    }
 }
 

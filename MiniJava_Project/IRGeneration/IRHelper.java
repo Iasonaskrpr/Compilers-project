@@ -168,11 +168,18 @@ public class IRHelper{
     public void addVariable(String var,String type){
         VariableTypes.put(var, type);
     }
-    public String getVariableType(String var){
-        String ret = VariableTypes.get(var);
+    public String getVariableType(IRData var){ //Inheritence problems here as well
+        String ret = VariableTypes.get(var.getData());
         if(ret == null){
-            VarInfo classVar = this.getClassVar(var);
-            return classVar.getType();
+            VarInfo classVar;
+            String cls = CurClass;
+            while(Vars.containsKey(cls)){
+                classVar = this.getClassVar(var.getData());
+                if(classVar != null){
+                    return getLLVMType(classVar.getType());
+                }
+                cls = Vars.get(cls).getSuper();
+            }
         }
         return ret;
     }
@@ -180,17 +187,30 @@ public class IRHelper{
         VariableTypes.clear();
     }
     public String idToTempVar(IRData var){ //Generates a temporary variable and returns it to whoever needs it
-        if(this.VariableTypes.containsKey(var.getData())){//Return original variable in case it is not a java variable
+        if(this.VariableTypes.containsKey(var.getData())){
             String tempVar = this.new_var();
-            String type = getVariableType(var.getData()); //Get the variable type
+            String type = getVariableType(var); //Get the variable type
             this.emit(tempVar+" = load "+ type +", "+type+"* %"+var.getData()+"\n"); 
             return tempVar;
             }
-        VarInfo classVar = this.getClassVar(var.getData());
-        if(classVar != null){
-            //TODO
+        VarInfo classVar;
+        String cls = CurClass;
+        String tmp = new_var();
+        String command = tmp+" = getelementptr %class."+this.CurClass+", %class."+CurClass+"* %this, i32 0, i32 0\n";
+        while(Vars.containsKey(cls)){
+            classVar = this.getClassVar(var.getData());
+            if(classVar != null){
+                String retVar = new_var();
+                this.emit(command);
+                this.emit(retVar+ " = load "+getLLVMType(classVar.getType())+", "+getLLVMType(classVar.getType())+"* "+tmp+"\n");
+                return retVar;
+            }
+            cls = Vars.get(cls).getSuper();
+            String oldtmp = tmp;
+            tmp = new_var();
+            command = command + "\t".repeat(this.block_count) + tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
         }
-        return var.getData();
+        return var.getData();//Return original variable in case it is not a java variable
         
     }
     public void EnterClass(String cls){
@@ -206,10 +226,39 @@ public class IRHelper{
         return this.emit;
     }
     public VarInfo getClassVar(String name){
-        ClassVariables cls = this.Vars.get(CurClass);
-        if(cls != null){
-            VarInfo var = cls.getVar(name);
-            return var;
+        VarInfo classVar;
+        String cls = CurClass;
+        while(Vars.containsKey(cls)){
+            ClassVariables c = Vars.get(cls);
+            classVar = c.getVar(name);
+            if(classVar != null){
+                return classVar;
+            }
+            cls = Vars.get(cls).getSuper();
+        }
+        return null;
+    }
+    public String classVarToTempVar(IRData var){
+        VarInfo classVar;
+        String cls = CurClass;
+        String tmp = new_var();
+        String command = tmp+" = getelementptr %class."+this.CurClass+", %class."+CurClass+"* %this, i32 0, i32 0\n";
+        for (ClassVariables value : Vars.values()) {
+            for(String v :value.getVarMap().keySet()){
+                System.out.println(v);
+            }
+        }
+        while(Vars.containsKey(cls)){
+            classVar = this.getClassVar(var.getData());
+            if(classVar != null){
+                String retVar = new_var();
+                this.emit(command);
+                return tmp;
+            }
+            cls = Vars.get(cls).getSuper();
+            String oldtmp = tmp;
+            tmp = new_var();
+            command = command + "\t".repeat(this.block_count) + tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
         }
         return null;
     }

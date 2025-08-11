@@ -1,4 +1,6 @@
+@.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*)* @Greeter.sayHello to i8*),i8* bitcast (i32 (i8*)* @broaderGreeter.dontsayHello to i8*)]
 @.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*)* @Greeter.sayHello to i8*)]
+%class.broaderGreeter = type{ %class.Greeter, i32 }
 %class.Greeter = type{ i32, i32, i32 }
 %IntArray = type { i32, i32* }
 %BooleanArray = type { i32, i8* }
@@ -112,24 +114,24 @@ oob8:
 		br label %if5
 
 if4:
-		%_38 = add i32 0, 3
-		%_39 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-		%_40 = load i32, i32* %_39
-		%_41 = icmp slt i32 %_38, %_40
-		br i1 %_41, label %oob9, label %oob10
+		%_39 = add i32 0, 3
+		%_40 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+		%_41 = load i32, i32* %_40
+		%_42 = icmp slt i32 %_39, %_41
+		br i1 %_42, label %oob9, label %oob10
 
 oob9:
-		%_42 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-		%_43 = load i32*, i32** %_42
-		%_44 = getelementptr i32, i32* %_43, i32 %_38
-		%_45 = load i32, i32* %_44
+		%_43 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+		%_44 = load i32*, i32** %_43
+		%_45 = getelementptr i32, i32* %_44, i32 %_39
+		%_46 = load i32, i32* %_45
 		br label %oob11
 
 oob10:
 		br label %end
 
 oob11:
-		call void @print_int(i32 %_45)
+		call void @print_int(i32 %_46)
 		br label %if5
 
 if5:
@@ -139,9 +141,17 @@ end:
 	call void @throw_oob()
 	ret i32 1
 }
-define i32 @Greeter.sayHello(i8* this) {
-	store i32 8, i32* %x
-	%_46 = load i32, i32* %x
-	call void @print_int(i32 %_46)
-	ret num 0
+define i32 @Greeter.sayHello(i8* %this) {
+	%_48 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 0
+	store i32 8, i32* %_48
+	%_50 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 0
+	%_51 = load i32, i32* %_50
+	call void @print_int(i32 %_51)
+	ret i32 0
+}
+define i32 @broaderGreeter.dontsayHello(i8* %this) {
+	%_52 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	store i32 8, i32* %_52
+	call void @print_int(i32 9)
+	ret i32 0
 }
