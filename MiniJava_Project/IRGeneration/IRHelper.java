@@ -174,7 +174,7 @@ public class IRHelper{
             VarInfo classVar;
             String cls = CurClass;
             while(Vars.containsKey(cls)){
-                classVar = this.getClassVar(var.getData());
+                classVar = this.getClassVar(var.getData(),cls);
                 if(classVar != null){
                     return getLLVMType(classVar.getType());
                 }
@@ -195,20 +195,24 @@ public class IRHelper{
             }
         VarInfo classVar;
         String cls = CurClass;
-        String tmp = new_var();
-        String command = tmp+" = getelementptr %class."+this.CurClass+", %class."+CurClass+"* %this, i32 0, i32 0\n";
+        String tmp = "%this";
+        String command = "";
         while(Vars.containsKey(cls)){
-            classVar = this.getClassVar(var.getData());
+            System.out.println(cls);
+            classVar = this.getClassVar(var.getData(),cls);
             if(classVar != null){
+                String ptr = new_var();
                 String retVar = new_var();
                 this.emit(command);
-                this.emit(retVar+ " = load "+getLLVMType(classVar.getType())+", "+getLLVMType(classVar.getType())+"* "+tmp+"\n");
+                this.emit(ptr+" = getelementptr "+getLLVMType(classVar.getType())+", %class."+cls+"* "+tmp+", i32 0, i32 "+ Vars.get(cls).getVar(var.getData()).getOffset() +"\n");
+                this.emit(retVar+ " = load "+getLLVMType(classVar.getType())+", "+getLLVMType(classVar.getType())+"* "+ptr+"\n");
                 return retVar;
             }
-            cls = Vars.get(cls).getSuper();
             String oldtmp = tmp;
             tmp = new_var();
             command = command + "\t".repeat(this.block_count) + tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
+            cls = Vars.get(cls).getSuper();
+            
         }
         return var.getData();//Return original variable in case it is not a java variable
         
@@ -226,39 +230,33 @@ public class IRHelper{
         return this.emit;
     }
     public VarInfo getClassVar(String name){
-        VarInfo classVar;
-        String cls = CurClass;
-        while(Vars.containsKey(cls)){
-            ClassVariables c = Vars.get(cls);
-            classVar = c.getVar(name);
-            if(classVar != null){
-                return classVar;
-            }
-            cls = Vars.get(cls).getSuper();
-        }
-        return null;
+        ClassVariables c = this.Vars.get(this.CurClass);
+        if(c == null) {return null;}
+        return c.getVar(name);
+    }
+    public VarInfo getClassVar(String name,String cls){
+        ClassVariables c = this.Vars.get(cls);
+        if(c == null) {return null;}
+        return c.getVar(name);
+       
     }
     public String classVarToTempVar(IRData var){
         VarInfo classVar;
         String cls = CurClass;
-        String tmp = new_var();
-        String command = tmp+" = getelementptr %class."+this.CurClass+", %class."+CurClass+"* %this, i32 0, i32 0\n";
-        for (ClassVariables value : Vars.values()) {
-            for(String v :value.getVarMap().keySet()){
-                System.out.println(v);
-            }
-        }
+        String tmp = "%this";
+        String command = "";
         while(Vars.containsKey(cls)){
-            classVar = this.getClassVar(var.getData());
+            classVar = this.getClassVar(var.getData(),cls);
             if(classVar != null){
                 String retVar = new_var();
                 this.emit(command);
-                return tmp;
+                this.emit(retVar + " = getelementptr "+getLLVMType(classVar.getType())+", %class."+cls+"* "+ tmp+", i32 0, i32 "+ classVar.getOffset()+"\n");
+                return retVar;
             }
-            cls = Vars.get(cls).getSuper();
             String oldtmp = tmp;
             tmp = new_var();
             command = command + "\t".repeat(this.block_count) + tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
+            cls = Vars.get(cls).getSuper();
         }
         return null;
     }

@@ -114,24 +114,24 @@ oob8:
 		br label %if5
 
 if4:
-		%_39 = add i32 0, 3
-		%_40 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-		%_41 = load i32, i32* %_40
-		%_42 = icmp slt i32 %_39, %_41
-		br i1 %_42, label %oob9, label %oob10
+		%_38 = add i32 0, 3
+		%_39 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
+		%_40 = load i32, i32* %_39
+		%_41 = icmp slt i32 %_38, %_40
+		br i1 %_41, label %oob9, label %oob10
 
 oob9:
-		%_43 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-		%_44 = load i32*, i32** %_43
-		%_45 = getelementptr i32, i32* %_44, i32 %_39
-		%_46 = load i32, i32* %_45
+		%_42 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
+		%_43 = load i32*, i32** %_42
+		%_44 = getelementptr i32, i32* %_43, i32 %_38
+		%_45 = load i32, i32* %_44
 		br label %oob11
 
 oob10:
 		br label %end
 
 oob11:
-		call void @print_int(i32 %_46)
+		call void @print_int(i32 %_45)
 		br label %if5
 
 if5:
@@ -141,17 +141,18 @@ end:
 	call void @throw_oob()
 	ret i32 1
 }
-define i32 @Greeter.sayHello(i8* %this) {
-	%_48 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 0
-	store i32 8, i32* %_48
-	%_50 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 0
-	%_51 = load i32, i32* %_50
-	call void @print_int(i32 %_51)
+define i32 @Greeter.sayHello(%class.Greeter* %this) {
+		%_46 = getelementptr i32, %class.Greeter* %this, i32 0, i32 1
+	store i32 8, i32* %_46
+		%_47 = getelementptr i32, %class.Greeter* %this, i32 0, i32 1
+	%_48 = load i32, i32* %_47
+	call void @print_int(i32 %_48)
 	ret i32 0
 }
-define i32 @broaderGreeter.dontsayHello(i8* %this) {
-	%_52 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	store i32 8, i32* %_52
+define i32 @broaderGreeter.dontsayHello(%class.broaderGreeter* %this) {
+		%_49 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_50 = getelementptr i32, %class.Greeter* %_49, i32 0, i32 1
+	store i32 8, i32* %_50
 	call void @print_int(i32 9)
 	ret i32 0
 }

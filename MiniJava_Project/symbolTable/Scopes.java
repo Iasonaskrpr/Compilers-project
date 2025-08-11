@@ -264,7 +264,7 @@ public class Scopes {
                 ClassVariables varTable = new ClassVariables(Parent);
                 for (Map.Entry<String, Info> set2 : symbol_table.getTable().entrySet()) {
                     Info var = set2.getValue();
-                    if (!var.getType().equals("method")&&!set2.getKey().equals("this")) {
+                    if (!var.getType().equals("method")&&!set2.getKey().equals("this") ) {
                         String varName = set2.getKey();
                         varTable.addVariable(varName, offset++, var.getType(),symbol_table.getName());
                     }

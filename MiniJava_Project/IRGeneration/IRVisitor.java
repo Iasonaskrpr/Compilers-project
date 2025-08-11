@@ -149,7 +149,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(MethodDeclaration n, IRHelper ir) throws Exception{
         String retType = n.f1.accept(this,ir).getData();
         String MethName = n.f2.accept(this,ir).getData();
-        ir.emit("define " + retType + " @"+ir.getCurClass()+"."+MethName+"(i8* %this");
+        ir.emit("define " + retType + " @"+ir.getCurClass()+"."+MethName+"(%class."+ ir.getCurClass()+"* %this");
         n.f4.accept(this,ir);
         ir.emit(") {\n");
         ir.enter_block();
@@ -316,7 +316,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(ArrayAssignmentStatement n,IRHelper ir) throws Exception{
-        //EDIT TO ACCOMODATE CLASS VARIABLES
         IRData arr = n.f0.accept(this,ir);
         IRData i = n.f2.accept(this,ir);
         String L1 = ir.new_oob_label();
@@ -653,13 +652,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit("store i8* " +ArrPtr+ ", i8** "+ArrFieldptr+"\n");
             return null;
         }
-        VarInfo clsvr = ir.getClassVar(lhs);
-        if(clsvr == null){
+        String l = ir.classVarToTempVar(left);
+        System.out.println(l);
+        if(l == null){
             ir.emit("store "+ir.getVariableType(left)+" "+rhs+", "+ir.getVariableType(left)+"* %"+lhs+"\n");
-            return null;
         }
-       String l = ir.classVarToTempVar(left);
-       ir.emit("store " + ir.getLLVMType(clsvr.getType()) +" "+rhs+", "+ir.getVariableType(left)+"* "+ l +"\n");
+        else{
+            ir.emit("store " + ir.getVariableType(left) +" "+rhs+", "+ir.getVariableType(left)+"* "+ l +"\n");
+            }
        return null;
     }
     /**
