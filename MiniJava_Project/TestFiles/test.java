@@ -1,3 +1,4 @@
+
 class test {
 	public static void main(String[] a){
 		int x;
@@ -22,7 +23,7 @@ class Greeter {
     int[] x;
 	int y;
 	int z;
-    public int sayHello() {
+    public int sayHello(Greeter h) {
 		y = 8;
         System.out.println(y);
 		return 0;
@@ -31,10 +32,10 @@ class Greeter {
 class broaderGreeter extends Greeter{
 	int k;
 	public int dontsayHello() {
-		x = new int[15];
+		broaderGreeter l;
 		x[5] = 8;
         System.out.println(x[5]);
-		return 0;
+		return k;
     }
 }
 

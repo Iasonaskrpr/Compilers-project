@@ -151,10 +151,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(MethodDeclaration n, IRHelper ir) throws Exception{
         String retType = n.f1.accept(this,ir).getData();
         String MethName = n.f2.accept(this,ir).getData();
-        ir.emit("define " + retType + " @"+ir.getCurClass()+"."+MethName+"(%class."+ ir.getCurClass()+"* %this");
+        ir.emit("define " + retType + " @"+ir.getCurClass()+"."+MethName+"(i8* %this_raw");
         n.f4.accept(this,ir);
         ir.emit(") {\n");
         ir.enter_block();
+        ir.emit("%this = bitcast i8* %this_raw to %class."+ir.getCurClass()+"*\n");
         n.f7.accept(this,ir);
         n.f8.accept(this,ir);
         IRData ret = n.f10.accept(this,ir);
@@ -162,7 +163,8 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         else{ir.emit("ret "+ ret.getType() + " "+ ret.getData()+"\n");}
         ir.emitlabel("end");
         ir.emit("call void @throw_oob()\n");
-        ir.emit("ret i32 1\n");
+        if(ret.isNum()){ir.emit("ret i32 1\n");}
+        else{ir.emit("ret "+ ret.getType() + " null\n");}
         ir.exit_block();
         ir.emit("}\n");
         return null; 
@@ -185,9 +187,17 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override 
     public IRData visit(FormalParameter n, IRHelper ir) throws Exception {
-        String type = n.f0.accept(this,ir).getData();
+        //Class parameters require casting
+        IRData typeData = n.f0.accept(this,ir);
+        String type = typeData.getData();
         String id = n.f1.accept(this,ir).getData();
-        ir.emit(", "+type+" %"+id);
+        if(typeData.isId()){
+            type = "i8*";
+            ir.emit(", "+type+" %"+id+"_raw");
+        }
+        else{
+            ir.emit(", "+type+" %"+id);
+            }
         return null;
     }
     /**
@@ -321,7 +331,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(ArrayAssignmentStatement n,IRHelper ir) throws Exception{
-        //EDIT HERE
         IRData arr = n.f0.accept(this,ir);
         IRData i = n.f2.accept(this,ir);
         String L1 = ir.new_oob_label();

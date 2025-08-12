@@ -1,5 +1,5 @@
-@.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*)* @Greeter.sayHello to i8*),i8* bitcast (i32 (i8*)* @broaderGreeter.dontsayHello to i8*)]
-@.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*)* @Greeter.sayHello to i8*)]
+@.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*),i8* bitcast (i32 (i8*)* @broaderGreeter.dontsayHello to i8*)]
+@.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*)]
 %class.broaderGreeter = type{ %class.Greeter, i32 }
 %class.Greeter = type{ %IntArray, i32, i32 }
 %IntArray = type { i32, i32* }
@@ -141,7 +141,8 @@ end:
 	call void @throw_oob()
 	ret i32 1
 }
-define i32 @Greeter.sayHello(%class.Greeter* %this) {
+define i32 @Greeter.sayHello(i8* %this_raw, %class.Greeter* %h) {
+	%this = bitcast i8* %this_raw to %class.Greeter*
 		%_46 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
 	store i32 8, i32* %_46
 		%_47 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
@@ -153,57 +154,51 @@ end:
 	call void @throw_oob()
 	ret i32 1
 }
-define i32 @broaderGreeter.dontsayHello(%class.broaderGreeter* %this) {
-		%_49 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_50 = getelementptr %class.Greeter, %class.Greeter* %_49, i32 0, i32 0
-	%_51 = getelementptr %IntArray, %IntArray* %_50, i32 0, i32 0
-	store i32 15, i32* %_51
-	%_52 = call i8* @calloc(i32 15, i32 4)
-	%_53 = bitcast i8* %_52 to i32*
-	%_54 = getelementptr %IntArray, %IntArray* %_50, i32 0, i32 1
-	store i32* %_53, i32** %_54
-	%_55 = add i32 0, 5
-		%_56 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_57 = getelementptr %class.Greeter, %class.Greeter* %_56, i32 0, i32 0
-	%_58 = getelementptr %IntArray, %IntArray* %_57, i32 0, i32 0
-	%_59 = load i32, i32* %_58
-	%_60 = icmp slt i32 %_55, %_59
-	br i1 %_60, label %oob12, label %oob13
+define i32 @broaderGreeter.dontsayHello(i8* %this_raw) {
+	%this = bitcast i8* %this_raw to %class.broaderGreeter*
+	%l = alloca %class.broaderGreeter
+	%_49 = add i32 0, 5
+		%_50 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_51 = getelementptr %class.Greeter, %class.Greeter* %_50, i32 0, i32 0
+	%_52 = getelementptr %IntArray, %IntArray* %_51, i32 0, i32 0
+	%_53 = load i32, i32* %_52
+	%_54 = icmp slt i32 %_49, %_53
+	br i1 %_54, label %oob12, label %oob13
 
 oob12:
-	%_61 = getelementptr %IntArray, %IntArray* %_57, i32 0, i32 1
-	%_62 = load i32*, i32** %_61
-	%_63 = getelementptr i32, i32* %_62, i32 %_55
-	store i32 8, i32* %_63
+	%_55 = getelementptr %IntArray, %IntArray* %_51, i32 0, i32 1
+	%_56 = load i32*, i32** %_55
+	%_57 = getelementptr i32, i32* %_56, i32 %_49
+	store i32 8, i32* %_57
 	br label %oob14
 
 oob13:
 	br label %end
 
 oob14:
-	%_64 = add i32 0, 5
-		%_65 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_66 = getelementptr %class.Greeter, %class.Greeter* %_65, i32 0, i32 0
-	%_67 = getelementptr %IntArray, %IntArray* %_66, i32 0, i32 0
-	%_68 = load i32, i32* %_67
-	%_69 = icmp slt i32 %_64, %_68
-	br i1 %_69, label %oob15, label %oob16
+	%_58 = add i32 0, 5
+		%_59 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_60 = getelementptr %class.Greeter, %class.Greeter* %_59, i32 0, i32 0
+	%_61 = getelementptr %IntArray, %IntArray* %_60, i32 0, i32 0
+	%_62 = load i32, i32* %_61
+	%_63 = icmp slt i32 %_58, %_62
+	br i1 %_63, label %oob15, label %oob16
 
 oob15:
-	%_70 = getelementptr %IntArray, %IntArray* %_66, i32 0, i32 1
-	%_71 = load i32*, i32** %_70
-	%_72 = getelementptr i32, i32* %_71, i32 %_64
-	%_73 = load i32, i32* %_72
+	%_64 = getelementptr %IntArray, %IntArray* %_60, i32 0, i32 1
+	%_65 = load i32*, i32** %_64
+	%_66 = getelementptr i32, i32* %_65, i32 %_58
+	%_67 = load i32, i32* %_66
 	br label %oob17
 
 oob16:
 	br label %end
 
 oob17:
-	call void @print_int(i32 %_73)
-	ret i32 0
+	call void @print_int(i32 %_67)
+	ret id k
 
 end:
 	call void @throw_oob()
-	ret i32 1
+	ret id null
 }
