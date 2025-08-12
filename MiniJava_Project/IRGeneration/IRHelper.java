@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import syntaxtree.ThisExpression;
 public class IRHelper{
     private OutputStream f;
     private int iflabelcount; 
@@ -15,6 +17,7 @@ public class IRHelper{
     private final Map<String ,Map<String , FunctionVInfo>> vtable;
     private int block_count; //Used to keep track of blocks 
     private Map<String,String> VariableTypes; //Used to store variables of the method
+    private Map<String,String> params; //Map used to cast i8* to classes
     private boolean emit;
     private String CurClass;
     // Initializes variables and opens a new output stream
@@ -62,6 +65,9 @@ public class IRHelper{
     }
     // Emits command to the .ll file
     public void emit(String command){
+        if(command.equals("")){
+            return;
+        }
         command = "\t".repeat(this.block_count)+command;
         try{
             f.write(command.getBytes());
@@ -104,7 +110,6 @@ public class IRHelper{
     }
     // Emits vtable and necessary functions
     private void startGeneration(Map<String ,Map<String , FunctionVInfo>> vtable){
-        //TODO: Extract all class and variables and create a type for each one
         for(Map.Entry<String, Map<String, FunctionVInfo>> classEntry : vtable.entrySet()){
             String entries = Integer.toString(classEntry.getValue().size());
             String tablename = "@."+classEntry.getKey()+"_vtable = global [" + entries +" x i8*] [";
@@ -209,7 +214,7 @@ public class IRHelper{
             }
             String oldtmp = tmp;
             tmp = new_var();
-            command = command + "\t".repeat(this.block_count) + tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
+            command = command +  tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
             cls = Vars.get(cls).getSuper();
             
         }
@@ -254,9 +259,18 @@ public class IRHelper{
             }
             String oldtmp = tmp;
             tmp = new_var();
-            command = command + "\t".repeat(this.block_count) + tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
+            command = command + tmp+" = getelementptr %class."+cls+", %class."+cls+"* "+ oldtmp+", i32 0, i32 0\n";
             cls = Vars.get(cls).getSuper();
         }
         return null;
+    }
+    public void new_method(){
+        this.params = new HashMap<>();
+    }
+    public void addParam(String name, String cls){
+        this.params.put(name, cls);
+    }
+    public Map<String, String> getParams(){
+        return this.params;
     }
 }

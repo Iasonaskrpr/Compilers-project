@@ -1,4 +1,4 @@
-@.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*),i8* bitcast (i32 (i8*)* @broaderGreeter.dontsayHello to i8*)]
+@.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*),i8* bitcast (i1 (i8*)* @broaderGreeter.dontsayHello to i8*)]
 @.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*)]
 %class.broaderGreeter = type{ %class.Greeter, i32 }
 %class.Greeter = type{ %IntArray, i32, i32 }
@@ -141,11 +141,12 @@ end:
 	call void @throw_oob()
 	ret i32 1
 }
-define i32 @Greeter.sayHello(i8* %this_raw, %class.Greeter* %h) {
+define i32 @Greeter.sayHello(i8* %this_raw, i8* %h_raw) {
 	%this = bitcast i8* %this_raw to %class.Greeter*
-		%_46 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	%h = bitcast i8* %h_raw to %class.Greeter*
+	%_46 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
 	store i32 8, i32* %_46
-		%_47 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	%_47 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
 	%_48 = load i32, i32* %_47
 	call void @print_int(i32 %_48)
 	ret i32 0
@@ -154,11 +155,13 @@ end:
 	call void @throw_oob()
 	ret i32 1
 }
-define i32 @broaderGreeter.dontsayHello(i8* %this_raw) {
+define i1 @broaderGreeter.dontsayHello(i8* %this_raw) {
 	%this = bitcast i8* %this_raw to %class.broaderGreeter*
+	%t = alloca i1
+	%y = alloca i1
 	%l = alloca %class.broaderGreeter
 	%_49 = add i32 0, 5
-		%_50 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_50 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
 	%_51 = getelementptr %class.Greeter, %class.Greeter* %_50, i32 0, i32 0
 	%_52 = getelementptr %IntArray, %IntArray* %_51, i32 0, i32 0
 	%_53 = load i32, i32* %_52
@@ -177,7 +180,7 @@ oob13:
 
 oob14:
 	%_58 = add i32 0, 5
-		%_59 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_59 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
 	%_60 = getelementptr %class.Greeter, %class.Greeter* %_59, i32 0, i32 0
 	%_61 = getelementptr %IntArray, %IntArray* %_60, i32 0, i32 0
 	%_62 = load i32, i32* %_61
@@ -196,9 +199,22 @@ oob16:
 
 oob17:
 	call void @print_int(i32 %_67)
-	ret id k
+	%_70 = load i1, i1* %t
+	br label %if6
+if6:
+	%_71 = icmp ne i1 %_70, 0
+	br i1 %_71, label %if7, label %if8
+
+if7:
+	%_74 = load i1, i1* %y
+	%_72 = icmp ne i1 %_74, 0
+	br label %if8
+
+if8:
+	%_73 = phi i1 [false, %if6], [%_72, %if7]
+	ret i1 %_73
 
 end:
 	call void @throw_oob()
-	ret id null
+	ret i1 null
 }

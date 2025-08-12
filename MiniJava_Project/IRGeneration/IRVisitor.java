@@ -1,6 +1,6 @@
 package IRGeneration;
 import java.lang.reflect.AnnotatedTypeVariable;
-
+import java.util.*;
 import syntaxtree.AndExpression;
 import syntaxtree.ArrayAllocationExpression;
 import syntaxtree.ArrayAssignmentStatement;
@@ -149,22 +149,38 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(MethodDeclaration n, IRHelper ir) throws Exception{
+        Map<String, String> params;
         String retType = n.f1.accept(this,ir).getData();
         String MethName = n.f2.accept(this,ir).getData();
+        ir.new_method();
         ir.emit("define " + retType + " @"+ir.getCurClass()+"."+MethName+"(i8* %this_raw");
         n.f4.accept(this,ir);
         ir.emit(") {\n");
         ir.enter_block();
         ir.emit("%this = bitcast i8* %this_raw to %class."+ir.getCurClass()+"*\n");
+        params = ir.getParams();
+        for (Map.Entry<String, String> p : params.entrySet()) {
+            ir.emit("%"+p.getKey()+" = bitcast i8* %"+p.getKey()+"_raw to %class."+p.getValue()+"*\n");
+        }
         n.f7.accept(this,ir);
         n.f8.accept(this,ir);
         IRData ret = n.f10.accept(this,ir);
         if(ret.isNum()){ir.emit("ret i32 "+ ret.getData()+"\n");}
-        else{ir.emit("ret "+ ret.getType() + " "+ ret.getData()+"\n");}
+        else if(ret.isBool()){ ir.emit("ret i1 "+ ret.getData()+"\n");}
+        else{//In case it is an id we have to load it first
+            if(ret.getData().startsWith("%")){
+                ir.emit("ret "+ retType + " "+ ret.getData()+"\n");
+            }
+            else{
+                String retVar = ir.idToTempVar(ret);
+                ir.emit("ret "+retType+" "+retVar+"\n");
+            }
+        }
         ir.emitlabel("end");
         ir.emit("call void @throw_oob()\n");
-        if(ret.isNum()){ir.emit("ret i32 1\n");}
-        else{ir.emit("ret "+ ret.getType() + " null\n");}
+        if(retType.equals("i32")){ir.emit("ret i32 1\n");}
+        else if(retType.equals("i1")){ ir.emit("ret i1 false\n");}
+        else{ir.emit("ret "+ retType + " null\n");}
         ir.exit_block();
         ir.emit("}\n");
         return null; 
@@ -192,6 +208,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String type = typeData.getData();
         String id = n.f1.accept(this,ir).getData();
         if(typeData.isId()){
+            ir.addParam(id, type);
             type = "i8*";
             ir.emit(", "+type+" %"+id+"_raw");
         }

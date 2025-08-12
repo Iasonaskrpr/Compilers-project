@@ -31,11 +31,13 @@ class Greeter {
 }
 class broaderGreeter extends Greeter{
 	int k;
-	public int dontsayHello() {
+	public boolean dontsayHello() {
+		boolean t;
+		boolean y;
 		broaderGreeter l;
 		x[5] = 8;
         System.out.println(x[5]);
-		return k;
+		return t&&y;
     }
 }
 

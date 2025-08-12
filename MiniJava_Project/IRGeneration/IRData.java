@@ -19,4 +19,7 @@ public class IRData{
     public boolean isNum(){
         return this.type.equals("num");
     }
+    public boolean isBool(){
+        return this.type.equals("bool");
+    }
 }
