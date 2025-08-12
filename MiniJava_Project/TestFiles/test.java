@@ -6,6 +6,7 @@ class test {
 		int[] i;
 		boolean z;
 		boolean t;
+		Greeter u;
 		i = new int[15];
 		y=3;
 		x= y+3;
@@ -16,12 +17,13 @@ class test {
 		if((t && z))
 			System.out.println(i[8]);
 		else
-			System.out.println(i[3]);
+			System.out.println(19);
 	}	
 }
 class Greeter {
     int[] x;
 	int y;
+	Greeter m;
 	int z;
     public int sayHello(Greeter h) {
 		y = 8;
@@ -36,7 +38,7 @@ class broaderGreeter extends Greeter{
 		boolean y;
 		broaderGreeter l;
 		x[5] = 8;
-        System.out.println(x[5]);
+        System.out.println(m.sayHello(m));
 		return t&&y;
     }
 }

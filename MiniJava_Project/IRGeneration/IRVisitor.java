@@ -1,12 +1,14 @@
 package IRGeneration;
 import java.lang.reflect.AnnotatedTypeVariable;
 import java.util.*;
+
 import syntaxtree.AndExpression;
 import syntaxtree.ArrayAllocationExpression;
 import syntaxtree.ArrayAssignmentStatement;
 import syntaxtree.ArrayLength;
 import syntaxtree.ArrayLookup;
 import syntaxtree.ArrayType;
+import syntaxtree.AllocationExpression;
 import syntaxtree.AssignmentStatement;
 import syntaxtree.Block;
 import syntaxtree.BooleanArrayAllocationExpression;
@@ -29,6 +31,7 @@ import syntaxtree.IntegerArrayType;
 import syntaxtree.IntegerLiteral;
 import syntaxtree.IntegerType;
 import syntaxtree.MainClass;
+import syntaxtree.MessageSend;
 import syntaxtree.MethodDeclaration;
 import syntaxtree.MinusExpression;
 import syntaxtree.NotExpression;
@@ -236,6 +239,31 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         n.f1.accept(this,ir);
         return null;
     }
+    /**
+     * MessageSend ::= PrimaryExpression "." Identifier "(" ( ExpressionList )? ")"
+     * f0 -> PrimaryExpression()
+     * f1 -> "."
+     * f2 -> Identifier()
+     * f3 -> "("
+     * f4 -> ( ExpressionList )?
+     * f5 -> ")"
+     */
+    @Override
+    public IRData visit(MessageSend n, IRHelper ir) throws Exception{
+        String thisVar = n.f0.accept(this,ir).getData();
+        String methodName = n.f2.accept(this,ir).getData();
+        //Load method from vtable to var and call it like that
+        String cls;
+        if(thisVar.equals("this")){
+            cls = ir.getCurClass();
+        }
+        else{
+            cls = ir.getVariableClass(thisVar);
+        }
+        //Return what????
+        return new IRData("place","holder");
+    }
+
     /**
      * IfStatement ::= "if" "(" Expression ")" Statement "else" Statement
      * f0 -> "if"

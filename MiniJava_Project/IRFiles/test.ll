@@ -1,7 +1,7 @@
 @.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*),i8* bitcast (i1 (i8*)* @broaderGreeter.dontsayHello to i8*)]
 @.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*)]
 %class.broaderGreeter = type{ %class.Greeter, i32 }
-%class.Greeter = type{ %IntArray, i32, i32 }
+%class.Greeter = type{ %IntArray, i32, i32, i8* }
 %IntArray = type { i32, i32* }
 %BooleanArray = type { i32, i8* }
 declare i8* @calloc(i32, i32)
@@ -26,6 +26,7 @@ define i32 @main(){
 	%i = alloca %IntArray
 	%z = alloca i1
 	%t = alloca i1
+	%u = alloca %class.Greeter
 	%_0 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
 	store i32 15, i32* %_0
 	%_1 = call i8* @calloc(i32 15, i32 4)
@@ -114,24 +115,7 @@ oob8:
 		br label %if5
 
 if4:
-		%_38 = add i32 0, 3
-		%_39 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-		%_40 = load i32, i32* %_39
-		%_41 = icmp slt i32 %_38, %_40
-		br i1 %_41, label %oob9, label %oob10
-
-oob9:
-		%_42 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-		%_43 = load i32*, i32** %_42
-		%_44 = getelementptr i32, i32* %_43, i32 %_38
-		%_45 = load i32, i32* %_44
-		br label %oob11
-
-oob10:
-		br label %end
-
-oob11:
-		call void @print_int(i32 %_45)
+		call void @print_int(i32 19)
 		br label %if5
 
 if5:
@@ -144,11 +128,11 @@ end:
 define i32 @Greeter.sayHello(i8* %this_raw, i8* %h_raw) {
 	%this = bitcast i8* %this_raw to %class.Greeter*
 	%h = bitcast i8* %h_raw to %class.Greeter*
-	%_46 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
-	store i32 8, i32* %_46
-	%_47 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
-	%_48 = load i32, i32* %_47
-	call void @print_int(i32 %_48)
+	%_38 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	store i32 8, i32* %_38
+	%_39 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	%_40 = load i32, i32* %_39
+	call void @print_int(i32 %_40)
 	ret i32 0
 
 end:
@@ -160,61 +144,42 @@ define i1 @broaderGreeter.dontsayHello(i8* %this_raw) {
 	%t = alloca i1
 	%y = alloca i1
 	%l = alloca %class.broaderGreeter
-	%_49 = add i32 0, 5
-	%_50 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_51 = getelementptr %class.Greeter, %class.Greeter* %_50, i32 0, i32 0
-	%_52 = getelementptr %IntArray, %IntArray* %_51, i32 0, i32 0
-	%_53 = load i32, i32* %_52
-	%_54 = icmp slt i32 %_49, %_53
-	br i1 %_54, label %oob12, label %oob13
+	%_41 = add i32 0, 5
+	%_42 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_43 = getelementptr %class.Greeter, %class.Greeter* %_42, i32 0, i32 0
+	%_44 = getelementptr %IntArray, %IntArray* %_43, i32 0, i32 0
+	%_45 = load i32, i32* %_44
+	%_46 = icmp slt i32 %_41, %_45
+	br i1 %_46, label %oob9, label %oob10
 
-oob12:
-	%_55 = getelementptr %IntArray, %IntArray* %_51, i32 0, i32 1
-	%_56 = load i32*, i32** %_55
-	%_57 = getelementptr i32, i32* %_56, i32 %_49
-	store i32 8, i32* %_57
-	br label %oob14
+oob9:
+	%_47 = getelementptr %IntArray, %IntArray* %_43, i32 0, i32 1
+	%_48 = load i32*, i32** %_47
+	%_49 = getelementptr i32, i32* %_48, i32 %_41
+	store i32 8, i32* %_49
+	br label %oob11
 
-oob13:
+oob10:
 	br label %end
 
-oob14:
-	%_58 = add i32 0, 5
-	%_59 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_60 = getelementptr %class.Greeter, %class.Greeter* %_59, i32 0, i32 0
-	%_61 = getelementptr %IntArray, %IntArray* %_60, i32 0, i32 0
-	%_62 = load i32, i32* %_61
-	%_63 = icmp slt i32 %_58, %_62
-	br i1 %_63, label %oob15, label %oob16
-
-oob15:
-	%_64 = getelementptr %IntArray, %IntArray* %_60, i32 0, i32 1
-	%_65 = load i32*, i32** %_64
-	%_66 = getelementptr i32, i32* %_65, i32 %_58
-	%_67 = load i32, i32* %_66
-	br label %oob17
-
-oob16:
-	br label %end
-
-oob17:
-	call void @print_int(i32 %_67)
-	%_70 = load i1, i1* %t
+oob11:
+	call void @print_int(i32 place)
+	%_50 = load i1, i1* %t
 	br label %if6
 if6:
-	%_71 = icmp ne i1 %_70, 0
-	br i1 %_71, label %if7, label %if8
+	%_51 = icmp ne i1 %_50, 0
+	br i1 %_51, label %if7, label %if8
 
 if7:
-	%_74 = load i1, i1* %y
-	%_72 = icmp ne i1 %_74, 0
+	%_54 = load i1, i1* %y
+	%_52 = icmp ne i1 %_54, 0
 	br label %if8
 
 if8:
-	%_73 = phi i1 [false, %if6], [%_72, %if7]
-	ret i1 %_73
+	%_53 = phi i1 [false, %if6], [%_52, %if7]
+	ret i1 %_53
 
 end:
 	call void @throw_oob()
-	ret i1 null
+	ret i1 false
 }

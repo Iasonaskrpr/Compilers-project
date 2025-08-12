@@ -5,8 +5,6 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import syntaxtree.ThisExpression;
 public class IRHelper{
     private OutputStream f;
     private int iflabelcount; 
@@ -187,6 +185,21 @@ public class IRHelper{
             }
         }
         return ret;
+    }
+    public String getVariableClass(String var){
+        String ret = VariableTypes.get(var);
+        if(ret == null){
+            VarInfo classVar;
+            String cls = CurClass;
+            while(Vars.containsKey(cls)){
+                classVar = this.getClassVar(var,cls);
+                if(classVar != null){
+                    return classVar.getType();
+                }
+                cls = Vars.get(cls).getSuper();
+            }
+        }
+        return ret.substring(7);
     }
     public void exitClass(){
         VariableTypes.clear();
