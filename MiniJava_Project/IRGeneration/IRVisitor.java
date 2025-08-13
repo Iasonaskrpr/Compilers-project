@@ -272,11 +272,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             thisVar = "%this";
             cls = ir.getCurClass();
         }
-        else if(thisVar.endsWith("()")){ //If it is a constructor we need to construct the class first
-            cls = thisVar.substring(0, thisVar.length()-2);
+        else if(ir.isClass(thisVar)){ //If it is a constructor we need to construct the class first
+            cls = thisVar;
             thisVar = ir.new_var();
             ir.emit(thisVar+" = alloca %class."+cls+"*\n");
-            ir.emit("store "+cls+ "* null, "+cls+"** "+thisVar+"\n");
+            ir.emit("store %class."+cls+ "* null, %class."+cls+"** "+thisVar+"\n");
             String size = ir.new_var();
             String mem = ir.new_var();
             String cls_ptr = ir.new_var();
@@ -285,13 +285,15 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(size+" = ptrtoint %class."+cls+"* "+cls_ptr_ptr+ " to i32\n");
             ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
             ir.emit(cls_ptr + " = bitcast i8* " + mem + " to %class."+cls+"*\n");
-            ir.emit("store %class."+cls+"* "+cls_ptr+", "+cls+"** "+thisVar+"\n");
+            ir.emit("store %class."+cls+"* "+cls_ptr+", %class."+cls+"** "+thisVar+"\n");
         }
-        else{
+        else{ 
+            System.out.println(thisVar);
+            cls = ir.getVariableClass(thisVar);
             if(!thisVar.startsWith("%")){
                 thisVar = "%"+thisVar;
             }
-            cls = ir.getVariableClass(thisVar);
+           
         }
 
         String method_ptr = ir.new_var();
@@ -300,9 +302,17 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String ret = ir.new_var();
         ir.emit(method_ptr+ " = " + ir.getMethodLoadCommand(cls, methodName));
         ir.emit(method_raw + " = load i8*, i8** "+method_ptr+"\n");
-        ir.emit(method + " = "+ ir.getMethodCallCommand(cls, method, method_raw));
+        ir.emit(method + " = "+ ir.getMethodCallCommand(cls, methodName, method_raw));
         String Argurments = n.f4.accept(this,ir).getData();
-        ir.emit(ret+" = call "+ ir.getMethodRetType(cls,methodName)+" "+method+"(i8* "+thisVar + Argurments+ ")\n");
+        ir.emit(ret+" = call "+ ir.getMethodRetType(cls,methodName)+" "+method+"(i8* "+thisVar );
+        String[] ids = Argurments.split("--");
+        List<String> types = ir.getMethodArgs(cls, methodName);
+        int i = 0;
+        for(String id : ids){
+            String tp = ir.getLLVMType(types.get(i++));
+            ir.emit(", "+tp+" "+id);
+        }
+        ir.emit(")\n");
         return new IRData(ret,"id");
     }
     /**

@@ -21,3 +21,13 @@ define void @throw_oob() {
 	ret void
 }
 define i32 @main(){
+	%_0 = alloca %class.BT*
+	store %class.BT* null, %class.BT** %_0
+	%_4 = getelementptr %class.BT, %class.BT* null, i32 1
+	%_1 = ptrtoint %class.BT* %_4 to i32
+	%_2 = call i8* @calloc(i32 1, i32 %_1)
+	%_3 = bitcast i8* %_2 to %class.BT*
+	store %class.BT* %_3, %class.BT** %_0
+	%_5 = getelementptr [1 x i8*], [1 x i8*]* @.BT_vtable, i32 0, i32 0
+	%_6 = load i8*, i8** %_5
+	%_7 = bitcast i8* %_6 to i32(i8*)*

@@ -54,6 +54,9 @@ public class IRHelper{
             case "int[]":
                 retType = "%IntArray";
                 break;
+            case "void":
+                retType = var;
+                break;
             default:
                 // Returns a class pointer
                 retType = "i8*";
@@ -186,7 +189,7 @@ public class IRHelper{
         }
         return ret;
     }
-    public String getVariableClass(String var){
+    public String getVariableClass(String var){ //Problem here, called by
         String ret = VariableTypes.get(var);
         if(ret == null){
             VarInfo classVar;
@@ -295,6 +298,7 @@ public class IRHelper{
     }
     public String getMethodCallCommand(String cls, String Method,String var){
         FunctionVInfo meth = this.vtable.get(cls).get(Method);
+        System.out.println(Method);
         String command = "bitcast i8* " + var + " to "+getLLVMType(meth.getRet())+"(i8*";
         List<String> arguments = meth.getArguments();
         for (String arg : arguments) {
@@ -305,5 +309,11 @@ public class IRHelper{
     }
     public String getMethodRetType(String cls, String Method){
         return getLLVMType(this.vtable.get(cls).get(Method).getRet());
+    }
+    public List<String> getMethodArgs(String cls, String method){
+        return this.vtable.get(cls).get(method).getArguments();
+    }
+    public boolean isClass(String name){
+        return this.vtable.containsKey(name);
     }
 }
