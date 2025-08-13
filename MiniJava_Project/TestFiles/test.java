@@ -37,8 +37,10 @@ class broaderGreeter extends Greeter{
 		boolean t;
 		boolean y;
 		broaderGreeter l;
+		t =true;
+		y=true;
+		l = new broaderGreeter();
 		x[5] = 8;
-        System.out.println(m.sayHello(m));
 		return t&&y;
     }
 }

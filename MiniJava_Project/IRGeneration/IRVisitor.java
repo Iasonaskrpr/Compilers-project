@@ -1,7 +1,5 @@
 package IRGeneration;
-import java.lang.reflect.AnnotatedTypeVariable;
 import java.util.*;
-
 import syntaxtree.AndExpression;
 import syntaxtree.ArrayAllocationExpression;
 import syntaxtree.ArrayAssignmentStatement;
@@ -189,6 +187,17 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         return null; 
     }
     /**
+     * AllocationExpression ::= "new" Identifier "(" ")"
+     * f0 -> "new"
+     * f1 -> Identifier()
+     * f2 -> "("
+     * f3 -> ")"
+     */
+    @Override
+    public IRData visit(AllocationExpression n, IRHelper ir) throws Exception{
+        return new IRData (n.f1.accept(this,ir).getData(),"new");
+    }
+    /**
      * FormalParameterList ::= FormalParameter FormalParameterTail
      * f0 -> FormalParameter()
      * f1 -> FormalParameterTail()
@@ -329,14 +338,18 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(VarDeclaration n,IRHelper ir) throws Exception{
         IRData tp = n.f0.accept(this,ir);
         String type = tp.getData();
-        if(tp.isId()){
-            type = "%class."+tp.getData();
-        }
         IRData id = n.f1.accept(this,ir);
         String var = id.getData();
         if(ir.shouldEmit()){
             ir.addVariable(var, type);
-            ir.emit("%"+var+" = alloca "+type+"\n");
+            if(tp.isId()){
+                type = "%class."+tp.getData()+"*";
+                ir.emit("%"+var+" = alloca "+type+"\n");
+                ir.emit("store "+type+ " null, "+type+"* %"+var+"\n");
+            }
+            else{
+                ir.emit("%"+var+" = alloca "+type+"\n");
+            }
         }
         return null;
     }
@@ -742,7 +755,24 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             return null;
         }
         String l = ir.classVarToTempVar(left);
-        if(l == null){
+        if(rightHand.getType().equals("new")){
+            String size = ir.new_var();
+            String mem = ir.new_var();
+            String cls_ptr = ir.new_var();
+            String cls_ptr_ptr = ir.new_var();
+            String cls = "%class."+rightHand.getData();
+            ir.emit(cls_ptr_ptr + " = getelementptr "+cls+", "+cls+"* null, i32 1\n");
+            ir.emit(size+" = ptrtoint "+cls+"* "+cls_ptr_ptr+ " to i32\n");
+            ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
+            ir.emit(cls_ptr + " = bitcast i8* " + mem + " to "+cls+"*\n");
+            if(l == null){
+                ir.emit("store "+cls+"* "+cls_ptr+", "+cls+"** %"+lhs+"\n");
+            }
+            else{
+                ir.emit("store "+cls+"* "+cls_ptr+", "+cls+"** "+l+"\n");
+            }
+        }
+        else if(l == null){
             ir.emit("store "+ir.getVariableType(left)+" "+rhs+", "+ir.getVariableType(left)+"* %"+lhs+"\n");
         }
         else{

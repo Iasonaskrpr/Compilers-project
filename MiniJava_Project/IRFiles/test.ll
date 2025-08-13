@@ -26,7 +26,8 @@ define i32 @main(){
 	%i = alloca %IntArray
 	%z = alloca i1
 	%t = alloca i1
-	%u = alloca %class.Greeter
+	%u = alloca %class.Greeter*
+	store %class.Greeter* null, %class.Greeter** %u
 	%_0 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
 	store i32 15, i32* %_0
 	%_1 = call i8* @calloc(i32 15, i32 4)
@@ -143,41 +144,50 @@ define i1 @broaderGreeter.dontsayHello(i8* %this_raw) {
 	%this = bitcast i8* %this_raw to %class.broaderGreeter*
 	%t = alloca i1
 	%y = alloca i1
-	%l = alloca %class.broaderGreeter
-	%_41 = add i32 0, 5
-	%_42 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_43 = getelementptr %class.Greeter, %class.Greeter* %_42, i32 0, i32 0
-	%_44 = getelementptr %IntArray, %IntArray* %_43, i32 0, i32 0
-	%_45 = load i32, i32* %_44
-	%_46 = icmp slt i32 %_41, %_45
-	br i1 %_46, label %oob9, label %oob10
+	%l = alloca %class.broaderGreeter*
+	store %class.broaderGreeter* null, %class.broaderGreeter** %l
+	store i1 1, i1* %t
+	%_43 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_44 = getelementptr %class.Greeter, %class.Greeter* %_43, i32 0, i32 1
+	store i1 1, i1* %_44
+	%_50 = getelementptr %class.broaderGreeter, %class.broaderGreeter* null, i32 1
+	%_47 = ptrtoint %class.broaderGreeter* %_50 to i32
+	%_48 = call i8* @calloc(i32 1, i32 %_47)
+	%_49 = bitcast i8* %_48 to %class.broaderGreeter*
+	store %class.broaderGreeter* %_49, %class.broaderGreeter** %l
+	%_51 = add i32 0, 5
+	%_52 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
+	%_53 = getelementptr %class.Greeter, %class.Greeter* %_52, i32 0, i32 0
+	%_54 = getelementptr %IntArray, %IntArray* %_53, i32 0, i32 0
+	%_55 = load i32, i32* %_54
+	%_56 = icmp slt i32 %_51, %_55
+	br i1 %_56, label %oob9, label %oob10
 
 oob9:
-	%_47 = getelementptr %IntArray, %IntArray* %_43, i32 0, i32 1
-	%_48 = load i32*, i32** %_47
-	%_49 = getelementptr i32, i32* %_48, i32 %_41
-	store i32 8, i32* %_49
+	%_57 = getelementptr %IntArray, %IntArray* %_53, i32 0, i32 1
+	%_58 = load i32*, i32** %_57
+	%_59 = getelementptr i32, i32* %_58, i32 %_51
+	store i32 8, i32* %_59
 	br label %oob11
 
 oob10:
 	br label %end
 
 oob11:
-	call void @print_int(i32 place)
-	%_50 = load i1, i1* %t
+	%_60 = load i1, i1* %t
 	br label %if6
 if6:
-	%_51 = icmp ne i1 %_50, 0
-	br i1 %_51, label %if7, label %if8
+	%_61 = icmp ne i1 %_60, 0
+	br i1 %_61, label %if7, label %if8
 
 if7:
-	%_54 = load i1, i1* %y
-	%_52 = icmp ne i1 %_54, 0
+	%_64 = load i1, i1* %y
+	%_62 = icmp ne i1 %_64, 0
 	br label %if8
 
 if8:
-	%_53 = phi i1 [false, %if6], [%_52, %if7]
-	ret i1 %_53
+	%_63 = phi i1 [false, %if6], [%_62, %if7]
+	ret i1 %_63
 
 end:
 	call void @throw_oob()
