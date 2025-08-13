@@ -1,5 +1,6 @@
 package IRGeneration;
 import java.util.*;
+
 import syntaxtree.AndExpression;
 import syntaxtree.ArrayAllocationExpression;
 import syntaxtree.ArrayAssignmentStatement;
@@ -17,6 +18,9 @@ import syntaxtree.ClassDeclaration;
 import syntaxtree.ClassExtendsDeclaration;
 import syntaxtree.Clause;
 import syntaxtree.CompareExpression;
+import syntaxtree.ExpressionList;
+import syntaxtree.ExpressionTail;
+import syntaxtree.ExpressionTerm;
 import syntaxtree.FalseLiteral;
 import syntaxtree.FormalParameter;
 import syntaxtree.FormalParameterList;
@@ -43,6 +47,7 @@ import syntaxtree.Type;
 import syntaxtree.TypeDeclaration;
 import syntaxtree.VarDeclaration;
 import syntaxtree.WhileStatement;
+import syntaxtree.Node;
 import visitor.GJDepthFirst;
 
 public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
@@ -264,15 +269,78 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         //Load method from vtable to var and call it like that
         String cls;
         if(thisVar.equals("this")){
+            thisVar = "%this";
             cls = ir.getCurClass();
         }
+        else if(thisVar.endsWith("()")){ //If it is a constructor we need to construct the class first
+            cls = thisVar.substring(0, thisVar.length()-2);
+            thisVar = ir.new_var();
+            ir.emit(thisVar+" = alloca %class."+cls+"*\n");
+            ir.emit("store "+cls+ "* null, "+cls+"** "+thisVar+"\n");
+            String size = ir.new_var();
+            String mem = ir.new_var();
+            String cls_ptr = ir.new_var();
+            String cls_ptr_ptr = ir.new_var();
+            ir.emit(cls_ptr_ptr + " = getelementptr %class."+cls+", %class."+cls+"* null, i32 1\n");
+            ir.emit(size+" = ptrtoint %class."+cls+"* "+cls_ptr_ptr+ " to i32\n");
+            ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
+            ir.emit(cls_ptr + " = bitcast i8* " + mem + " to %class."+cls+"*\n");
+            ir.emit("store %class."+cls+"* "+cls_ptr+", "+cls+"** "+thisVar+"\n");
+        }
         else{
+            if(!thisVar.startsWith("%")){
+                thisVar = "%"+thisVar;
+            }
             cls = ir.getVariableClass(thisVar);
         }
-        //Return what????
-        return new IRData("place","holder");
-    }
 
+        String method_ptr = ir.new_var();
+        String method_raw = ir.new_var();
+        String method = ir.new_var();
+        String ret = ir.new_var();
+        ir.emit(method_ptr+ " = " + ir.getMethodLoadCommand(cls, methodName));
+        ir.emit(method_raw + " = load i8*, i8** "+method_ptr+"\n");
+        ir.emit(method + " = "+ ir.getMethodCallCommand(cls, method, method_raw));
+        String Argurments = n.f4.accept(this,ir).getData();
+        ir.emit(ret+" = call "+ ir.getMethodRetType(cls,methodName)+" "+method+"(i8* "+thisVar + Argurments+ ")\n");
+        return new IRData(ret,"id");
+    }
+    /**
+     * ExpressionList ::= Expression ExpressionTail
+     * f0 -> Expression()
+     * f1 -> ExpressionTail()
+     */
+    @Override
+    public IRData visit(ExpressionList n, IRHelper ir) throws Exception{
+        String arg = n.f0.accept(this,ir).getData();
+        IRData Rest_Data = n.f1.accept(this,ir);
+        if(Rest_Data != null){
+            arg += Rest_Data.getData();
+        }
+        return new IRData(arg,"Args");
+    }
+    /**
+     * ExpressionTail ::= ( ExpressionTerm )*
+     * f0 -> ( ExpressionTerm )*
+     */
+    @Override
+    public IRData visit(ExpressionTail n, IRHelper ir) throws Exception{
+        String Arguments = "";
+        for(Node node : n.f0.nodes){
+            IRData term = node.accept(this,ir);
+            Arguments += "--"+term.getData();
+        }  
+        return new IRData(Arguments,"Args");
+    }
+    /**
+     * ExpressionTerm ::= "," Expression
+     * f0 -> ","
+     * f1 -> Expression()
+     */
+    @Override
+    public IRData visit(ExpressionTerm n, IRHelper ir) throws Exception{
+        return n.f1.accept(this,ir);
+    }
     /**
      * IfStatement ::= "if" "(" Expression ")" Statement "else" Statement
      * f0 -> "if"

@@ -13,7 +13,7 @@ public class IRHelper{
     private int varcount;
     private final Map<String,ClassVariables> Vars;
     private final Map<String ,Map<String , FunctionVInfo>> vtable;
-    private int block_count; //Used to keep track of blocks 
+    private int block_count; //Used to keep track of blocks  
     private Map<String,String> VariableTypes; //Used to store variables of the method
     private Map<String,String> params; //Map used to cast i8* to classes
     private boolean emit;
@@ -285,5 +285,25 @@ public class IRHelper{
     }
     public Map<String, String> getParams(){
         return this.params;
+    }
+    public String getMethodLoadCommand(String cls, String Method){
+        String size = Integer.toString(this.vtable.get(cls).size());
+        FunctionVInfo meth = this.vtable.get(cls).get(Method);
+        String methodOffset = Integer.toString(meth.getOffset());
+        String command = "getelementptr ["+size+" x i8*], ["+size+" x i8*]* @."+cls+"_vtable, i32 0, i32 "+methodOffset+"\n";
+        return command;
+    }
+    public String getMethodCallCommand(String cls, String Method,String var){
+        FunctionVInfo meth = this.vtable.get(cls).get(Method);
+        String command = "bitcast i8* " + var + " to "+getLLVMType(meth.getRet())+"(i8*";
+        List<String> arguments = meth.getArguments();
+        for (String arg : arguments) {
+            command = command+", "+getLLVMType(arg);
+        }
+        command+=")*\n";
+        return command;
+    }
+    public String getMethodRetType(String cls, String Method){
+        return getLLVMType(this.vtable.get(cls).get(Method).getRet());
     }
 }
