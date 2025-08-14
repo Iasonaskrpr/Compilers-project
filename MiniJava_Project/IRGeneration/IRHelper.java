@@ -3,6 +3,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 public class IRHelper{
@@ -16,6 +17,7 @@ public class IRHelper{
     private int block_count; //Used to keep track of blocks  
     private Map<String,String> VariableTypes; //Used to store variables of the method
     private Map<String,String> params; //Map used to cast i8* to classes
+    private List<String> VarParams; //Used to identify parameters used inside function
     private boolean emit;
     private String CurClass;
     // Initializes variables and opens a new output stream
@@ -282,6 +284,7 @@ public class IRHelper{
     }
     public void new_method(){
         this.params = new HashMap<>();
+        this.VarParams = new LinkedList<>();
     }
     public void addParam(String name, String cls){
         this.params.put(name, cls);
@@ -321,6 +324,9 @@ public class IRHelper{
         if(this.params == null){
             return false;
         }
-        return this.params.containsKey(name);
+        return this.VarParams.contains(name);
+    }
+    public void addVarParam(String name){
+        this.VarParams.add(name);
     }
 }

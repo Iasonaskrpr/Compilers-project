@@ -231,6 +231,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(", "+type+" %"+id+"_raw");
         }
         else{
+            ir.addVarParam(id);
             ir.emit(", "+type+" %"+id);
             }
         return null;

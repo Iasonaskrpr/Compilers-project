@@ -21,18 +21,20 @@ define void @throw_oob() {
 	ret void
 }
 define i32 @main(){
-	%_0 = alloca %class.BT*
-	store %class.BT* null, %class.BT** %_0
-	%_4 = getelementptr %class.BT, %class.BT* null, i32 1
-	%_1 = ptrtoint %class.BT* %_4 to i32
-	%_2 = call i8* @calloc(i32 1, i32 %_1)
-	%_3 = bitcast i8* %_2 to %class.BT*
-	store %class.BT* %_3, %class.BT** %_0
-	%_5 = getelementptr [1 x i8*], [1 x i8*]* @.BT_vtable, i32 0, i32 0
-	%_6 = load i8*, i8** %_5
-	%_7 = bitcast i8* %_6 to i32(i8*)*
-	%_8 = call i32 %_7(i8* %_0)
-	call void @print_int(i32 %_8)
+	%_1 = alloca %class.BT*
+	store %class.BT* null, %class.BT** %_1
+	%_5 = getelementptr %class.BT, %class.BT* null, i32 1
+	%_2 = ptrtoint %class.BT* %_5 to i32
+	%_3 = call i8* @calloc(i32 1, i32 %_2)
+	%_4 = bitcast i8* %_3 to %class.BT*
+	store %class.BT* %_4, %class.BT** %_1
+	%_0 = load %class.BT*, %class.BT** %_1
+	%_6 = getelementptr [1 x i8*], [1 x i8*]* @.BT_vtable, i32 0, i32 0
+	%_7 = load i8*, i8** %_6
+	%_8 = bitcast i8* %_7 to i32(i8*)*
+	%_10 = bitcast %class.BT* %_0 to i8*
+	%_9 = call i32 %_8(i8* %_10)
+	call void @print_int(i32 %_9)
 	ret i32 0
 
 end:
@@ -45,8 +47,8 @@ define i32 @BT.Start(i8* %this_raw) {
 	store %class.Tree null, %class.Tree %root
 	%ntb = alloca i1
 	%nti = alloca i32
-	%_14 = getelementptr %class.Tree, %class.Tree* null, i32 1
-	%_11 = ptrtoint %class.Tree* %_14 to i32
-	%_12 = call i8* @calloc(i32 1, i32 %_11)
-	%_13 = bitcast i8* %_12 to %class.Tree*
-	store %class.Tree* %_13, %class.Tree** %root
+	%_16 = getelementptr %class.Tree, %class.Tree* null, i32 1
+	%_13 = ptrtoint %class.Tree* %_16 to i32
+	%_14 = call i8* @calloc(i32 1, i32 %_13)
+	%_15 = bitcast i8* %_14 to %class.Tree*
+	store %class.Tree* %_15, %class.Tree** %root
