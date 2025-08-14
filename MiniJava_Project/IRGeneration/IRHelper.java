@@ -18,6 +18,7 @@ public class IRHelper{
     private Map<String,String> VariableTypes; //Used to store variables of the method
     private Map<String,String> params; //Map used to cast i8* to classes
     private List<String> VarParams; //Used to identify parameters used inside function
+    private String LastMethodCallClass;
     private boolean emit;
     private String CurClass;
     // Initializes variables and opens a new output stream
@@ -176,7 +177,7 @@ public class IRHelper{
     public void addVariable(String var,String type){
         VariableTypes.put(var, type);
     }
-    public String getVariableType(IRData var){ //Inheritence problems here as well
+    public String getVariableType(IRData var){ 
         String ret = VariableTypes.get(var.getData());
         if(ret == null){
             VarInfo classVar;
@@ -189,9 +190,12 @@ public class IRHelper{
                 cls = Vars.get(cls).getSuper();
             }
         }
+        if(ret == null){
+            ret = this.params.get(var.getData());
+        }
         return ret;
     }
-    public String getVariableClass(String var){ //Problem here, called by
+    public String getVariableClass(String var){ 
         String ret = VariableTypes.get(var);
         if(ret == null){
             VarInfo classVar;
@@ -204,7 +208,16 @@ public class IRHelper{
                 cls = Vars.get(cls).getSuper();
             }
         }
-        return ret.substring(7);
+        if(ret == null ){
+            ret = this.params.get(var);
+        }
+        if(var.startsWith("%") && ret == null){
+            ret = this.LastMethodCallClass;
+        }
+        if(ret.startsWith("%class")){
+            ret = ret.substring(7);
+        }
+        return ret;
     }
     public void exitClass(){
         VariableTypes.clear();
@@ -213,6 +226,9 @@ public class IRHelper{
         if(this.VariableTypes.containsKey(var.getData())){
             String tempVar = this.new_var();
             String type = getVariableType(var); //Get the variable type
+            if(isClass(type)){
+                type = "%class." + type + "*";
+            }
             this.emit(tempVar+" = load "+ type +", "+type+"* %"+var.getData()+"\n"); 
             return tempVar;
             }
@@ -296,13 +312,11 @@ public class IRHelper{
         String size = Integer.toString(this.vtable.get(cls).size());
         FunctionVInfo meth = this.vtable.get(cls).get(Method);
         String methodOffset = Integer.toString(meth.getOffset()/8);
-        System.out.println(methodOffset);
         String command = "getelementptr ["+size+" x i8*], ["+size+" x i8*]* @."+cls+"_vtable, i32 0, i32 "+methodOffset+"\n";
         return command;
     }
     public String getMethodCallCommand(String cls, String Method,String var){
         FunctionVInfo meth = this.vtable.get(cls).get(Method);
-        System.out.println(Method);
         String command = "bitcast i8* " + var + " to "+getLLVMType(meth.getRet())+"(i8*";
         List<String> arguments = meth.getArguments();
         for (String arg : arguments) {
@@ -314,6 +328,9 @@ public class IRHelper{
     public String getMethodRetType(String cls, String Method){
         return getLLVMType(this.vtable.get(cls).get(Method).getRet());
     }
+    public String getMethodRawRetType(String cls, String Method){
+        return this.vtable.get(cls).get(Method).getRet();
+    }
     public List<String> getMethodArgs(String cls, String method){
         return this.vtable.get(cls).get(method).getArguments();
     }
@@ -321,12 +338,15 @@ public class IRHelper{
         return this.vtable.containsKey(name);
     }
     public boolean isParameter(String name){
-        if(this.params == null){
+        if(this.VarParams == null){
             return false;
         }
         return this.VarParams.contains(name);
     }
     public void addVarParam(String name){
         this.VarParams.add(name);
+    }
+    public void lastCallClass(String cls){
+        this.LastMethodCallClass = cls;
     }
 }
