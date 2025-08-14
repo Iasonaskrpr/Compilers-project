@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 public class IRHelper{
     private OutputStream f;
     private int iflabelcount; 
@@ -147,10 +149,10 @@ public class IRHelper{
                 classDecl += " %class."+Parent+",";
             }
             Map<String,VarInfo> varTable = cls.getValue().getVarMap();
-            for(Map.Entry<String,VarInfo> varEntry : varTable.entrySet()){
-                String type = getLLVMType(varEntry.getValue().getType());
-                classDecl += " "+ type+",";
-            }
+            classDecl += " " + varTable.entrySet().stream()
+                .sorted(Comparator.comparingInt(e -> e.getValue().getOffset()))
+                .map(e -> getLLVMType(e.getValue().getType()))
+                .collect(Collectors.joining(", "));
             if(classDecl.endsWith(",")){
                 classDecl = classDecl.substring(0, classDecl.length() - 1);
             }

@@ -1,7 +1,7 @@
 @.BT_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*)* @BT.Start to i8*)]
 @.Tree_vtable = global [20 x i8*] [i8* bitcast (i1 (i8*,i32)* @Tree.Init to i8*),i8* bitcast (i1 (i8*,i8*)* @Tree.SetRight to i8*),i8* bitcast (i1 (i8*,i8*)* @Tree.SetLeft to i8*),i8* bitcast (i8* (i8*)* @Tree.GetRight to i8*),i8* bitcast (i8* (i8*)* @Tree.GetLeft to i8*),i8* bitcast (i32 (i8*)* @Tree.GetKey to i8*),i8* bitcast (i1 (i8*,i32)* @Tree.SetKey to i8*),i8* bitcast (i1 (i8*)* @Tree.GetHas_Right to i8*),i8* bitcast (i1 (i8*)* @Tree.GetHas_Left to i8*),i8* bitcast (i1 (i8*,i1)* @Tree.SetHas_Left to i8*),i8* bitcast (i1 (i8*,i1)* @Tree.SetHas_Right to i8*),i8* bitcast (i1 (i8*,i32,i32)* @Tree.Compare to i8*),i8* bitcast (i1 (i8*,i32)* @Tree.Insert to i8*),i8* bitcast (i1 (i8*,i32)* @Tree.Delete to i8*),i8* bitcast (i1 (i8*,i8*,i8*)* @Tree.Remove to i8*),i8* bitcast (i1 (i8*,i8*,i8*)* @Tree.RemoveRight to i8*),i8* bitcast (i1 (i8*,i8*,i8*)* @Tree.RemoveLeft to i8*),i8* bitcast (i32 (i8*,i32)* @Tree.Search to i8*),i8* bitcast (i1 (i8*)* @Tree.Print to i8*),i8* bitcast (i1 (i8*,i8*)* @Tree.RecPrint to i8*)]
-%class.BT = type{ }
-%class.Tree = type{ i8*, i1, i8*, i8*, i1, i32 }
+%class.BT = type{  }
+%class.Tree = type{ i8*, i32, i1, i8*, i1, i8* }
 %IntArray = type { i32, i32* }
 %BooleanArray = type { i32, i8* }
 declare i8* @calloc(i32, i32)
@@ -178,10 +178,10 @@ define i1 @Tree.Init(i8* %this_raw, i32 %v_key) {
 	%_159 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
 	store i32 %v_key, i32* %_159
 	%_161 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
-	store i1 0, i1* %_161
+	store i1 false, i1* %_161
 	%_163 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
-	store i1 0, i1* %_163
-	ret i1 1
+	store i1 false, i1* %_163
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -192,7 +192,7 @@ define i1 @Tree.SetRight(i8* %this_raw, i8* %rn_raw) {
 	%rn = bitcast i8* %rn_raw to %class.Tree*
 	%_164 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 3
 	store i8* %rn, i8** %_164
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -203,7 +203,7 @@ define i1 @Tree.SetLeft(i8* %this_raw, i8* %ln_raw) {
 	%ln = bitcast i8* %ln_raw to %class.Tree*
 	%_165 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 5
 	store i8* %ln, i8** %_165
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -243,7 +243,7 @@ define i1 @Tree.SetKey(i8* %this_raw, i32 %v_key) {
 	%this = bitcast i8* %this_raw to %class.Tree*
 	%_172 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
 	store i32 %v_key, i32* %_172
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -273,7 +273,7 @@ define i1 @Tree.SetHas_Left(i8* %this_raw, i1 %val) {
 	%this = bitcast i8* %this_raw to %class.Tree*
 	%_177 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
 	store i1 %val, i1* %_177
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -283,7 +283,7 @@ define i1 @Tree.SetHas_Right(i8* %this_raw, i1 %val) {
 	%this = bitcast i8* %this_raw to %class.Tree*
 	%_178 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
 	store i1 %val, i1* %_178
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -293,14 +293,14 @@ define i1 @Tree.Compare(i8* %this_raw, i32 %num1, i32 %num2) {
 	%this = bitcast i8* %this_raw to %class.Tree*
 	%ntb = alloca i1
 	%nti = alloca i32
-	store i1 0, i1* %ntb
+	store i1 false, i1* %ntb
 	%_182 = add i32 %num2, 1
 	store i32 %_182, i32* %nti
 	%_187 = icmp slt i32 %num1, %num2
 	br i1 %_187, label %if0, label %if1
 
 if0:
-		store i1 0, i1* %ntb
+		store i1 false, i1* %ntb
 		br label %if2
 
 if1:
@@ -310,11 +310,11 @@ if1:
 		br i1 %_193, label %if3, label %if4
 
 if3:
-			store i1 0, i1* %ntb
+			store i1 false, i1* %ntb
 			br label %if5
 
 if4:
-			store i1 1, i1* %ntb
+			store i1 true, i1* %ntb
 			br label %if5
 
 if5:
@@ -349,7 +349,7 @@ define i1 @Tree.Insert(i8* %this_raw, i32 %v_key) {
 	%_208 = call i1 %_207(i8* %_209, i32 %v_key)
 	store i1 %_208, i1* %ntb
 	store %class.Tree* %this, %class.Tree** %current_node
-	store i1 1, i1* %cont
+	store i1 true, i1* %cont
 	br label %loop0
 
 loop0:
@@ -385,12 +385,12 @@ if9:
 				br label %if11
 
 if10:
-				store i1 0, i1* %cont
+				store i1 false, i1* %cont
 				%_240 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 9
 				%_241 = load i8*, i8** %_240
 				%_242 = bitcast i8* %_241 to i1(i8*, i1)*
 				%_244 = bitcast %class.Tree* %current_node to i8*
-				%_243 = call i1 %_242(i8* %_244, i1 1)
+				%_243 = call i1 %_242(i8* %_244, i1 true)
 				store i1 %_243, i1* %ntb
 				%_248 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 2
 				%_249 = load i8*, i8** %_248
@@ -422,12 +422,12 @@ if12:
 				br label %if14
 
 if13:
-				store i1 0, i1* %cont
+				store i1 false, i1* %cont
 				%_270 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 10
 				%_271 = load i8*, i8** %_270
 				%_272 = bitcast i8* %_271 to i1(i8*, i1)*
 				%_274 = bitcast %class.Tree* %current_node to i8*
-				%_273 = call i1 %_272(i8* %_274, i1 1)
+				%_273 = call i1 %_272(i8* %_274, i1 true)
 				store i1 %_273, i1* %ntb
 				%_278 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 1
 				%_279 = load i8*, i8** %_278
@@ -445,7 +445,7 @@ if8:
 		br label %loop0
 
 loop2:
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -464,9 +464,9 @@ define i1 @Tree.Delete(i8* %this_raw, i32 %v_key) {
 	%ntb = alloca i1
 	store %class.Tree* %this, %class.Tree** %current_node
 	store %class.Tree* %this, %class.Tree** %parent_node
-	store i1 1, i1* %cont
-	store i1 0, i1* %found
-	store i1 1, i1* %is_root
+	store i1 true, i1* %cont
+	store i1 false, i1* %found
+	store i1 true, i1* %is_root
 	br label %loop3
 
 loop3:
@@ -504,7 +504,7 @@ if18:
 				br label %if20
 
 if19:
-				store i1 0, i1* %cont
+				store i1 false, i1* %cont
 				br label %if20
 
 if20:
@@ -535,7 +535,7 @@ if24:
 					br label %if26
 
 if25:
-					store i1 0, i1* %cont
+					store i1 false, i1* %cont
 					br label %if26
 
 if26:
@@ -572,7 +572,7 @@ if32:
 					br i1 %_350, label %if33, label %if34
 
 if33:
-						store i1 1, i1* %ntb
+						store i1 true, i1* %ntb
 						br label %if35
 
 if34:
@@ -601,15 +601,15 @@ if28:
 					br label %if29
 
 if29:
-				store i1 1, i1* %found
-				store i1 0, i1* %cont
+				store i1 true, i1* %found
+				store i1 false, i1* %cont
 				br label %if23
 
 if23:
 			br label %if17
 
 if17:
-		store i1 0, i1* %is_root
+		store i1 false, i1* %is_root
 		br label %loop3
 
 loop5:
@@ -700,7 +700,7 @@ if42:
 				%_445 = load i8*, i8** %_444
 				%_446 = bitcast i8* %_445 to i1(i8*, i1)*
 				%_448 = bitcast %class.Tree* %p_node to i8*
-				%_447 = call i1 %_446(i8* %_448, i1 0)
+				%_447 = call i1 %_446(i8* %_448, i1 false)
 				store i1 %_447, i1* %ntb
 				br label %if44
 
@@ -717,7 +717,7 @@ if43:
 				%_462 = load i8*, i8** %_461
 				%_463 = bitcast i8* %_462 to i1(i8*, i1)*
 				%_465 = bitcast %class.Tree* %p_node to i8*
-				%_464 = call i1 %_463(i8* %_465, i1 0)
+				%_464 = call i1 %_463(i8* %_465, i1 false)
 				store i1 %_464, i1* %ntb
 				br label %if44
 
@@ -728,7 +728,7 @@ if41:
 		br label %if38
 
 if38:
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -788,9 +788,9 @@ loop8:
 	%_510 = load i8*, i8** %_509
 	%_511 = bitcast i8* %_510 to i1(i8*, i1)*
 	%_513 = bitcast %class.Tree* %p_node to i8*
-	%_512 = call i1 %_511(i8* %_513, i1 0)
+	%_512 = call i1 %_511(i8* %_513, i1 false)
 	store i1 %_512, i1* %ntb
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -850,9 +850,9 @@ loop11:
 	%_558 = load i8*, i8** %_557
 	%_559 = bitcast i8* %_558 to i1(i8*, i1)*
 	%_561 = bitcast %class.Tree* %p_node to i8*
-	%_560 = call i1 %_559(i8* %_561, i1 0)
+	%_560 = call i1 %_559(i8* %_561, i1 false)
 	store i1 %_560, i1* %ntb
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -866,7 +866,7 @@ define i32 @Tree.Search(i8* %this_raw, i32 %v_key) {
 	store %class.Tree* null, %class.Tree** %current_node
 	%key_aux = alloca i32
 	store %class.Tree* %this, %class.Tree** %current_node
-	store i1 1, i1* %cont
+	store i1 true, i1* %cont
 	store i32 0, i32* %ifound
 	br label %loop12
 
@@ -903,7 +903,7 @@ if48:
 				br label %if50
 
 if49:
-				store i1 0, i1* %cont
+				store i1 false, i1* %cont
 				br label %if50
 
 if50:
@@ -932,7 +932,7 @@ if54:
 					br label %if56
 
 if55:
-					store i1 0, i1* %cont
+					store i1 false, i1* %cont
 					br label %if56
 
 if56:
@@ -940,7 +940,7 @@ if56:
 
 if52:
 				store i32 1, i32* %ifound
-				store i1 0, i1* %cont
+				store i1 false, i1* %cont
 				br label %if53
 
 if53:
@@ -970,7 +970,7 @@ define i1 @Tree.Print(i8* %this_raw) {
 	%_623 = load %class.Tree*, %class.Tree** %current_node
 	%_621 = call i1 %_620(i8* %_622, i8* %_623)
 	store i1 %_621, i1* %ntb
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()
@@ -1002,7 +1002,7 @@ if57:
 		br label %if59
 
 if58:
-		store i1 1, i1* %ntb
+		store i1 true, i1* %ntb
 		br label %if59
 
 if59:
@@ -1034,11 +1034,11 @@ if60:
 		br label %if62
 
 if61:
-		store i1 1, i1* %ntb
+		store i1 true, i1* %ntb
 		br label %if62
 
 if62:
-	ret i1 1
+	ret i1 true
 
 end:
 	call void @throw_oob()

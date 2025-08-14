@@ -303,9 +303,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             if(!thisVar.startsWith("%")){
                 thisVar = "%"+thisVar;
             }
-           
         }
-
         String method_ptr = ir.new_var();
         String method_raw = ir.new_var();
         String method = ir.new_var();
@@ -322,6 +320,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         String this_raw = thisVar;
         thisVar = ir.new_var();
+
         ir.emit(thisVar + " = bitcast %class."+cls+"* "+this_raw+ " to i8*\n");
         String callCommand;
         String returnType = ir.getMethodRetType(cls,methodName);
@@ -997,11 +996,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     }
     @Override
     public IRData visit(TrueLiteral n,IRHelper ir){
-        return new IRData("1","bool");
+        return new IRData("true","bool");
     }
     @Override
     public IRData visit(FalseLiteral n,IRHelper ir){
-        return new IRData("0","bool");
+        return new IRData("false","bool");
     }
     @Override
     public IRData visit(ThisExpression n, IRHelper ir){
