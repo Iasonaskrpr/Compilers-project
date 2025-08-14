@@ -4,7 +4,8 @@
 %BooleanArray = type { i32, i8* }
 declare i8* @calloc(i32, i32)
 declare i32 @printf(i8*, ...)
-declare void @exit(i32)
+declare void @free(i32)
+declare void @exit(i8*)
 @_cint = constant [4 x i8] c"%d\0A\00"
 @_cOOB = constant [15 x i8] c"Out of bounds\0A\00"
 define void @print_int(i32 %i) {
@@ -19,7 +20,7 @@ define void @throw_oob() {
 	ret void
 }
 define i32 @main(){
-	%_0 = alloca %class.BBS
+	%_0 = alloca %class.BBS*
 	store %class.BBS* null, %class.BBS** %_0
 	%_4 = getelementptr %class.BBS, %class.BBS* null, i32 1
 	%_1 = ptrtoint %class.BBS* %_4 to i32
@@ -31,32 +32,30 @@ define i32 @main(){
 	%_7 = bitcast i8* %_6 to i32(i8*, i32)*
 	%_8 = call i32 %_7(i8* %_0, i32 10)
 	call void @print_int(i32 %_8)
+	%_9 = bitcast %class.BBS* %_3 to i8*
+  	call void @free(i8* %_9)
 	ret i32 0
-
-end:
-	call void @throw_oob()
-	ret i32 1
 }
 define i32 @BBS.Start(i8* %this_raw, i32 %sz) {
 	%this = bitcast i8* %this_raw to %class.BBS*
 	%aux01 = alloca i32
-	%_9 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 24
+	%_9 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 3
 	%_10 = load i8*, i8** %_9
 	%_11 = bitcast i8* %_10 to i32(i8*, i32)*
 	%_12 = call i32 %_11(i8* %this, i32 %sz)
 	store i32 %_12, i32* %aux01
-	%_16 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 16
+	%_16 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 2
 	%_17 = load i8*, i8** %_16
 	%_18 = bitcast i8* %_17 to i32(i8*)*
 	%_19 = call i32 %_18(i8* %this)
 	store i32 %_19, i32* %aux01
 	call void @print_int(i32 99999)
-	%_22 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 8
+	%_22 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 1
 	%_23 = load i8*, i8** %_22
 	%_24 = bitcast i8* %_23 to i32(i8*)*
 	%_25 = call i32 %_24(i8* %this)
 	store i32 %_25, i32* %aux01
-	%_28 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 16
+	%_28 = getelementptr [4 x i8*], [4 x i8*]* @.BBS_vtable, i32 0, i32 2
 	%_29 = load i8*, i8** %_28
 	%_30 = bitcast i8* %_29 to i32(i8*)*
 	%_31 = call i32 %_30(i8* %this)

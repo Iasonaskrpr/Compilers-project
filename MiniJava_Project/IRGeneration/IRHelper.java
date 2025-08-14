@@ -292,7 +292,8 @@ public class IRHelper{
     public String getMethodLoadCommand(String cls, String Method){
         String size = Integer.toString(this.vtable.get(cls).size());
         FunctionVInfo meth = this.vtable.get(cls).get(Method);
-        String methodOffset = Integer.toString(meth.getOffset());
+        String methodOffset = Integer.toString(meth.getOffset()/8);
+        System.out.println(methodOffset);
         String command = "getelementptr ["+size+" x i8*], ["+size+" x i8*]* @."+cls+"_vtable, i32 0, i32 "+methodOffset+"\n";
         return command;
     }
