@@ -275,9 +275,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         else if(ir.isClass(thisVar)){ //If it is a constructor we need to construct the class first
             cls = thisVar;
+            String tempVar;
             thisVar = ir.new_var();
-            ir.emit(thisVar+" = alloca %class."+cls+"*\n"); 
-            ir.emit("store %class."+cls+ "* null, %class."+cls+"** "+thisVar+"\n"); 
+            tempVar = ir.new_var();
+            ir.emit(tempVar+" = alloca %class."+cls+"*\n"); 
+            ir.emit("store %class."+cls+ "* null, %class."+cls+"** "+tempVar+"\n"); 
             String size = ir.new_var();
             String mem = ir.new_var();
             String cls_ptr = ir.new_var();
@@ -286,10 +288,10 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(size+" = ptrtoint %class."+cls+"* "+cls_ptr_ptr+ " to i32\n");
             ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
             ir.emit(cls_ptr + " = bitcast i8* " + mem + " to %class."+cls+"*\n");
-            ir.emit("store %class."+cls+"* "+cls_ptr+", %class."+cls+"** "+thisVar+"\n"); 
+            ir.emit("store %class."+cls+"* "+cls_ptr+", %class."+cls+"** "+tempVar+"\n"); 
+            ir.emit(thisVar+" = load %class."+cls+"*, %class."+cls+"** "+tempVar+"\n");
         }
         else{ 
-            System.out.println(thisVar);
             cls = ir.getVariableClass(thisVar);
             if(!thisVar.startsWith("%")){
                 thisVar = "%"+thisVar;
@@ -311,6 +313,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         else{
             Arguments = "";
         }
+        String this_raw = thisVar;
+        thisVar = ir.new_var();
+        ir.emit(thisVar + " = bitcast %class."+cls+"* "+this_raw+ " to i8*\n");
         String callCommand;
         callCommand = ret+" = call "+ ir.getMethodRetType(cls,methodName)+" "+method+"(i8* "+thisVar;
         if(!Arguments.equals("")){

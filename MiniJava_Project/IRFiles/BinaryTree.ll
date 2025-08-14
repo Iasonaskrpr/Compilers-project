@@ -31,3 +31,22 @@ define i32 @main(){
 	%_5 = getelementptr [1 x i8*], [1 x i8*]* @.BT_vtable, i32 0, i32 0
 	%_6 = load i8*, i8** %_5
 	%_7 = bitcast i8* %_6 to i32(i8*)*
+	%_8 = call i32 %_7(i8* %_0)
+	call void @print_int(i32 %_8)
+	ret i32 0
+
+end:
+	call void @throw_oob()
+	ret i32 1
+}
+define i32 @BT.Start(i8* %this_raw) {
+	%this = bitcast i8* %this_raw to %class.BT*
+	%root = alloca %class.Tree*
+	store %class.Tree null, %class.Tree %root
+	%ntb = alloca i1
+	%nti = alloca i32
+	%_14 = getelementptr %class.Tree, %class.Tree* null, i32 1
+	%_11 = ptrtoint %class.Tree* %_14 to i32
+	%_12 = call i8* @calloc(i32 1, i32 %_11)
+	%_13 = bitcast i8* %_12 to %class.Tree*
+	store %class.Tree* %_13, %class.Tree** %root
