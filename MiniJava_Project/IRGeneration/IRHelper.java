@@ -316,4 +316,10 @@ public class IRHelper{
     public boolean isClass(String name){
         return this.vtable.containsKey(name);
     }
+    public boolean isParameter(String name){
+        if(this.params == null){
+            return false;
+        }
+        return this.params.containsKey(name);
+    }
 }

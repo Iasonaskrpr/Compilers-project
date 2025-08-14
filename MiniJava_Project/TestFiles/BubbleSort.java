@@ -16,17 +16,18 @@ class BBS{
     // Invoke the Initialization, Sort and Printing
     // Methods
     public int Start(int sz){
-	//int[] aux01 ;
-	int aux2;
-	//aux2 = this.Init(sz);
-	//aux01 = this.Sort();
-	//aux2 = this.Print();
+	int aux01 ;
+	aux01 = this.Init(sz);
+	aux01 = this.Print();
+	System.out.println(99999);
+	aux01 = this.Sort();
+	aux01 = this.Print();
 	return 0 ;
     }
 
  
     // Sort array of integers using Bublesort method
-    public int[] Sort(){
+    public int Sort(){
 	int nt ;
 	int i ;
 	int aux02 ;
@@ -56,7 +57,7 @@ class BBS{
 	    }
 	    i = i - 1 ;
 	}
-	return number;
+	return 0 ;
     }
 
     // Printing method

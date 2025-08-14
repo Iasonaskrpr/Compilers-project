@@ -47,6 +47,7 @@ import syntaxtree.Type;
 import syntaxtree.TypeDeclaration;
 import syntaxtree.VarDeclaration;
 import syntaxtree.WhileStatement;
+import syntaxtree.ThisExpression;
 import syntaxtree.Node;
 import visitor.GJDepthFirst;
 
@@ -186,7 +187,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         ir.emit("call void @throw_oob()\n");
         if(retType.equals("i32")){ir.emit("ret i32 1\n");}
         else if(retType.equals("i1")){ ir.emit("ret i1 false\n");}
-        else{ir.emit("ret "+ retType + " null\n");}
+        else{ir.emit("ret "+ retType + " zeroinitializer\n");}
         ir.exit_block();
         ir.emit("}\n");
         return null; 
@@ -275,8 +276,8 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         else if(ir.isClass(thisVar)){ //If it is a constructor we need to construct the class first
             cls = thisVar;
             thisVar = ir.new_var();
-            ir.emit(thisVar+" = alloca %class."+cls+"*\n");
-            ir.emit("store %class."+cls+ "* null, %class."+cls+"** "+thisVar+"\n");
+            ir.emit(thisVar+" = alloca %class."+cls+"*\n"); 
+            ir.emit("store %class."+cls+ "* null, %class."+cls+"** "+thisVar+"\n"); 
             String size = ir.new_var();
             String mem = ir.new_var();
             String cls_ptr = ir.new_var();
@@ -285,7 +286,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(size+" = ptrtoint %class."+cls+"* "+cls_ptr_ptr+ " to i32\n");
             ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
             ir.emit(cls_ptr + " = bitcast i8* " + mem + " to %class."+cls+"*\n");
-            ir.emit("store %class."+cls+"* "+cls_ptr+", %class."+cls+"** "+thisVar+"\n");
+            ir.emit("store %class."+cls+"* "+cls_ptr+", %class."+cls+"** "+thisVar+"\n"); 
         }
         else{ 
             System.out.println(thisVar);
@@ -303,16 +304,32 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         ir.emit(method_ptr+ " = " + ir.getMethodLoadCommand(cls, methodName));
         ir.emit(method_raw + " = load i8*, i8** "+method_ptr+"\n");
         ir.emit(method + " = "+ ir.getMethodCallCommand(cls, methodName, method_raw));
-        String Argurments = n.f4.accept(this,ir).getData();
-        ir.emit(ret+" = call "+ ir.getMethodRetType(cls,methodName)+" "+method+"(i8* "+thisVar );
-        String[] ids = Argurments.split("--");
-        List<String> types = ir.getMethodArgs(cls, methodName);
-        int i = 0;
-        for(String id : ids){
-            String tp = ir.getLLVMType(types.get(i++));
-            ir.emit(", "+tp+" "+id);
+        String Arguments;
+        if(n.f4.present()){
+            Arguments = n.f4.accept(this,ir).getData();
         }
-        ir.emit(")\n");
+        else{
+            Arguments = "";
+        }
+        String callCommand;
+        callCommand = ret+" = call "+ ir.getMethodRetType(cls,methodName)+" "+method+"(i8* "+thisVar;
+        if(!Arguments.equals("")){
+            String[] ids = Arguments.split("--");
+            List<String> types = ir.getMethodArgs(cls, methodName);
+            int i = 0;
+            for(String id : ids){
+                String tp = ir.getLLVMType(types.get(i++));
+                if(ir.isParameter(id)){
+                    id = "%" + id;
+                }
+                else{
+                    id = ir.idToTempVar(new IRData(id,"id"));
+                }
+                callCommand += ", "+tp+" "+id;
+            }
+        }
+        callCommand+=")\n";
+        ir.emit(callCommand);
         return new IRData(ret,"id");
     }
     /**
@@ -421,9 +438,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         if(ir.shouldEmit()){
             ir.addVariable(var, type);
             if(tp.isId()){
-                type = "%class."+tp.getData()+"*";
-                ir.emit("%"+var+" = alloca "+type+"\n");
-                ir.emit("store "+type+ " null, "+type+"* %"+var+"\n");
+                type = "%class."+tp.getData();
+                ir.emit("%"+var+" = alloca "+type+"*\n");
+                ir.emit("store "+type+ " null, "+type+" %"+var+"\n");
             }
             else{
                 ir.emit("%"+var+" = alloca "+type+"\n");
@@ -478,7 +495,13 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(index+" = add i32 0, "+i.getData()+"\n");
         } 
         else{
-            index =i.getData();
+            if(!i.getData().startsWith("%")){
+                index =ir.idToTempVar(i);
+                }
+            else{
+                index = i.getData();
+            }
+            
         }
         IRData valData = n.f5.accept(this,ir);
         String val = valData.getData();
@@ -565,7 +588,12 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(index+" = add i32 0, "+i.getData()+"\n");
         } 
         else{
-            index =i.getData();
+            if(!i.getData().startsWith("%")){
+                index =ir.idToTempVar(i);
+                }
+            else{
+                index = i.getData();
+            }
         }
         String var = arr.getData();
         String cls = ir.classVarToTempVar(arr);
@@ -797,6 +825,12 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String lhs = left.getData();
         IRData rightHand = n.f2.accept(this,ir);
         String rhs = rightHand.getData();
+        if(ir.isParameter(rhs)){
+                rhs = "%" + rhs;
+        }
+        else{
+            rhs = ir.idToTempVar(rightHand);
+        }
         if(ir.getVariableType(left).equals("%IntArray") && rightHand.isNum()){
             String l = ir.classVarToTempVar(left);
             if(l != null){
@@ -912,5 +946,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     @Override
     public IRData visit(FalseLiteral n,IRHelper ir){
         return new IRData("0","bool");
+    }
+    @Override
+    public IRData visit(ThisExpression n, IRHelper ir){
+        return new IRData("this","id");
     }
 }
