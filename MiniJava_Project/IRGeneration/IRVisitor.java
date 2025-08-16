@@ -319,8 +319,13 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             Arguments = "";
         }
         String this_raw = thisVar;
+        System.out.println(this_raw);
+        if(!ir.isParameter(this_raw.substring(1)) && !this_raw.equals("%this")){
+            String this_loaded = ir.new_var();
+            ir.emit(this_loaded + " = load %class."+cls+"*, %class."+cls+"** "+this_raw+"\n");
+            this_raw = this_loaded;
+        }
         thisVar = ir.new_var();
-
         ir.emit(thisVar + " = bitcast %class."+cls+"* "+this_raw+ " to i8*\n");
         String callCommand;
         String returnType = ir.getMethodRetType(cls,methodName);
@@ -331,18 +336,27 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             List<String> types = ir.getMethodArgs(cls, methodName);
             int i = 0;
             for(String id : ids){
-                String tp = ir.getLLVMType(types.get(i++));
+                String tp = ir.getLLVMType(types.get(i));
                 if(ir.isParameter(id)){
                     id = "%" + id;
+                    // if(tp.equals("i8*")){
+                    //     String new_id = ir.new_var();
+                    //     ir.emit(new_id + " = bitcast %class."+types.get(i)+"* "+id+ " to i8*\n");
+                    //     id = new_id;
+                    // }
                 }
                 else{
                     id = ir.idToTempVar(new IRData(id,"id"));
                 }
                 callCommand += ", "+tp+" "+id;
+                i++;
             }
         }
         callCommand+=")\n";
         ir.emit(callCommand);
+        // if(returnType.equals("i8*")){
+        //     String new_ret = ir.new_var()
+        // }
         return new IRData(ret,"id");
     }
     /**

@@ -32,8 +32,9 @@ define i32 @main(){
 	%_6 = getelementptr [1 x i8*], [1 x i8*]* @.BT_vtable, i32 0, i32 0
 	%_7 = load i8*, i8** %_6
 	%_8 = bitcast i8* %_7 to i32(i8*)*
-	%_10 = bitcast %class.BT* %_0 to i8*
-	%_9 = call i32 %_8(i8* %_10)
+	%_10 = load %class.BT*, %class.BT** %_0
+	%_11 = bitcast %class.BT* %_10 to i8*
+	%_9 = call i32 %_8(i8* %_11)
 	call void @print_int(i32 %_9)
 	ret i32 0
 
@@ -47,126 +48,153 @@ define i32 @BT.Start(i8* %this_raw) {
 	store %class.Tree* null, %class.Tree** %root
 	%ntb = alloca i1
 	%nti = alloca i32
-	%_16 = getelementptr %class.Tree, %class.Tree* null, i32 1
-	%_13 = ptrtoint %class.Tree* %_16 to i32
-	%_14 = call i8* @calloc(i32 1, i32 %_13)
-	%_15 = bitcast i8* %_14 to %class.Tree*
-	store %class.Tree* %_15, %class.Tree** %root
-	%_17 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 0
-	%_18 = load i8*, i8** %_17
-	%_19 = bitcast i8* %_18 to i1(i8*, i32)*
-	%_21 = bitcast %class.Tree* %root to i8*
-	%_20 = call i1 %_19(i8* %_21, i32 16)
-	store i1 %_20, i1* %ntb
-	%_25 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
-	%_26 = load i8*, i8** %_25
-	%_27 = bitcast i8* %_26 to i1(i8*)*
-	%_29 = bitcast %class.Tree* %root to i8*
-	%_28 = call i1 %_27(i8* %_29)
-	store i1 %_28, i1* %ntb
+	%_17 = getelementptr %class.Tree, %class.Tree* null, i32 1
+	%_14 = ptrtoint %class.Tree* %_17 to i32
+	%_15 = call i8* @calloc(i32 1, i32 %_14)
+	%_16 = bitcast i8* %_15 to %class.Tree*
+	store %class.Tree* %_16, %class.Tree** %root
+	%_18 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 0
+	%_19 = load i8*, i8** %_18
+	%_20 = bitcast i8* %_19 to i1(i8*, i32)*
+	%_22 = load %class.Tree*, %class.Tree** %root
+	%_23 = bitcast %class.Tree* %_22 to i8*
+	%_21 = call i1 %_20(i8* %_23, i32 16)
+	store i1 %_21, i1* %ntb
+	%_27 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
+	%_28 = load i8*, i8** %_27
+	%_29 = bitcast i8* %_28 to i1(i8*)*
+	%_31 = load %class.Tree*, %class.Tree** %root
+	%_32 = bitcast %class.Tree* %_31 to i8*
+	%_30 = call i1 %_29(i8* %_32)
+	store i1 %_30, i1* %ntb
 	call void @print_int(i32 100000000)
-	%_32 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
-	%_33 = load i8*, i8** %_32
-	%_34 = bitcast i8* %_33 to i1(i8*, i32)*
-	%_36 = bitcast %class.Tree* %root to i8*
-	%_35 = call i1 %_34(i8* %_36, i32 8)
-	store i1 %_35, i1* %ntb
-	%_40 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
-	%_41 = load i8*, i8** %_40
-	%_42 = bitcast i8* %_41 to i1(i8*)*
-	%_44 = bitcast %class.Tree* %root to i8*
-	%_43 = call i1 %_42(i8* %_44)
-	store i1 %_43, i1* %ntb
-	%_47 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
-	%_48 = load i8*, i8** %_47
-	%_49 = bitcast i8* %_48 to i1(i8*, i32)*
-	%_51 = bitcast %class.Tree* %root to i8*
-	%_50 = call i1 %_49(i8* %_51, i32 24)
-	store i1 %_50, i1* %ntb
-	%_55 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
-	%_56 = load i8*, i8** %_55
-	%_57 = bitcast i8* %_56 to i1(i8*, i32)*
-	%_59 = bitcast %class.Tree* %root to i8*
-	%_58 = call i1 %_57(i8* %_59, i32 4)
-	store i1 %_58, i1* %ntb
-	%_63 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
-	%_64 = load i8*, i8** %_63
-	%_65 = bitcast i8* %_64 to i1(i8*, i32)*
-	%_67 = bitcast %class.Tree* %root to i8*
-	%_66 = call i1 %_65(i8* %_67, i32 12)
-	store i1 %_66, i1* %ntb
-	%_71 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
-	%_72 = load i8*, i8** %_71
-	%_73 = bitcast i8* %_72 to i1(i8*, i32)*
-	%_75 = bitcast %class.Tree* %root to i8*
-	%_74 = call i1 %_73(i8* %_75, i32 20)
-	store i1 %_74, i1* %ntb
+	%_35 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
+	%_36 = load i8*, i8** %_35
+	%_37 = bitcast i8* %_36 to i1(i8*, i32)*
+	%_39 = load %class.Tree*, %class.Tree** %root
+	%_40 = bitcast %class.Tree* %_39 to i8*
+	%_38 = call i1 %_37(i8* %_40, i32 8)
+	store i1 %_38, i1* %ntb
+	%_44 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
+	%_45 = load i8*, i8** %_44
+	%_46 = bitcast i8* %_45 to i1(i8*)*
+	%_48 = load %class.Tree*, %class.Tree** %root
+	%_49 = bitcast %class.Tree* %_48 to i8*
+	%_47 = call i1 %_46(i8* %_49)
+	store i1 %_47, i1* %ntb
+	call void @print_int(i32 200000000)
+	%_52 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
+	%_53 = load i8*, i8** %_52
+	%_54 = bitcast i8* %_53 to i1(i8*, i32)*
+	%_56 = load %class.Tree*, %class.Tree** %root
+	%_57 = bitcast %class.Tree* %_56 to i8*
+	%_55 = call i1 %_54(i8* %_57, i32 24)
+	store i1 %_55, i1* %ntb
+	%_61 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
+	%_62 = load i8*, i8** %_61
+	%_63 = bitcast i8* %_62 to i1(i8*, i32)*
+	%_65 = load %class.Tree*, %class.Tree** %root
+	%_66 = bitcast %class.Tree* %_65 to i8*
+	%_64 = call i1 %_63(i8* %_66, i32 4)
+	store i1 %_64, i1* %ntb
+	%_70 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
+	%_71 = load i8*, i8** %_70
+	%_72 = bitcast i8* %_71 to i1(i8*, i32)*
+	%_74 = load %class.Tree*, %class.Tree** %root
+	%_75 = bitcast %class.Tree* %_74 to i8*
+	%_73 = call i1 %_72(i8* %_75, i32 12)
+	store i1 %_73, i1* %ntb
 	%_79 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
 	%_80 = load i8*, i8** %_79
 	%_81 = bitcast i8* %_80 to i1(i8*, i32)*
-	%_83 = bitcast %class.Tree* %root to i8*
-	%_82 = call i1 %_81(i8* %_83, i32 28)
+	%_83 = load %class.Tree*, %class.Tree** %root
+	%_84 = bitcast %class.Tree* %_83 to i8*
+	%_82 = call i1 %_81(i8* %_84, i32 20)
 	store i1 %_82, i1* %ntb
-	%_87 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
-	%_88 = load i8*, i8** %_87
-	%_89 = bitcast i8* %_88 to i1(i8*, i32)*
-	%_91 = bitcast %class.Tree* %root to i8*
-	%_90 = call i1 %_89(i8* %_91, i32 14)
-	store i1 %_90, i1* %ntb
-	%_95 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
-	%_96 = load i8*, i8** %_95
-	%_97 = bitcast i8* %_96 to i1(i8*)*
-	%_99 = bitcast %class.Tree* %root to i8*
-	%_98 = call i1 %_97(i8* %_99)
-	store i1 %_98, i1* %ntb
-	%_102 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
-	%_103 = load i8*, i8** %_102
-	%_104 = bitcast i8* %_103 to i32(i8*, i32)*
-	%_106 = bitcast %class.Tree* %root to i8*
-	%_105 = call i32 %_104(i8* %_106, i32 24)
-	call void @print_int(i32 %_105)
-	%_109 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
-	%_110 = load i8*, i8** %_109
-	%_111 = bitcast i8* %_110 to i32(i8*, i32)*
-	%_113 = bitcast %class.Tree* %root to i8*
-	%_112 = call i32 %_111(i8* %_113, i32 12)
-	call void @print_int(i32 %_112)
-	%_116 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
-	%_117 = load i8*, i8** %_116
-	%_118 = bitcast i8* %_117 to i32(i8*, i32)*
-	%_120 = bitcast %class.Tree* %root to i8*
-	%_119 = call i32 %_118(i8* %_120, i32 16)
-	call void @print_int(i32 %_119)
-	%_123 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
-	%_124 = load i8*, i8** %_123
-	%_125 = bitcast i8* %_124 to i32(i8*, i32)*
-	%_127 = bitcast %class.Tree* %root to i8*
-	%_126 = call i32 %_125(i8* %_127, i32 50)
-	call void @print_int(i32 %_126)
+	%_88 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
+	%_89 = load i8*, i8** %_88
+	%_90 = bitcast i8* %_89 to i1(i8*, i32)*
+	%_92 = load %class.Tree*, %class.Tree** %root
+	%_93 = bitcast %class.Tree* %_92 to i8*
+	%_91 = call i1 %_90(i8* %_93, i32 28)
+	store i1 %_91, i1* %ntb
+	%_97 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 12
+	%_98 = load i8*, i8** %_97
+	%_99 = bitcast i8* %_98 to i1(i8*, i32)*
+	%_101 = load %class.Tree*, %class.Tree** %root
+	%_102 = bitcast %class.Tree* %_101 to i8*
+	%_100 = call i1 %_99(i8* %_102, i32 14)
+	store i1 %_100, i1* %ntb
+	%_106 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
+	%_107 = load i8*, i8** %_106
+	%_108 = bitcast i8* %_107 to i1(i8*)*
+	%_110 = load %class.Tree*, %class.Tree** %root
+	%_111 = bitcast %class.Tree* %_110 to i8*
+	%_109 = call i1 %_108(i8* %_111)
+	store i1 %_109, i1* %ntb
+	call void @print_int(i32 300000000)
+	%_114 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
+	%_115 = load i8*, i8** %_114
+	%_116 = bitcast i8* %_115 to i32(i8*, i32)*
+	%_118 = load %class.Tree*, %class.Tree** %root
+	%_119 = bitcast %class.Tree* %_118 to i8*
+	%_117 = call i32 %_116(i8* %_119, i32 24)
+	call void @print_int(i32 %_117)
+	call void @print_int(i32 400000000)
+	%_122 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
+	%_123 = load i8*, i8** %_122
+	%_124 = bitcast i8* %_123 to i32(i8*, i32)*
+	%_126 = load %class.Tree*, %class.Tree** %root
+	%_127 = bitcast %class.Tree* %_126 to i8*
+	%_125 = call i32 %_124(i8* %_127, i32 12)
+	call void @print_int(i32 %_125)
+	call void @print_int(i32 500000000)
 	%_130 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
 	%_131 = load i8*, i8** %_130
 	%_132 = bitcast i8* %_131 to i32(i8*, i32)*
-	%_134 = bitcast %class.Tree* %root to i8*
-	%_133 = call i32 %_132(i8* %_134, i32 12)
+	%_134 = load %class.Tree*, %class.Tree** %root
+	%_135 = bitcast %class.Tree* %_134 to i8*
+	%_133 = call i32 %_132(i8* %_135, i32 16)
 	call void @print_int(i32 %_133)
-	%_137 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 13
-	%_138 = load i8*, i8** %_137
-	%_139 = bitcast i8* %_138 to i1(i8*, i32)*
-	%_141 = bitcast %class.Tree* %root to i8*
-	%_140 = call i1 %_139(i8* %_141, i32 12)
-	store i1 %_140, i1* %ntb
-	%_145 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
-	%_146 = load i8*, i8** %_145
-	%_147 = bitcast i8* %_146 to i1(i8*)*
-	%_149 = bitcast %class.Tree* %root to i8*
-	%_148 = call i1 %_147(i8* %_149)
-	store i1 %_148, i1* %ntb
-	%_152 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
-	%_153 = load i8*, i8** %_152
-	%_154 = bitcast i8* %_153 to i32(i8*, i32)*
-	%_156 = bitcast %class.Tree* %root to i8*
-	%_155 = call i32 %_154(i8* %_156, i32 12)
-	call void @print_int(i32 %_155)
+	call void @print_int(i32 600000000)
+	%_138 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
+	%_139 = load i8*, i8** %_138
+	%_140 = bitcast i8* %_139 to i32(i8*, i32)*
+	%_142 = load %class.Tree*, %class.Tree** %root
+	%_143 = bitcast %class.Tree* %_142 to i8*
+	%_141 = call i32 %_140(i8* %_143, i32 50)
+	call void @print_int(i32 %_141)
+	call void @print_int(i32 700000000)
+	%_146 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
+	%_147 = load i8*, i8** %_146
+	%_148 = bitcast i8* %_147 to i32(i8*, i32)*
+	%_150 = load %class.Tree*, %class.Tree** %root
+	%_151 = bitcast %class.Tree* %_150 to i8*
+	%_149 = call i32 %_148(i8* %_151, i32 12)
+	call void @print_int(i32 %_149)
+	call void @print_int(i32 800000000)
+	%_154 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 13
+	%_155 = load i8*, i8** %_154
+	%_156 = bitcast i8* %_155 to i1(i8*, i32)*
+	%_158 = load %class.Tree*, %class.Tree** %root
+	%_159 = bitcast %class.Tree* %_158 to i8*
+	%_157 = call i1 %_156(i8* %_159, i32 12)
+	store i1 %_157, i1* %ntb
+	%_163 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 18
+	%_164 = load i8*, i8** %_163
+	%_165 = bitcast i8* %_164 to i1(i8*)*
+	%_167 = load %class.Tree*, %class.Tree** %root
+	%_168 = bitcast %class.Tree* %_167 to i8*
+	%_166 = call i1 %_165(i8* %_168)
+	store i1 %_166, i1* %ntb
+	call void @print_int(i32 900000000)
+	%_171 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 17
+	%_172 = load i8*, i8** %_171
+	%_173 = bitcast i8* %_172 to i32(i8*, i32)*
+	%_175 = load %class.Tree*, %class.Tree** %root
+	%_176 = bitcast %class.Tree* %_175 to i8*
+	%_174 = call i32 %_173(i8* %_176, i32 12)
+	call void @print_int(i32 %_174)
 	ret i32 0
 
 end:
@@ -175,12 +203,12 @@ end:
 }
 define i1 @Tree.Init(i8* %this_raw, i32 %v_key) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_159 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
-	store i32 %v_key, i32* %_159
-	%_161 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
-	store i1 false, i1* %_161
-	%_163 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
-	store i1 false, i1* %_163
+	%_179 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
+	store i32 %v_key, i32* %_179
+	%_181 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
+	store i1 false, i1* %_181
+	%_183 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
+	store i1 false, i1* %_183
 	ret i1 true
 
 end:
@@ -190,8 +218,8 @@ end:
 define i1 @Tree.SetRight(i8* %this_raw, i8* %rn_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
 	%rn = bitcast i8* %rn_raw to %class.Tree*
-	%_164 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 3
-	store i8* %rn, i8** %_164
+	%_184 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 3
+	store i8* %rn, i8** %_184
 	ret i1 true
 
 end:
@@ -201,8 +229,8 @@ end:
 define i1 @Tree.SetLeft(i8* %this_raw, i8* %ln_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
 	%ln = bitcast i8* %ln_raw to %class.Tree*
-	%_165 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 5
-	store i8* %ln, i8** %_165
+	%_185 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 5
+	store i8* %ln, i8** %_185
 	ret i1 true
 
 end:
@@ -211,9 +239,9 @@ end:
 }
 define %class.Tree* @Tree.GetRight(i8* %this_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_166 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 3
-	%_167 = load i8*, i8** %_166
-	ret %class.Tree* %_167
+	%_186 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 3
+	%_187 = load i8*, i8** %_186
+	ret %class.Tree* %_187
 
 end:
 	call void @throw_oob()
@@ -221,9 +249,9 @@ end:
 }
 define %class.Tree* @Tree.GetLeft(i8* %this_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_168 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 5
-	%_169 = load i8*, i8** %_168
-	ret %class.Tree* %_169
+	%_188 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 5
+	%_189 = load i8*, i8** %_188
+	ret %class.Tree* %_189
 
 end:
 	call void @throw_oob()
@@ -231,9 +259,9 @@ end:
 }
 define i32 @Tree.GetKey(i8* %this_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_170 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
-	%_171 = load i32, i32* %_170
-	ret i32 %_171
+	%_190 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
+	%_191 = load i32, i32* %_190
+	ret i32 %_191
 
 end:
 	call void @throw_oob()
@@ -241,8 +269,8 @@ end:
 }
 define i1 @Tree.SetKey(i8* %this_raw, i32 %v_key) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_172 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
-	store i32 %v_key, i32* %_172
+	%_192 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 1
+	store i32 %v_key, i32* %_192
 	ret i1 true
 
 end:
@@ -251,9 +279,9 @@ end:
 }
 define i1 @Tree.GetHas_Right(i8* %this_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_173 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
-	%_174 = load i1, i1* %_173
-	ret i1 %_174
+	%_193 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
+	%_194 = load i1, i1* %_193
+	ret i1 %_194
 
 end:
 	call void @throw_oob()
@@ -261,9 +289,9 @@ end:
 }
 define i1 @Tree.GetHas_Left(i8* %this_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_175 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
-	%_176 = load i1, i1* %_175
-	ret i1 %_176
+	%_195 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
+	%_196 = load i1, i1* %_195
+	ret i1 %_196
 
 end:
 	call void @throw_oob()
@@ -271,8 +299,8 @@ end:
 }
 define i1 @Tree.SetHas_Left(i8* %this_raw, i1 %val) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_177 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
-	store i1 %val, i1* %_177
+	%_197 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 4
+	store i1 %val, i1* %_197
 	ret i1 true
 
 end:
@@ -281,8 +309,8 @@ end:
 }
 define i1 @Tree.SetHas_Right(i8* %this_raw, i1 %val) {
 	%this = bitcast i8* %this_raw to %class.Tree*
-	%_178 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
-	store i1 %val, i1* %_178
+	%_198 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 2
+	store i1 %val, i1* %_198
 	ret i1 true
 
 end:
@@ -294,20 +322,20 @@ define i1 @Tree.Compare(i8* %this_raw, i32 %num1, i32 %num2) {
 	%ntb = alloca i1
 	%nti = alloca i32
 	store i1 false, i1* %ntb
-	%_182 = add i32 %num2, 1
-	store i32 %_182, i32* %nti
-	%_187 = icmp slt i32 %num1, %num2
-	br i1 %_187, label %if0, label %if1
+	%_202 = add i32 %num2, 1
+	store i32 %_202, i32* %nti
+	%_207 = icmp slt i32 %num1, %num2
+	br i1 %_207, label %if0, label %if1
 
 if0:
 		store i1 false, i1* %ntb
 		br label %if2
 
 if1:
-		%_191 = load i32, i32* %nti
-		%_192 = icmp slt i32 %num1, %_191
-		%_193 = xor i1 %_192, true
-		br i1 %_193, label %if3, label %if4
+		%_211 = load i32, i32* %nti
+		%_212 = icmp slt i32 %num1, %_211
+		%_213 = xor i1 %_212, true
+		br i1 %_213, label %if3, label %if4
 
 if3:
 			store i1 false, i1* %ntb
@@ -321,8 +349,8 @@ if5:
 		br label %if2
 
 if2:
-	%_198 = load i1, i1* %ntb
-	ret i1 %_198
+	%_218 = load i1, i1* %ntb
+	ret i1 %_218
 
 end:
 	call void @throw_oob()
@@ -337,105 +365,115 @@ define i1 @Tree.Insert(i8* %this_raw, i32 %v_key) {
 	%key_aux = alloca i32
 	%current_node = alloca %class.Tree*
 	store %class.Tree* null, %class.Tree** %current_node
-	%_204 = getelementptr %class.Tree, %class.Tree* null, i32 1
-	%_201 = ptrtoint %class.Tree* %_204 to i32
-	%_202 = call i8* @calloc(i32 1, i32 %_201)
-	%_203 = bitcast i8* %_202 to %class.Tree*
-	store %class.Tree* %_203, %class.Tree** %new_node
-	%_205 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 0
-	%_206 = load i8*, i8** %_205
-	%_207 = bitcast i8* %_206 to i1(i8*, i32)*
-	%_209 = bitcast %class.Tree* %new_node to i8*
-	%_208 = call i1 %_207(i8* %_209, i32 %v_key)
-	store i1 %_208, i1* %ntb
+	%_224 = getelementptr %class.Tree, %class.Tree* null, i32 1
+	%_221 = ptrtoint %class.Tree* %_224 to i32
+	%_222 = call i8* @calloc(i32 1, i32 %_221)
+	%_223 = bitcast i8* %_222 to %class.Tree*
+	store %class.Tree* %_223, %class.Tree** %new_node
+	%_225 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 0
+	%_226 = load i8*, i8** %_225
+	%_227 = bitcast i8* %_226 to i1(i8*, i32)*
+	%_229 = load %class.Tree*, %class.Tree** %new_node
+	%_230 = bitcast %class.Tree* %_229 to i8*
+	%_228 = call i1 %_227(i8* %_230, i32 %v_key)
+	store i1 %_228, i1* %ntb
 	store %class.Tree* %this, %class.Tree** %current_node
 	store i1 true, i1* %cont
 	br label %loop0
 
 loop0:
-		%_215 = load i1, i1* %cont
-		br i1 %_215, label %loop1, label %loop2
+		%_236 = load i1, i1* %cont
+		br i1 %_236, label %loop1, label %loop2
 
 loop1:
-		%_216 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-		%_217 = load i8*, i8** %_216
-		%_218 = bitcast i8* %_217 to i32(i8*)*
-		%_220 = bitcast %class.Tree* %current_node to i8*
-		%_219 = call i32 %_218(i8* %_220)
-		store i32 %_219, i32* %key_aux
-		%_224 = load i32, i32* %key_aux
-		%_225 = icmp slt i32 %v_key, %_224
-		br i1 %_225, label %if6, label %if7
+		%_237 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+		%_238 = load i8*, i8** %_237
+		%_239 = bitcast i8* %_238 to i32(i8*)*
+		%_241 = load %class.Tree*, %class.Tree** %current_node
+		%_242 = bitcast %class.Tree* %_241 to i8*
+		%_240 = call i32 %_239(i8* %_242)
+		store i32 %_240, i32* %key_aux
+		%_246 = load i32, i32* %key_aux
+		%_247 = icmp slt i32 %v_key, %_246
+		br i1 %_247, label %if6, label %if7
 
 if6:
-			%_226 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
-			%_227 = load i8*, i8** %_226
-			%_228 = bitcast i8* %_227 to i1(i8*)*
-			%_230 = bitcast %class.Tree* %current_node to i8*
-			%_229 = call i1 %_228(i8* %_230)
-			br i1 %_229, label %if9, label %if10
+			%_248 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
+			%_249 = load i8*, i8** %_248
+			%_250 = bitcast i8* %_249 to i1(i8*)*
+			%_252 = load %class.Tree*, %class.Tree** %current_node
+			%_253 = bitcast %class.Tree* %_252 to i8*
+			%_251 = call i1 %_250(i8* %_253)
+			br i1 %_251, label %if9, label %if10
 
 if9:
-				%_231 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
-				%_232 = load i8*, i8** %_231
-				%_233 = bitcast i8* %_232 to i8*(i8*)*
-				%_235 = bitcast %class.Tree* %current_node to i8*
-				%_234 = call i8* %_233(i8* %_235)
-				store %class.Tree* %_234, %class.Tree** %current_node
+				%_254 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
+				%_255 = load i8*, i8** %_254
+				%_256 = bitcast i8* %_255 to i8*(i8*)*
+				%_258 = load %class.Tree*, %class.Tree** %current_node
+				%_259 = bitcast %class.Tree* %_258 to i8*
+				%_257 = call i8* %_256(i8* %_259)
+				store %class.Tree* %_257, %class.Tree** %current_node
 				br label %if11
 
 if10:
 				store i1 false, i1* %cont
-				%_240 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 9
-				%_241 = load i8*, i8** %_240
-				%_242 = bitcast i8* %_241 to i1(i8*, i1)*
-				%_244 = bitcast %class.Tree* %current_node to i8*
-				%_243 = call i1 %_242(i8* %_244, i1 true)
-				store i1 %_243, i1* %ntb
-				%_248 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 2
-				%_249 = load i8*, i8** %_248
-				%_250 = bitcast i8* %_249 to i1(i8*, i8*)*
-				%_252 = bitcast %class.Tree* %current_node to i8*
-				%_253 = load %class.Tree*, %class.Tree** %new_node
-				%_251 = call i1 %_250(i8* %_252, i8* %_253)
-				store i1 %_251, i1* %ntb
+				%_264 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 9
+				%_265 = load i8*, i8** %_264
+				%_266 = bitcast i8* %_265 to i1(i8*, i1)*
+				%_268 = load %class.Tree*, %class.Tree** %current_node
+				%_269 = bitcast %class.Tree* %_268 to i8*
+				%_267 = call i1 %_266(i8* %_269, i1 true)
+				store i1 %_267, i1* %ntb
+				%_273 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 2
+				%_274 = load i8*, i8** %_273
+				%_275 = bitcast i8* %_274 to i1(i8*, i8*)*
+				%_277 = load %class.Tree*, %class.Tree** %current_node
+				%_278 = bitcast %class.Tree* %_277 to i8*
+				%_279 = load %class.Tree*, %class.Tree** %new_node
+				%_276 = call i1 %_275(i8* %_278, i8* %_279)
+				store i1 %_276, i1* %ntb
 				br label %if11
 
 if11:
 			br label %if8
 
 if7:
-			%_256 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
-			%_257 = load i8*, i8** %_256
-			%_258 = bitcast i8* %_257 to i1(i8*)*
-			%_260 = bitcast %class.Tree* %current_node to i8*
-			%_259 = call i1 %_258(i8* %_260)
-			br i1 %_259, label %if12, label %if13
+			%_282 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
+			%_283 = load i8*, i8** %_282
+			%_284 = bitcast i8* %_283 to i1(i8*)*
+			%_286 = load %class.Tree*, %class.Tree** %current_node
+			%_287 = bitcast %class.Tree* %_286 to i8*
+			%_285 = call i1 %_284(i8* %_287)
+			br i1 %_285, label %if12, label %if13
 
 if12:
-				%_261 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
-				%_262 = load i8*, i8** %_261
-				%_263 = bitcast i8* %_262 to i8*(i8*)*
-				%_265 = bitcast %class.Tree* %current_node to i8*
-				%_264 = call i8* %_263(i8* %_265)
-				store %class.Tree* %_264, %class.Tree** %current_node
+				%_288 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
+				%_289 = load i8*, i8** %_288
+				%_290 = bitcast i8* %_289 to i8*(i8*)*
+				%_292 = load %class.Tree*, %class.Tree** %current_node
+				%_293 = bitcast %class.Tree* %_292 to i8*
+				%_291 = call i8* %_290(i8* %_293)
+				store %class.Tree* %_291, %class.Tree** %current_node
 				br label %if14
 
 if13:
 				store i1 false, i1* %cont
-				%_270 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 10
-				%_271 = load i8*, i8** %_270
-				%_272 = bitcast i8* %_271 to i1(i8*, i1)*
-				%_274 = bitcast %class.Tree* %current_node to i8*
-				%_273 = call i1 %_272(i8* %_274, i1 true)
-				store i1 %_273, i1* %ntb
-				%_278 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 1
-				%_279 = load i8*, i8** %_278
-				%_280 = bitcast i8* %_279 to i1(i8*, i8*)*
-				%_282 = bitcast %class.Tree* %current_node to i8*
-				%_283 = load %class.Tree*, %class.Tree** %new_node
-				%_281 = call i1 %_280(i8* %_282, i8* %_283)
-				store i1 %_281, i1* %ntb
+				%_298 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 10
+				%_299 = load i8*, i8** %_298
+				%_300 = bitcast i8* %_299 to i1(i8*, i1)*
+				%_302 = load %class.Tree*, %class.Tree** %current_node
+				%_303 = bitcast %class.Tree* %_302 to i8*
+				%_301 = call i1 %_300(i8* %_303, i1 true)
+				store i1 %_301, i1* %ntb
+				%_307 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 1
+				%_308 = load i8*, i8** %_307
+				%_309 = bitcast i8* %_308 to i1(i8*, i8*)*
+				%_311 = load %class.Tree*, %class.Tree** %current_node
+				%_312 = bitcast %class.Tree* %_311 to i8*
+				%_313 = load %class.Tree*, %class.Tree** %new_node
+				%_310 = call i1 %_309(i8* %_312, i8* %_313)
+				store i1 %_310, i1* %ntb
 				br label %if14
 
 if14:
@@ -470,37 +508,40 @@ define i1 @Tree.Delete(i8* %this_raw, i32 %v_key) {
 	br label %loop3
 
 loop3:
-		%_294 = load i1, i1* %cont
-		br i1 %_294, label %loop4, label %loop5
+		%_324 = load i1, i1* %cont
+		br i1 %_324, label %loop4, label %loop5
 
 loop4:
-		%_295 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-		%_296 = load i8*, i8** %_295
-		%_297 = bitcast i8* %_296 to i32(i8*)*
-		%_299 = bitcast %class.Tree* %current_node to i8*
-		%_298 = call i32 %_297(i8* %_299)
-		store i32 %_298, i32* %key_aux
-		%_303 = load i32, i32* %key_aux
-		%_304 = icmp slt i32 %v_key, %_303
-		br i1 %_304, label %if15, label %if16
+		%_325 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+		%_326 = load i8*, i8** %_325
+		%_327 = bitcast i8* %_326 to i32(i8*)*
+		%_329 = load %class.Tree*, %class.Tree** %current_node
+		%_330 = bitcast %class.Tree* %_329 to i8*
+		%_328 = call i32 %_327(i8* %_330)
+		store i32 %_328, i32* %key_aux
+		%_334 = load i32, i32* %key_aux
+		%_335 = icmp slt i32 %v_key, %_334
+		br i1 %_335, label %if15, label %if16
 
 if15:
-			%_305 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
-			%_306 = load i8*, i8** %_305
-			%_307 = bitcast i8* %_306 to i1(i8*)*
-			%_309 = bitcast %class.Tree* %current_node to i8*
-			%_308 = call i1 %_307(i8* %_309)
-			br i1 %_308, label %if18, label %if19
+			%_336 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
+			%_337 = load i8*, i8** %_336
+			%_338 = bitcast i8* %_337 to i1(i8*)*
+			%_340 = load %class.Tree*, %class.Tree** %current_node
+			%_341 = bitcast %class.Tree* %_340 to i8*
+			%_339 = call i1 %_338(i8* %_341)
+			br i1 %_339, label %if18, label %if19
 
 if18:
-				%_310 = load %class.Tree*, %class.Tree** %current_node
-				store %class.Tree* %_310, %class.Tree** %parent_node
-				%_312 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
-				%_313 = load i8*, i8** %_312
-				%_314 = bitcast i8* %_313 to i8*(i8*)*
-				%_316 = bitcast %class.Tree* %current_node to i8*
-				%_315 = call i8* %_314(i8* %_316)
-				store %class.Tree* %_315, %class.Tree** %current_node
+				%_342 = load %class.Tree*, %class.Tree** %current_node
+				store %class.Tree* %_342, %class.Tree** %parent_node
+				%_344 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
+				%_345 = load i8*, i8** %_344
+				%_346 = bitcast i8* %_345 to i8*(i8*)*
+				%_348 = load %class.Tree*, %class.Tree** %current_node
+				%_349 = bitcast %class.Tree* %_348 to i8*
+				%_347 = call i8* %_346(i8* %_349)
+				store %class.Tree* %_347, %class.Tree** %current_node
 				br label %if20
 
 if19:
@@ -511,27 +552,29 @@ if20:
 			br label %if17
 
 if16:
-			%_321 = load i32, i32* %key_aux
-			%_323 = icmp slt i32 %_321, %v_key
-			br i1 %_323, label %if21, label %if22
+			%_354 = load i32, i32* %key_aux
+			%_356 = icmp slt i32 %_354, %v_key
+			br i1 %_356, label %if21, label %if22
 
 if21:
-				%_324 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
-				%_325 = load i8*, i8** %_324
-				%_326 = bitcast i8* %_325 to i1(i8*)*
-				%_328 = bitcast %class.Tree* %current_node to i8*
-				%_327 = call i1 %_326(i8* %_328)
-				br i1 %_327, label %if24, label %if25
+				%_357 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
+				%_358 = load i8*, i8** %_357
+				%_359 = bitcast i8* %_358 to i1(i8*)*
+				%_361 = load %class.Tree*, %class.Tree** %current_node
+				%_362 = bitcast %class.Tree* %_361 to i8*
+				%_360 = call i1 %_359(i8* %_362)
+				br i1 %_360, label %if24, label %if25
 
 if24:
-					%_329 = load %class.Tree*, %class.Tree** %current_node
-					store %class.Tree* %_329, %class.Tree** %parent_node
-					%_331 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
-					%_332 = load i8*, i8** %_331
-					%_333 = bitcast i8* %_332 to i8*(i8*)*
-					%_335 = bitcast %class.Tree* %current_node to i8*
-					%_334 = call i8* %_333(i8* %_335)
-					store %class.Tree* %_334, %class.Tree** %current_node
+					%_363 = load %class.Tree*, %class.Tree** %current_node
+					store %class.Tree* %_363, %class.Tree** %parent_node
+					%_365 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
+					%_366 = load i8*, i8** %_365
+					%_367 = bitcast i8* %_366 to i8*(i8*)*
+					%_369 = load %class.Tree*, %class.Tree** %current_node
+					%_370 = bitcast %class.Tree* %_369 to i8*
+					%_368 = call i8* %_367(i8* %_370)
+					store %class.Tree* %_368, %class.Tree** %current_node
 					br label %if26
 
 if25:
@@ -542,62 +585,64 @@ if26:
 				br label %if23
 
 if22:
-				%_340 = load i1, i1* %is_root
-				br i1 %_340, label %if27, label %if28
+				%_375 = load i1, i1* %is_root
+				br i1 %_375, label %if27, label %if28
 
 if27:
-					%_341 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
-					%_342 = load i8*, i8** %_341
-					%_343 = bitcast i8* %_342 to i1(i8*)*
-					%_345 = bitcast %class.Tree* %current_node to i8*
-					%_344 = call i1 %_343(i8* %_345)
-					%_346 = xor i1 %_344, true
+					%_376 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
+					%_377 = load i8*, i8** %_376
+					%_378 = bitcast i8* %_377 to i1(i8*)*
+					%_380 = load %class.Tree*, %class.Tree** %current_node
+					%_381 = bitcast %class.Tree* %_380 to i8*
+					%_379 = call i1 %_378(i8* %_381)
+					%_382 = xor i1 %_379, true
 					br label %if30
 if30:
-					%_348 = icmp ne i1 %_346, 0
-					br i1 %_348, label %if31, label %if32
+					%_384 = icmp ne i1 %_382, 0
+					br i1 %_384, label %if31, label %if32
 
 if31:
-					%_351 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
-					%_352 = load i8*, i8** %_351
-					%_353 = bitcast i8* %_352 to i1(i8*)*
-					%_355 = bitcast %class.Tree* %current_node to i8*
-					%_354 = call i1 %_353(i8* %_355)
-					%_356 = xor i1 %_354, true
-					%_349 = icmp ne i1 %_356, 0
+					%_387 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
+					%_388 = load i8*, i8** %_387
+					%_389 = bitcast i8* %_388 to i1(i8*)*
+					%_391 = load %class.Tree*, %class.Tree** %current_node
+					%_392 = bitcast %class.Tree* %_391 to i8*
+					%_390 = call i1 %_389(i8* %_392)
+					%_393 = xor i1 %_390, true
+					%_385 = icmp ne i1 %_393, 0
 					br label %if32
 
 if32:
-					%_350 = phi i1 [false, %if30], [%_349, %if31]
-					br i1 %_350, label %if33, label %if34
+					%_386 = phi i1 [false, %if30], [%_385, %if31]
+					br i1 %_386, label %if33, label %if34
 
 if33:
 						store i1 true, i1* %ntb
 						br label %if35
 
 if34:
-						%_360 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 14
-						%_361 = load i8*, i8** %_360
-						%_362 = bitcast i8* %_361 to i1(i8*, i8*, i8*)*
-						%_364 = bitcast %class.Tree* %this to i8*
-						%_365 = load %class.Tree*, %class.Tree** %parent_node
-						%_366 = load %class.Tree*, %class.Tree** %current_node
-						%_363 = call i1 %_362(i8* %_364, i8* %_365, i8* %_366)
-						store i1 %_363, i1* %ntb
+						%_397 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 14
+						%_398 = load i8*, i8** %_397
+						%_399 = bitcast i8* %_398 to i1(i8*, i8*, i8*)*
+						%_401 = bitcast %class.Tree* %this to i8*
+						%_402 = load %class.Tree*, %class.Tree** %parent_node
+						%_403 = load %class.Tree*, %class.Tree** %current_node
+						%_400 = call i1 %_399(i8* %_401, i8* %_402, i8* %_403)
+						store i1 %_400, i1* %ntb
 						br label %if35
 
 if35:
 					br label %if29
 
 if28:
-					%_369 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 14
-					%_370 = load i8*, i8** %_369
-					%_371 = bitcast i8* %_370 to i1(i8*, i8*, i8*)*
-					%_373 = bitcast %class.Tree* %this to i8*
-					%_374 = load %class.Tree*, %class.Tree** %parent_node
-					%_375 = load %class.Tree*, %class.Tree** %current_node
-					%_372 = call i1 %_371(i8* %_373, i8* %_374, i8* %_375)
-					store i1 %_372, i1* %ntb
+					%_406 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 14
+					%_407 = load i8*, i8** %_406
+					%_408 = bitcast i8* %_407 to i1(i8*, i8*, i8*)*
+					%_410 = bitcast %class.Tree* %this to i8*
+					%_411 = load %class.Tree*, %class.Tree** %parent_node
+					%_412 = load %class.Tree*, %class.Tree** %current_node
+					%_409 = call i1 %_408(i8* %_410, i8* %_411, i8* %_412)
+					store i1 %_409, i1* %ntb
 					br label %if29
 
 if29:
@@ -613,8 +658,8 @@ if17:
 		br label %loop3
 
 loop5:
-	%_384 = load i1, i1* %found
-	ret i1 %_384
+	%_421 = load i1, i1* %found
+	ret i1 %_421
 
 end:
 	call void @throw_oob()
@@ -627,98 +672,99 @@ define i1 @Tree.Remove(i8* %this_raw, i8* %p_node_raw, i8* %c_node_raw) {
 	%ntb = alloca i1
 	%auxkey1 = alloca i32
 	%auxkey2 = alloca i32
-	%_385 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
-	%_386 = load i8*, i8** %_385
-	%_387 = bitcast i8* %_386 to i1(i8*)*
-	%_389 = bitcast %class.Tree* %c_node to i8*
-	%_388 = call i1 %_387(i8* %_389)
-	br i1 %_388, label %if36, label %if37
+	%_422 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
+	%_423 = load i8*, i8** %_422
+	%_424 = bitcast i8* %_423 to i1(i8*)*
+	%_426 = bitcast %class.Tree* %c_node to i8*
+	%_425 = call i1 %_424(i8* %_426)
+	br i1 %_425, label %if36, label %if37
 
 if36:
-		%_390 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 16
-		%_391 = load i8*, i8** %_390
-		%_392 = bitcast i8* %_391 to i1(i8*, i8*, i8*)*
-		%_394 = bitcast %class.Tree* %this to i8*
-		%_393 = call i1 %_392(i8* %_394, i8* %p_node, i8* %c_node)
-		store i1 %_393, i1* %ntb
+		%_427 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 16
+		%_428 = load i8*, i8** %_427
+		%_429 = bitcast i8* %_428 to i1(i8*, i8*, i8*)*
+		%_431 = bitcast %class.Tree* %this to i8*
+		%_430 = call i1 %_429(i8* %_431, i8* %p_node, i8* %c_node)
+		store i1 %_430, i1* %ntb
 		br label %if38
 
 if37:
-		%_397 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
-		%_398 = load i8*, i8** %_397
-		%_399 = bitcast i8* %_398 to i1(i8*)*
-		%_401 = bitcast %class.Tree* %c_node to i8*
-		%_400 = call i1 %_399(i8* %_401)
-		br i1 %_400, label %if39, label %if40
+		%_434 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
+		%_435 = load i8*, i8** %_434
+		%_436 = bitcast i8* %_435 to i1(i8*)*
+		%_438 = bitcast %class.Tree* %c_node to i8*
+		%_437 = call i1 %_436(i8* %_438)
+		br i1 %_437, label %if39, label %if40
 
 if39:
-			%_402 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 15
-			%_403 = load i8*, i8** %_402
-			%_404 = bitcast i8* %_403 to i1(i8*, i8*, i8*)*
-			%_406 = bitcast %class.Tree* %this to i8*
-			%_405 = call i1 %_404(i8* %_406, i8* %p_node, i8* %c_node)
-			store i1 %_405, i1* %ntb
+			%_439 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 15
+			%_440 = load i8*, i8** %_439
+			%_441 = bitcast i8* %_440 to i1(i8*, i8*, i8*)*
+			%_443 = bitcast %class.Tree* %this to i8*
+			%_442 = call i1 %_441(i8* %_443, i8* %p_node, i8* %c_node)
+			store i1 %_442, i1* %ntb
 			br label %if41
 
 if40:
-			%_409 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-			%_410 = load i8*, i8** %_409
-			%_411 = bitcast i8* %_410 to i32(i8*)*
-			%_413 = bitcast %class.Tree* %c_node to i8*
-			%_412 = call i32 %_411(i8* %_413)
-			store i32 %_412, i32* %auxkey1
-			%_416 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
-			%_417 = load i8*, i8** %_416
-			%_418 = bitcast i8* %_417 to i8*(i8*)*
-			%_420 = bitcast %class.Tree* %p_node to i8*
-			%_419 = call i8* %_418(i8* %_420)
-			%_421 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-			%_422 = load i8*, i8** %_421
-			%_423 = bitcast i8* %_422 to i32(i8*)*
-			%_425 = bitcast %class.Tree* %_419 to i8*
-			%_424 = call i32 %_423(i8* %_425)
-			store i32 %_424, i32* %auxkey2
-			%_428 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 11
-			%_429 = load i8*, i8** %_428
-			%_430 = bitcast i8* %_429 to i1(i8*, i32, i32)*
-			%_432 = bitcast %class.Tree* %this to i8*
-			%_433 = load i32, i32* %auxkey1
-			%_434 = load i32, i32* %auxkey2
-			%_431 = call i1 %_430(i8* %_432, i32 %_433, i32 %_434)
-			br i1 %_431, label %if42, label %if43
+			%_446 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+			%_447 = load i8*, i8** %_446
+			%_448 = bitcast i8* %_447 to i32(i8*)*
+			%_450 = bitcast %class.Tree* %c_node to i8*
+			%_449 = call i32 %_448(i8* %_450)
+			store i32 %_449, i32* %auxkey1
+			%_453 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
+			%_454 = load i8*, i8** %_453
+			%_455 = bitcast i8* %_454 to i8*(i8*)*
+			%_457 = bitcast %class.Tree* %p_node to i8*
+			%_456 = call i8* %_455(i8* %_457)
+			%_458 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+			%_459 = load i8*, i8** %_458
+			%_460 = bitcast i8* %_459 to i32(i8*)*
+			%_462 = load %class.Tree*, %class.Tree** %_456
+			%_463 = bitcast %class.Tree* %_462 to i8*
+			%_461 = call i32 %_460(i8* %_463)
+			store i32 %_461, i32* %auxkey2
+			%_466 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 11
+			%_467 = load i8*, i8** %_466
+			%_468 = bitcast i8* %_467 to i1(i8*, i32, i32)*
+			%_470 = bitcast %class.Tree* %this to i8*
+			%_471 = load i32, i32* %auxkey1
+			%_472 = load i32, i32* %auxkey2
+			%_469 = call i1 %_468(i8* %_470, i32 %_471, i32 %_472)
+			br i1 %_469, label %if42, label %if43
 
 if42:
-				%_435 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 2
-				%_436 = load i8*, i8** %_435
-				%_437 = bitcast i8* %_436 to i1(i8*, i8*)*
-				%_439 = bitcast %class.Tree* %p_node to i8*
-				%_440 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
-				%_441 = load i8*, i8** %_440
-				%_438 = call i1 %_437(i8* %_439, i8* %_441)
-				store i1 %_438, i1* %ntb
-				%_444 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 9
-				%_445 = load i8*, i8** %_444
-				%_446 = bitcast i8* %_445 to i1(i8*, i1)*
-				%_448 = bitcast %class.Tree* %p_node to i8*
-				%_447 = call i1 %_446(i8* %_448, i1 false)
-				store i1 %_447, i1* %ntb
+				%_473 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 2
+				%_474 = load i8*, i8** %_473
+				%_475 = bitcast i8* %_474 to i1(i8*, i8*)*
+				%_477 = bitcast %class.Tree* %p_node to i8*
+				%_478 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
+				%_479 = load i8*, i8** %_478
+				%_476 = call i1 %_475(i8* %_477, i8* %_479)
+				store i1 %_476, i1* %ntb
+				%_482 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 9
+				%_483 = load i8*, i8** %_482
+				%_484 = bitcast i8* %_483 to i1(i8*, i1)*
+				%_486 = bitcast %class.Tree* %p_node to i8*
+				%_485 = call i1 %_484(i8* %_486, i1 false)
+				store i1 %_485, i1* %ntb
 				br label %if44
 
 if43:
-				%_452 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 1
-				%_453 = load i8*, i8** %_452
-				%_454 = bitcast i8* %_453 to i1(i8*, i8*)*
-				%_456 = bitcast %class.Tree* %p_node to i8*
-				%_457 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
-				%_458 = load i8*, i8** %_457
-				%_455 = call i1 %_454(i8* %_456, i8* %_458)
-				store i1 %_455, i1* %ntb
-				%_461 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 10
-				%_462 = load i8*, i8** %_461
-				%_463 = bitcast i8* %_462 to i1(i8*, i1)*
-				%_465 = bitcast %class.Tree* %p_node to i8*
-				%_464 = call i1 %_463(i8* %_465, i1 false)
-				store i1 %_464, i1* %ntb
+				%_490 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 1
+				%_491 = load i8*, i8** %_490
+				%_492 = bitcast i8* %_491 to i1(i8*, i8*)*
+				%_494 = bitcast %class.Tree* %p_node to i8*
+				%_495 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
+				%_496 = load i8*, i8** %_495
+				%_493 = call i1 %_492(i8* %_494, i8* %_496)
+				store i1 %_493, i1* %ntb
+				%_499 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 10
+				%_500 = load i8*, i8** %_499
+				%_501 = bitcast i8* %_500 to i1(i8*, i1)*
+				%_503 = bitcast %class.Tree* %p_node to i8*
+				%_502 = call i1 %_501(i8* %_503, i1 false)
+				store i1 %_502, i1* %ntb
 				br label %if44
 
 if44:
@@ -742,54 +788,55 @@ define i1 @Tree.RemoveRight(i8* %this_raw, i8* %p_node_raw, i8* %c_node_raw) {
 	br label %loop6
 
 loop6:
-		%_469 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
-		%_470 = load i8*, i8** %_469
-		%_471 = bitcast i8* %_470 to i1(i8*)*
-		%_473 = bitcast %class.Tree* %c_node to i8*
-		%_472 = call i1 %_471(i8* %_473)
-		br i1 %_472, label %loop7, label %loop8
+		%_507 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
+		%_508 = load i8*, i8** %_507
+		%_509 = bitcast i8* %_508 to i1(i8*)*
+		%_511 = bitcast %class.Tree* %c_node to i8*
+		%_510 = call i1 %_509(i8* %_511)
+		br i1 %_510, label %loop7, label %loop8
 
 loop7:
-		%_474 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 6
-		%_475 = load i8*, i8** %_474
-		%_476 = bitcast i8* %_475 to i1(i8*, i32)*
-		%_478 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
-		%_479 = load i8*, i8** %_478
-		%_480 = bitcast i8* %_479 to i8*(i8*)*
-		%_482 = bitcast %class.Tree* %c_node to i8*
-		%_481 = call i8* %_480(i8* %_482)
-		%_483 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-		%_484 = load i8*, i8** %_483
-		%_485 = bitcast i8* %_484 to i32(i8*)*
-		%_487 = bitcast %class.Tree* %_481 to i8*
-		%_486 = call i32 %_485(i8* %_487)
-		%_488 = bitcast %class.Tree* %c_node to i8*
-		%_477 = call i1 %_476(i8* %_488, i32 %_486)
-		store i1 %_477, i1* %ntb
+		%_512 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 6
+		%_513 = load i8*, i8** %_512
+		%_514 = bitcast i8* %_513 to i1(i8*, i32)*
+		%_516 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
+		%_517 = load i8*, i8** %_516
+		%_518 = bitcast i8* %_517 to i8*(i8*)*
+		%_520 = bitcast %class.Tree* %c_node to i8*
+		%_519 = call i8* %_518(i8* %_520)
+		%_521 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+		%_522 = load i8*, i8** %_521
+		%_523 = bitcast i8* %_522 to i32(i8*)*
+		%_525 = load %class.Tree*, %class.Tree** %_519
+		%_526 = bitcast %class.Tree* %_525 to i8*
+		%_524 = call i32 %_523(i8* %_526)
+		%_527 = bitcast %class.Tree* %c_node to i8*
+		%_515 = call i1 %_514(i8* %_527, i32 %_524)
+		store i1 %_515, i1* %ntb
 		store %class.Tree* %c_node, %class.Tree** %p_node
-		%_493 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
-		%_494 = load i8*, i8** %_493
-		%_495 = bitcast i8* %_494 to i8*(i8*)*
-		%_497 = bitcast %class.Tree* %c_node to i8*
-		%_496 = call i8* %_495(i8* %_497)
-		store %class.Tree* %_496, %class.Tree** %c_node
+		%_532 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
+		%_533 = load i8*, i8** %_532
+		%_534 = bitcast i8* %_533 to i8*(i8*)*
+		%_536 = bitcast %class.Tree* %c_node to i8*
+		%_535 = call i8* %_534(i8* %_536)
+		store %class.Tree* %_535, %class.Tree** %c_node
 		br label %loop6
 
 loop8:
-	%_500 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 1
-	%_501 = load i8*, i8** %_500
-	%_502 = bitcast i8* %_501 to i1(i8*, i8*)*
-	%_504 = bitcast %class.Tree* %p_node to i8*
-	%_505 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
-	%_506 = load i8*, i8** %_505
-	%_503 = call i1 %_502(i8* %_504, i8* %_506)
-	store i1 %_503, i1* %ntb
-	%_509 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 10
-	%_510 = load i8*, i8** %_509
-	%_511 = bitcast i8* %_510 to i1(i8*, i1)*
-	%_513 = bitcast %class.Tree* %p_node to i8*
-	%_512 = call i1 %_511(i8* %_513, i1 false)
-	store i1 %_512, i1* %ntb
+	%_539 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 1
+	%_540 = load i8*, i8** %_539
+	%_541 = bitcast i8* %_540 to i1(i8*, i8*)*
+	%_543 = bitcast %class.Tree* %p_node to i8*
+	%_544 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
+	%_545 = load i8*, i8** %_544
+	%_542 = call i1 %_541(i8* %_543, i8* %_545)
+	store i1 %_542, i1* %ntb
+	%_548 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 10
+	%_549 = load i8*, i8** %_548
+	%_550 = bitcast i8* %_549 to i1(i8*, i1)*
+	%_552 = bitcast %class.Tree* %p_node to i8*
+	%_551 = call i1 %_550(i8* %_552, i1 false)
+	store i1 %_551, i1* %ntb
 	ret i1 true
 
 end:
@@ -804,54 +851,55 @@ define i1 @Tree.RemoveLeft(i8* %this_raw, i8* %p_node_raw, i8* %c_node_raw) {
 	br label %loop9
 
 loop9:
-		%_517 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
-		%_518 = load i8*, i8** %_517
-		%_519 = bitcast i8* %_518 to i1(i8*)*
-		%_521 = bitcast %class.Tree* %c_node to i8*
-		%_520 = call i1 %_519(i8* %_521)
-		br i1 %_520, label %loop10, label %loop11
+		%_556 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
+		%_557 = load i8*, i8** %_556
+		%_558 = bitcast i8* %_557 to i1(i8*)*
+		%_560 = bitcast %class.Tree* %c_node to i8*
+		%_559 = call i1 %_558(i8* %_560)
+		br i1 %_559, label %loop10, label %loop11
 
 loop10:
-		%_522 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 6
-		%_523 = load i8*, i8** %_522
-		%_524 = bitcast i8* %_523 to i1(i8*, i32)*
-		%_526 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
-		%_527 = load i8*, i8** %_526
-		%_528 = bitcast i8* %_527 to i8*(i8*)*
-		%_530 = bitcast %class.Tree* %c_node to i8*
-		%_529 = call i8* %_528(i8* %_530)
-		%_531 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-		%_532 = load i8*, i8** %_531
-		%_533 = bitcast i8* %_532 to i32(i8*)*
-		%_535 = bitcast %class.Tree* %_529 to i8*
-		%_534 = call i32 %_533(i8* %_535)
-		%_536 = bitcast %class.Tree* %c_node to i8*
-		%_525 = call i1 %_524(i8* %_536, i32 %_534)
-		store i1 %_525, i1* %ntb
+		%_561 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 6
+		%_562 = load i8*, i8** %_561
+		%_563 = bitcast i8* %_562 to i1(i8*, i32)*
+		%_565 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
+		%_566 = load i8*, i8** %_565
+		%_567 = bitcast i8* %_566 to i8*(i8*)*
+		%_569 = bitcast %class.Tree* %c_node to i8*
+		%_568 = call i8* %_567(i8* %_569)
+		%_570 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+		%_571 = load i8*, i8** %_570
+		%_572 = bitcast i8* %_571 to i32(i8*)*
+		%_574 = load %class.Tree*, %class.Tree** %_568
+		%_575 = bitcast %class.Tree* %_574 to i8*
+		%_573 = call i32 %_572(i8* %_575)
+		%_576 = bitcast %class.Tree* %c_node to i8*
+		%_564 = call i1 %_563(i8* %_576, i32 %_573)
+		store i1 %_564, i1* %ntb
 		store %class.Tree* %c_node, %class.Tree** %p_node
-		%_541 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
-		%_542 = load i8*, i8** %_541
-		%_543 = bitcast i8* %_542 to i8*(i8*)*
-		%_545 = bitcast %class.Tree* %c_node to i8*
-		%_544 = call i8* %_543(i8* %_545)
-		store %class.Tree* %_544, %class.Tree** %c_node
+		%_581 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
+		%_582 = load i8*, i8** %_581
+		%_583 = bitcast i8* %_582 to i8*(i8*)*
+		%_585 = bitcast %class.Tree* %c_node to i8*
+		%_584 = call i8* %_583(i8* %_585)
+		store %class.Tree* %_584, %class.Tree** %c_node
 		br label %loop9
 
 loop11:
-	%_548 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 2
-	%_549 = load i8*, i8** %_548
-	%_550 = bitcast i8* %_549 to i1(i8*, i8*)*
-	%_552 = bitcast %class.Tree* %p_node to i8*
-	%_553 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
-	%_554 = load i8*, i8** %_553
-	%_551 = call i1 %_550(i8* %_552, i8* %_554)
-	store i1 %_551, i1* %ntb
-	%_557 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 9
-	%_558 = load i8*, i8** %_557
-	%_559 = bitcast i8* %_558 to i1(i8*, i1)*
-	%_561 = bitcast %class.Tree* %p_node to i8*
-	%_560 = call i1 %_559(i8* %_561, i1 false)
-	store i1 %_560, i1* %ntb
+	%_588 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 2
+	%_589 = load i8*, i8** %_588
+	%_590 = bitcast i8* %_589 to i1(i8*, i8*)*
+	%_592 = bitcast %class.Tree* %p_node to i8*
+	%_593 = getelementptr %class.Tree, %class.Tree* %this, i32 0, i32 0
+	%_594 = load i8*, i8** %_593
+	%_591 = call i1 %_590(i8* %_592, i8* %_594)
+	store i1 %_591, i1* %ntb
+	%_597 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 9
+	%_598 = load i8*, i8** %_597
+	%_599 = bitcast i8* %_598 to i1(i8*, i1)*
+	%_601 = bitcast %class.Tree* %p_node to i8*
+	%_600 = call i1 %_599(i8* %_601, i1 false)
+	store i1 %_600, i1* %ntb
 	ret i1 true
 
 end:
@@ -871,35 +919,38 @@ define i32 @Tree.Search(i8* %this_raw, i32 %v_key) {
 	br label %loop12
 
 loop12:
-		%_570 = load i1, i1* %cont
-		br i1 %_570, label %loop13, label %loop14
+		%_610 = load i1, i1* %cont
+		br i1 %_610, label %loop13, label %loop14
 
 loop13:
-		%_571 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-		%_572 = load i8*, i8** %_571
-		%_573 = bitcast i8* %_572 to i32(i8*)*
-		%_575 = bitcast %class.Tree* %current_node to i8*
-		%_574 = call i32 %_573(i8* %_575)
-		store i32 %_574, i32* %key_aux
-		%_579 = load i32, i32* %key_aux
-		%_580 = icmp slt i32 %v_key, %_579
-		br i1 %_580, label %if45, label %if46
+		%_611 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+		%_612 = load i8*, i8** %_611
+		%_613 = bitcast i8* %_612 to i32(i8*)*
+		%_615 = load %class.Tree*, %class.Tree** %current_node
+		%_616 = bitcast %class.Tree* %_615 to i8*
+		%_614 = call i32 %_613(i8* %_616)
+		store i32 %_614, i32* %key_aux
+		%_620 = load i32, i32* %key_aux
+		%_621 = icmp slt i32 %v_key, %_620
+		br i1 %_621, label %if45, label %if46
 
 if45:
-			%_581 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
-			%_582 = load i8*, i8** %_581
-			%_583 = bitcast i8* %_582 to i1(i8*)*
-			%_585 = bitcast %class.Tree* %current_node to i8*
-			%_584 = call i1 %_583(i8* %_585)
-			br i1 %_584, label %if48, label %if49
+			%_622 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
+			%_623 = load i8*, i8** %_622
+			%_624 = bitcast i8* %_623 to i1(i8*)*
+			%_626 = load %class.Tree*, %class.Tree** %current_node
+			%_627 = bitcast %class.Tree* %_626 to i8*
+			%_625 = call i1 %_624(i8* %_627)
+			br i1 %_625, label %if48, label %if49
 
 if48:
-				%_586 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
-				%_587 = load i8*, i8** %_586
-				%_588 = bitcast i8* %_587 to i8*(i8*)*
-				%_590 = bitcast %class.Tree* %current_node to i8*
-				%_589 = call i8* %_588(i8* %_590)
-				store %class.Tree* %_589, %class.Tree** %current_node
+				%_628 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
+				%_629 = load i8*, i8** %_628
+				%_630 = bitcast i8* %_629 to i8*(i8*)*
+				%_632 = load %class.Tree*, %class.Tree** %current_node
+				%_633 = bitcast %class.Tree* %_632 to i8*
+				%_631 = call i8* %_630(i8* %_633)
+				store %class.Tree* %_631, %class.Tree** %current_node
 				br label %if50
 
 if49:
@@ -910,25 +961,27 @@ if50:
 			br label %if47
 
 if46:
-			%_595 = load i32, i32* %key_aux
-			%_597 = icmp slt i32 %_595, %v_key
-			br i1 %_597, label %if51, label %if52
+			%_638 = load i32, i32* %key_aux
+			%_640 = icmp slt i32 %_638, %v_key
+			br i1 %_640, label %if51, label %if52
 
 if51:
-				%_598 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
-				%_599 = load i8*, i8** %_598
-				%_600 = bitcast i8* %_599 to i1(i8*)*
-				%_602 = bitcast %class.Tree* %current_node to i8*
-				%_601 = call i1 %_600(i8* %_602)
-				br i1 %_601, label %if54, label %if55
+				%_641 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
+				%_642 = load i8*, i8** %_641
+				%_643 = bitcast i8* %_642 to i1(i8*)*
+				%_645 = load %class.Tree*, %class.Tree** %current_node
+				%_646 = bitcast %class.Tree* %_645 to i8*
+				%_644 = call i1 %_643(i8* %_646)
+				br i1 %_644, label %if54, label %if55
 
 if54:
-					%_603 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
-					%_604 = load i8*, i8** %_603
-					%_605 = bitcast i8* %_604 to i8*(i8*)*
-					%_607 = bitcast %class.Tree* %current_node to i8*
-					%_606 = call i8* %_605(i8* %_607)
-					store %class.Tree* %_606, %class.Tree** %current_node
+					%_647 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
+					%_648 = load i8*, i8** %_647
+					%_649 = bitcast i8* %_648 to i8*(i8*)*
+					%_651 = load %class.Tree*, %class.Tree** %current_node
+					%_652 = bitcast %class.Tree* %_651 to i8*
+					%_650 = call i8* %_649(i8* %_652)
+					store %class.Tree* %_650, %class.Tree** %current_node
 					br label %if56
 
 if55:
@@ -950,8 +1003,8 @@ if47:
 		br label %loop12
 
 loop14:
-	%_616 = load i32, i32* %ifound
-	ret i32 %_616
+	%_661 = load i32, i32* %ifound
+	ret i32 %_661
 
 end:
 	call void @throw_oob()
@@ -963,13 +1016,13 @@ define i1 @Tree.Print(i8* %this_raw) {
 	store %class.Tree* null, %class.Tree** %current_node
 	%ntb = alloca i1
 	store %class.Tree* %this, %class.Tree** %current_node
-	%_618 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 19
-	%_619 = load i8*, i8** %_618
-	%_620 = bitcast i8* %_619 to i1(i8*, i8*)*
-	%_622 = bitcast %class.Tree* %this to i8*
-	%_623 = load %class.Tree*, %class.Tree** %current_node
-	%_621 = call i1 %_620(i8* %_622, i8* %_623)
-	store i1 %_621, i1* %ntb
+	%_663 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 19
+	%_664 = load i8*, i8** %_663
+	%_665 = bitcast i8* %_664 to i1(i8*, i8*)*
+	%_667 = bitcast %class.Tree* %this to i8*
+	%_668 = load %class.Tree*, %class.Tree** %current_node
+	%_666 = call i1 %_665(i8* %_667, i8* %_668)
+	store i1 %_666, i1* %ntb
 	ret i1 true
 
 end:
@@ -980,25 +1033,25 @@ define i1 @Tree.RecPrint(i8* %this_raw, i8* %node_raw) {
 	%this = bitcast i8* %this_raw to %class.Tree*
 	%node = bitcast i8* %node_raw to %class.Tree*
 	%ntb = alloca i1
-	%_626 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
-	%_627 = load i8*, i8** %_626
-	%_628 = bitcast i8* %_627 to i1(i8*)*
-	%_630 = bitcast %class.Tree* %node to i8*
-	%_629 = call i1 %_628(i8* %_630)
-	br i1 %_629, label %if57, label %if58
+	%_671 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 8
+	%_672 = load i8*, i8** %_671
+	%_673 = bitcast i8* %_672 to i1(i8*)*
+	%_675 = bitcast %class.Tree* %node to i8*
+	%_674 = call i1 %_673(i8* %_675)
+	br i1 %_674, label %if57, label %if58
 
 if57:
-		%_631 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 19
-		%_632 = load i8*, i8** %_631
-		%_633 = bitcast i8* %_632 to i1(i8*, i8*)*
-		%_635 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
-		%_636 = load i8*, i8** %_635
-		%_637 = bitcast i8* %_636 to i8*(i8*)*
-		%_639 = bitcast %class.Tree* %node to i8*
-		%_638 = call i8* %_637(i8* %_639)
-		%_640 = bitcast %class.Tree* %this to i8*
-		%_634 = call i1 %_633(i8* %_640, i8* %_638)
-		store i1 %_634, i1* %ntb
+		%_676 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 19
+		%_677 = load i8*, i8** %_676
+		%_678 = bitcast i8* %_677 to i1(i8*, i8*)*
+		%_680 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 4
+		%_681 = load i8*, i8** %_680
+		%_682 = bitcast i8* %_681 to i8*(i8*)*
+		%_684 = bitcast %class.Tree* %node to i8*
+		%_683 = call i8* %_682(i8* %_684)
+		%_685 = bitcast %class.Tree* %this to i8*
+		%_679 = call i1 %_678(i8* %_685, i8* %_683)
+		store i1 %_679, i1* %ntb
 		br label %if59
 
 if58:
@@ -1006,31 +1059,31 @@ if58:
 		br label %if59
 
 if59:
-	%_646 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
-	%_647 = load i8*, i8** %_646
-	%_648 = bitcast i8* %_647 to i32(i8*)*
-	%_650 = bitcast %class.Tree* %node to i8*
-	%_649 = call i32 %_648(i8* %_650)
-	call void @print_int(i32 %_649)
-	%_652 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
-	%_653 = load i8*, i8** %_652
-	%_654 = bitcast i8* %_653 to i1(i8*)*
-	%_656 = bitcast %class.Tree* %node to i8*
-	%_655 = call i1 %_654(i8* %_656)
-	br i1 %_655, label %if60, label %if61
+	%_691 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 5
+	%_692 = load i8*, i8** %_691
+	%_693 = bitcast i8* %_692 to i32(i8*)*
+	%_695 = bitcast %class.Tree* %node to i8*
+	%_694 = call i32 %_693(i8* %_695)
+	call void @print_int(i32 %_694)
+	%_697 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 7
+	%_698 = load i8*, i8** %_697
+	%_699 = bitcast i8* %_698 to i1(i8*)*
+	%_701 = bitcast %class.Tree* %node to i8*
+	%_700 = call i1 %_699(i8* %_701)
+	br i1 %_700, label %if60, label %if61
 
 if60:
-		%_657 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 19
-		%_658 = load i8*, i8** %_657
-		%_659 = bitcast i8* %_658 to i1(i8*, i8*)*
-		%_661 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
-		%_662 = load i8*, i8** %_661
-		%_663 = bitcast i8* %_662 to i8*(i8*)*
-		%_665 = bitcast %class.Tree* %node to i8*
-		%_664 = call i8* %_663(i8* %_665)
-		%_666 = bitcast %class.Tree* %this to i8*
-		%_660 = call i1 %_659(i8* %_666, i8* %_664)
-		store i1 %_660, i1* %ntb
+		%_702 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 19
+		%_703 = load i8*, i8** %_702
+		%_704 = bitcast i8* %_703 to i1(i8*, i8*)*
+		%_706 = getelementptr [20 x i8*], [20 x i8*]* @.Tree_vtable, i32 0, i32 3
+		%_707 = load i8*, i8** %_706
+		%_708 = bitcast i8* %_707 to i8*(i8*)*
+		%_710 = bitcast %class.Tree* %node to i8*
+		%_709 = call i8* %_708(i8* %_710)
+		%_711 = bitcast %class.Tree* %this to i8*
+		%_705 = call i1 %_704(i8* %_711, i8* %_709)
+		store i1 %_705, i1* %ntb
 		br label %if62
 
 if61:

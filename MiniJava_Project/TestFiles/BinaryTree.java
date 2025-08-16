@@ -16,13 +16,11 @@ class BT {
 
 	root = new Tree();
 	ntb = root.Init(16);
-
-
-	
 	ntb = root.Print();
 	System.out.println(100000000);
 	ntb = root.Insert(8) ;
 	ntb = root.Print();
+	System.out.println(200000000);
 	ntb = root.Insert(24) ;
 	ntb = root.Insert(4) ;
 	ntb = root.Insert(12) ;
@@ -30,13 +28,20 @@ class BT {
 	ntb = root.Insert(28) ;
 	ntb = root.Insert(14) ;
 	ntb = root.Print();
+	System.out.println(300000000);
 	System.out.println(root.Search(24));
+	System.out.println(400000000);
 	System.out.println(root.Search(12));
+	System.out.println(500000000);
 	System.out.println(root.Search(16));
+	System.out.println(600000000);
 	System.out.println(root.Search(50));
+	System.out.println(700000000);
 	System.out.println(root.Search(12));
+	System.out.println(800000000);
 	ntb = root.Delete(12);
 	ntb = root.Print();
+	System.out.println(900000000);
 	System.out.println(root.Search(12));
 
 	return 0 ;
