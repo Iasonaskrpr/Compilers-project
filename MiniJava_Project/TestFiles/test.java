@@ -1,23 +1,13 @@
 
 class test {
 	public static void main(String[] a){
-		int x;
+		broaderGreeter b;
 		int y;
-		int[] i;
-		boolean z;
-		boolean t;
-		Greeter u;
-		i = new int[15];
+		b = new broaderGreeter();
 		y=3;
-		x= y+3;
-		t = x<10;
-		z = y<4;
-		i[4] = 25;
-		i[3] = x;
-		if((t && z))
-			System.out.println(i[8]);
-		else
-			System.out.println(19);
+		System.out.println(y);
+		b.dontsayHello(y);
+		System.out.println(y);
 	}	
 }
 class Greeter {
@@ -31,17 +21,11 @@ class Greeter {
 		return 0;
     }
 }
-class broaderGreeter extends Greeter{
+class broaderGreeter{
 	int k;
-	public boolean dontsayHello() {
-		boolean t;
-		boolean y;
-		broaderGreeter l;
-		t =true;
-		y=true;
-		l = new broaderGreeter();
-		x[5] = 8;
-		return t&&y;
+	public boolean dontsayHello(int j) {
+		j=5;
+		return false;
     }
 }
 

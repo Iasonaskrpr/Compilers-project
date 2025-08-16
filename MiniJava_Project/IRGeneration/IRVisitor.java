@@ -163,7 +163,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String MethName = n.f2.accept(this,ir).getData();
         ir.new_method();
         if(ir.isClass(retType)){
-            retType = "%class."+retType+"*";
+            retType = "i8*";
         }
         ir.emit("define " + retType + " @"+ir.getCurClass()+"."+MethName+"(i8* %this_raw");
         n.f4.accept(this,ir);
@@ -274,6 +274,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(MessageSend n, IRHelper ir) throws Exception{
         String thisVar = n.f0.accept(this,ir).getData();
         String methodName = n.f2.accept(this,ir).getData();
+        String originalVar = thisVar;
         //Load method from vtable to var and call it like that
         String cls;
         if(thisVar.equals("this")){
@@ -320,13 +321,19 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         String this_raw = thisVar;
         System.out.println(this_raw);
-        if(!ir.isParameter(this_raw.substring(1)) && !this_raw.equals("%this")){
+        boolean bitcast = true;
+        if(originalVar.startsWith("%_")){
+            bitcast = false;
+        }
+        if(!ir.isParameter(this_raw.substring(1)) && !this_raw.equals("%this") && !this_raw.startsWith("%_")){
             String this_loaded = ir.new_var();
             ir.emit(this_loaded + " = load %class."+cls+"*, %class."+cls+"** "+this_raw+"\n");
             this_raw = this_loaded;
         }
-        thisVar = ir.new_var();
-        ir.emit(thisVar + " = bitcast %class."+cls+"* "+this_raw+ " to i8*\n");
+        if(bitcast){
+            thisVar = ir.new_var();
+            ir.emit(thisVar + " = bitcast %class."+cls+"* "+this_raw+ " to i8*\n");
+        }
         String callCommand;
         String returnType = ir.getMethodRetType(cls,methodName);
         ir.lastCallClass(ir.getMethodRawRetType(cls, methodName));
@@ -339,14 +346,19 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
                 String tp = ir.getLLVMType(types.get(i));
                 if(ir.isParameter(id)){
                     id = "%" + id;
-                    // if(tp.equals("i8*")){
-                    //     String new_id = ir.new_var();
-                    //     ir.emit(new_id + " = bitcast %class."+types.get(i)+"* "+id+ " to i8*\n");
-                    //     id = new_id;
-                    // }
+                    if(tp.equals("i8*")){
+                        String new_id = ir.new_var();
+                        ir.emit(new_id + " = bitcast %class."+types.get(i)+"* "+id+ " to i8*\n");
+                        id = new_id;
+                    }
                 }
                 else{
                     id = ir.idToTempVar(new IRData(id,"id"));
+                    if(tp.equals("i8*")){
+                        String new_id = ir.new_var();
+                        ir.emit(new_id + " = bitcast %class."+types.get(i)+"* "+id+ " to i8*\n");
+                        id = new_id;
+                    }
                 }
                 callCommand += ", "+tp+" "+id;
                 i++;
@@ -354,9 +366,11 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         callCommand+=")\n";
         ir.emit(callCommand);
-        // if(returnType.equals("i8*")){
-        //     String new_ret = ir.new_var()
-        // }
+        if(returnType.equals("i8*")){
+            String new_ret = ir.new_var();
+            ir.emit(new_ret + " = bitcast i8* "+ ret +" to %class."+ir.getMethodRawRetType(cls, methodName)+"*\n");
+            ret = new_ret;
+        }
         return new IRData(ret,"id");
     }
     /**
@@ -591,7 +605,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(ArrayLength n, IRHelper ir) throws Exception{
-        //Edit
         IRData arr = n.f0.accept(this,ir);
         String size_ptr = ir.new_var();
         String var = arr.getData();
