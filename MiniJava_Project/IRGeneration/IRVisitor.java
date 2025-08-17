@@ -328,7 +328,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             Arguments = "";
         }
         String this_raw = thisVar;
-        System.out.println(this_raw);
         if(!this_raw.equals("%this") && !this_raw.startsWith("%_")){
             String this_loaded = ir.new_var();
             ir.emit(this_loaded + " = load %class."+cls+"*, %class."+cls+"** "+this_raw+"\n");
@@ -410,10 +409,8 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(IfStatement n, IRHelper ir)throws Exception{
         IRData expr = n.f2.accept(this,ir);
         String var = expr.getData();
-        if(!var.startsWith("%") && !var.equals("true") && !var.equals(false)){
-            String raw_var = "%" + var;
-            var = ir.new_var();
-            ir.emit(var + " = load i1, i1* "+raw_var+"\n");
+        if(!var.startsWith("%") && !var.equals("true") && !var.equals("false")){
+            var = ir.idToTempVar(expr);
         }
         String _if = ir.new_if_label();
         String _else = ir.new_if_label();
@@ -449,9 +446,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         IRData expr = n.f2.accept(this,ir);
         String var = expr.getData();
         if(!var.startsWith("%") && !var.equals("true") && !var.equals(false)){
-            String raw_var = "%" + var;
-            var = ir.new_var();
-            ir.emit(var + " = load i1, i1* "+raw_var+"\n");
+            var = ir.idToTempVar(expr);
         }
         ir.emit("br i1 "+var+", label %"+body+", label %"+end+"\n");
         ir.emitlabel(body);
@@ -757,7 +752,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(NotExpression n, IRHelper ir) throws Exception{
-        String var = n.f1.accept(this,ir).getData();
+        String var = ir.idToTempVar(n.f1.accept(this,ir));
         String notVar = ir.new_var();
         ir.emit(notVar+" = xor i1 "+var+", true\n");
         return new IRData(notVar,"id");

@@ -11,4 +11,6 @@ compile:
 	mkdir -p IRFiles
 
 clean:
-	rm -rf IRGeneration/*.class symbolTable/*.class SemanticCheckingVisitors/*.class *.class syntaxtree visitor $(JTB_OUTPUT) *~ JavaCharStream.java MiniJavaParser.java TokenMgrError.java Token.java ParseException.java MiniJavaParserConstants.java MiniJavaParserTokenManager.java
+	rm -rf IRGeneration/*.class symbolTable/*.class SemanticCheckingVisitors/*.class *.class syntaxtree visitor $(JTB_OUTPUT) *~ JavaCharStream.java MiniJavaParser.java TokenMgrError.java Token.java ParseException.java MiniJavaParserConstants.java MiniJavaParserTokenManager.java 
+cleanIR:
+	rm -rf IRFiles

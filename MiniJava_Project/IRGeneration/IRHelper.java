@@ -137,7 +137,9 @@ public class IRHelper{
                 }
                 tablename+="."+methodEntry.getKey()+" to i8*),";
             }
-            tablename = tablename.substring(0,tablename.length()-1); //Drop last comma
+            if(tablename.endsWith(",")){
+                tablename = tablename.substring(0,tablename.length()-1); //Drop last comma
+            }
             tablename = tablename+ "]\n";
             this.emit(tablename);
         }
@@ -152,8 +154,8 @@ public class IRHelper{
                 .sorted(Comparator.comparingInt(e -> e.getValue().getOffset()))
                 .map(e -> getLLVMType(e.getValue().getType()))
                 .collect(Collectors.joining(", "));
-            if(classDecl.endsWith(",")){
-                classDecl = classDecl.substring(0, classDecl.length() - 1);
+            while(classDecl.endsWith(", ")){
+                classDecl = classDecl.substring(0, classDecl.length() - 2);
             }
             classDecl += " }\n";
             this.emit(classDecl);
