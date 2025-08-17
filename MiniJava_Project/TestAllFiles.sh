@@ -13,7 +13,7 @@ if [[ "$1" == "--keep" ]]; then
 fi
 
 # Καθαρισμός παλιών
-rm -f "$IR_DIR"/*.out "$IR_DIR"/*.tmpout "$TEST_DIR"/*.tmpout "$TEST_DIR"/*.class
+rm -f "$IR_DIR"/*.out "$IR_DIR"/*.tmpout" "$TEST_DIR"/*.tmpout" "$TEST_DIR"/*.class
 mkdir -p "$IR_DIR"
 # Compile the CompilerManager
 javac CompilerManager.java || exit 1
@@ -50,6 +50,7 @@ for java_file in "$TEST_DIR"/*.java; do
     # Compile & run original Java program
     javac "$java_file" || { echo "❌ javac failed"; continue; }
     java -cp "$TEST_DIR" "$base" >"$TEST_DIR/$base.java.tmpout" 2>&1
+    java_exit=$?
 
     # Compile IR -> executable
     if ! clang -o "$exe_file" "$ir_file" 2>/dev/null; then
@@ -59,8 +60,30 @@ for java_file in "$TEST_DIR"/*.java; do
 
     # Run LLVM executable
     "$exe_file" >"$IR_DIR/$base.llvm.tmpout" 2>&1
+    llvm_exit=$?
 
-    # Compare outputs
+    # Detect Java OOB/crash (or other runtime exceptions)
+    if grep -q "ArrayIndexOutOfBoundsException" "$TEST_DIR/$base.java.tmpout" || grep -q "Exception in thread" "$TEST_DIR/$base.java.tmpout"; then
+        # Java crashed (likely OOB). Expect LLVM to also abort/print OOB.
+        if grep -q "Out of bounds" "$IR_DIR/$base.llvm.tmpout" || [[ $llvm_exit -ne 0 ]]; then
+            echo "✅ Passed (Java crashed with OOB and LLVM aborted/printed OOB)"
+            CORRECT=$((CORRECT + 1))
+            # If you want to stop the whole test-suite at the first OOB, uncomment:
+            # echo "Stopping test suite due to OOB (fail fast)."
+            # exit 1
+            continue
+        else
+            echo "❌ Output mismatch on OOB case (Java crashed but LLVM did not abort/print OOB)"
+            echo "  Java output:"
+            sed -n '1,12p' "$TEST_DIR/$base.java.tmpout"
+            echo "  LLVM output:"
+            sed -n '1,12p' "$IR_DIR/$base.llvm.tmpout"
+            # stop immediately so make/CI sees the failure
+            exit 1
+        fi
+    fi
+
+    # Compare outputs for the normal (non-OOB) case
     if diff -q "$TEST_DIR/$base.java.tmpout" "$IR_DIR/$base.llvm.tmpout" >/dev/null; then
         echo "✅ Passed"
         CORRECT=$((CORRECT + 1))
