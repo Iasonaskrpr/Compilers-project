@@ -18,8 +18,7 @@ public class IRHelper{
     private final Map<String ,Map<String , FunctionVInfo>> vtable;
     private int block_count; //Used to keep track of blocks  
     private Map<String,String> VariableTypes; //Used to store variables of the method
-    private Map<String,String> params; //Map used to cast i8* to classes
-    private List<String> VarParams; //Used to identify parameters used inside function
+    private Map<String,String> params; //Map used to allocate parameters
     private String LastMethodCallClass;
     private boolean emit;
     private String CurClass;
@@ -302,7 +301,6 @@ public class IRHelper{
     }
     public void new_method(){
         this.params = new HashMap<>();
-        this.VarParams = new LinkedList<>();
     }
     public void addParam(String name, String cls){
         this.params.put(name, cls);
@@ -338,15 +336,6 @@ public class IRHelper{
     }
     public boolean isClass(String name){
         return this.vtable.containsKey(name);
-    }
-    public boolean isParameter(String name){
-        if(this.VarParams == null){
-            return false;
-        }
-        return this.VarParams.contains(name);
-    }
-    public void addVarParam(String name){
-        this.VarParams.add(name);
     }
     public void lastCallClass(String cls){
         this.LastMethodCallClass = cls;

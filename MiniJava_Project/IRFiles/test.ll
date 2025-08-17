@@ -1,7 +1,5 @@
-@.broaderGreeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*),i8* bitcast (i1 (i8*)* @broaderGreeter.dontsayHello to i8*)]
-@.Greeter_vtable = global [1 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*)]
-%class.broaderGreeter = type{ %class.Greeter, i32 }
-%class.Greeter = type{ %IntArray, i32, i32, i8* }
+@.Greeter_vtable = global [2 x i8*] [i8* bitcast (i32 (i8*,i8*)* @Greeter.sayHello to i8*),i8* bitcast (i32 (i8*,i32)* @Greeter.update to i8*)]
+%class.Greeter = type{ i32, i32, i32, i8* }
 %IntArray = type { i32, i32* }
 %BooleanArray = type { i32, i8* }
 declare i8* @calloc(i32, i32)
@@ -21,105 +19,34 @@ define void @throw_oob() {
 	ret void
 }
 define i32 @main(){
+	%b = alloca %class.Greeter*
+	store %class.Greeter* null, %class.Greeter** %b
+	%y = alloca %class.Greeter*
+	store %class.Greeter* null, %class.Greeter** %y
 	%x = alloca i32
-	%y = alloca i32
-	%i = alloca %IntArray
-	%z = alloca i1
-	%t = alloca i1
-	%u = alloca %class.Greeter*
-	store %class.Greeter* null, %class.Greeter** %u
-	%_0 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	store i32 15, i32* %_0
-	%_1 = call i8* @calloc(i32 15, i32 4)
-	%_2 = bitcast i8* %_1 to i32*
-	%_3 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	store i32* %_2, i32** %_3
-	store i32 3, i32* %y
-	%_4 = load i32, i32* %y
-	%_5 = add i32 %_4, 3
-	store i32 %_5, i32* %x
-	%_6 = load i32, i32* %x
-	%_7 = icmp slt i32 %_6, 10
-	store i1 %_7, i1* %t
-	%_8 = load i32, i32* %y
-	%_9 = icmp slt i32 %_8, 4
-	store i1 %_9, i1* %z
-	%_10 = add i32 0, 4
-	%_11 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_12 = load i32, i32* %_11
-	%_13 = icmp slt i32 %_10, %_12
-	br i1 %_13, label %oob0, label %oob1
+	%_3 = getelementptr %class.Greeter, %class.Greeter* null, i32 1
+	%_0 = ptrtoint %class.Greeter* %_3 to i32
+	%_1 = call i8* @calloc(i32 1, i32 %_0)
+	%_2 = bitcast i8* %_1 to %class.Greeter*
+	store %class.Greeter* %_2, %class.Greeter** %b
+	br i1 true, label %if0, label %if1
 
-oob0:
-	%_14 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_15 = load i32*, i32** %_14
-	%_16 = getelementptr i32, i32* %_15, i32 %_10
-	store i32 25, i32* %_16
-	br label %oob2
-
-oob1:
-	br label %end
-
-oob2:
-	%_17 = add i32 0, 3
-	%_18 = load i32, i32* %x
-	%_19 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-	%_20 = load i32, i32* %_19
-	%_21 = icmp slt i32 %_17, %_20
-	br i1 %_21, label %oob3, label %oob4
-
-oob3:
-	%_22 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-	%_23 = load i32*, i32** %_22
-	%_24 = getelementptr i32, i32* %_23, i32 %_17
-	store i32 %_18, i32* %_24
-	br label %oob5
-
-oob4:
-	br label %end
-
-oob5:
-	%_25 = load i1, i1* %t
-	br label %if0
 if0:
-	%_26 = icmp ne i1 %_25, 0
-	br i1 %_26, label %if1, label %if2
+		%_4 = getelementptr [2 x i8*], [2 x i8*]* @.Greeter_vtable, i32 0, i32 0
+		%_5 = load i8*, i8** %_4
+		%_6 = bitcast i8* %_5 to i32(i8*, i8*)*
+		%_8 = load %class.Greeter*, %class.Greeter** %b
+		%_9 = bitcast %class.Greeter* %_8 to i8*
+		%_10 = load %class.Greeter*, %class.Greeter** %y
+		%_7 = call i32 %_6(i8* %_9, i8* %_10)
+		store i32 %_7, i32* %x
+		br label %if2
 
 if1:
-	%_29 = load i1, i1* %z
-	%_27 = icmp ne i1 %_29, 0
-	br label %if2
+		store i32 4, i32* %x
+		br label %if2
 
 if2:
-	%_28 = phi i1 [false, %if0], [%_27, %if1]
-	br i1 %_28, label %if3, label %if4
-
-if3:
-		%_30 = add i32 0, 8
-		%_31 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 0
-		%_32 = load i32, i32* %_31
-		%_33 = icmp slt i32 %_30, %_32
-		br i1 %_33, label %oob6, label %oob7
-
-oob6:
-		%_34 = getelementptr %IntArray, %IntArray* %i, i32 0, i32 1
-		%_35 = load i32*, i32** %_34
-		%_36 = getelementptr i32, i32* %_35, i32 %_30
-		%_37 = load i32, i32* %_36
-		br label %oob8
-
-oob7:
-		br label %end
-
-oob8:
-		call void @print_int(i32 %_37)
-		br label %if5
-
-if4:
-		call void @print_int(i32 19)
-		br label %if5
-
-if5:
 	ret i32 0
 
 end:
@@ -128,68 +55,57 @@ end:
 }
 define i32 @Greeter.sayHello(i8* %this_raw, i8* %h_raw) {
 	%this = bitcast i8* %this_raw to %class.Greeter*
-	%h = bitcast i8* %h_raw to %class.Greeter*
-	%_38 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
-	store i32 8, i32* %_38
-	%_39 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
-	%_40 = load i32, i32* %_39
-	call void @print_int(i32 %_40)
+	%.h = bitcast i8* %h_raw to %class.Greeter*
+	%h = alloca %class.Greeter*
+	store %class.Greeter* %.h, %class.Greeter** %h
+	%_12 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	store i32 8, i32* %_12
+	%_18 = getelementptr %class.Greeter, %class.Greeter* null, i32 1
+	%_15 = ptrtoint %class.Greeter* %_18 to i32
+	%_16 = call i8* @calloc(i32 1, i32 %_15)
+	%_17 = bitcast i8* %_16 to %class.Greeter*
+	store %class.Greeter* %_17, %class.Greeter** %h
+	br i1 true, label %if3, label %if4
+
+if3:
+		%_19 = getelementptr [2 x i8*], [2 x i8*]* @.Greeter_vtable, i32 0, i32 1
+		%_20 = load i8*, i8** %_19
+		%_21 = bitcast i8* %_20 to i32(i8*, i32)*
+		%_23 = load %class.Greeter*, %class.Greeter** %h
+		%_24 = bitcast %class.Greeter* %_23 to i8*
+		%_25 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+		%_26 = load i32, i32* %_25
+		%_22 = call i32 %_21(i8* %_24, i32 %_26)
+		%_28 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 0
+		store i32 %_22, i32* %_28
+		br label %if5
+
+if4:
+		%_30 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+		store i32 4, i32* %_30
+		br label %if5
+
+if5:
+	%_31 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	%_32 = load i32, i32* %_31
+	call void @print_int(i32 %_32)
 	ret i32 0
 
 end:
 	call void @throw_oob()
 	ret i32 1
 }
-define i1 @broaderGreeter.dontsayHello(i8* %this_raw) {
-	%this = bitcast i8* %this_raw to %class.broaderGreeter*
-	%t = alloca i1
-	%y = alloca i1
-	%l = alloca %class.broaderGreeter*
-	store %class.broaderGreeter* null, %class.broaderGreeter** %l
-	store i1 1, i1* %t
-	%_43 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_44 = getelementptr %class.Greeter, %class.Greeter* %_43, i32 0, i32 1
-	store i1 1, i1* %_44
-	%_50 = getelementptr %class.broaderGreeter, %class.broaderGreeter* null, i32 1
-	%_47 = ptrtoint %class.broaderGreeter* %_50 to i32
-	%_48 = call i8* @calloc(i32 1, i32 %_47)
-	%_49 = bitcast i8* %_48 to %class.broaderGreeter*
-	store %class.broaderGreeter* %_49, %class.broaderGreeter** %l
-	%_51 = add i32 0, 5
-	%_52 = getelementptr %class.broaderGreeter, %class.broaderGreeter* %this, i32 0, i32 0
-	%_53 = getelementptr %class.Greeter, %class.Greeter* %_52, i32 0, i32 0
-	%_54 = getelementptr %IntArray, %IntArray* %_53, i32 0, i32 0
-	%_55 = load i32, i32* %_54
-	%_56 = icmp slt i32 %_51, %_55
-	br i1 %_56, label %oob9, label %oob10
-
-oob9:
-	%_57 = getelementptr %IntArray, %IntArray* %_53, i32 0, i32 1
-	%_58 = load i32*, i32** %_57
-	%_59 = getelementptr i32, i32* %_58, i32 %_51
-	store i32 8, i32* %_59
-	br label %oob11
-
-oob10:
-	br label %end
-
-oob11:
-	%_60 = load i1, i1* %t
-	br label %if6
-if6:
-	%_61 = icmp ne i1 %_60, 0
-	br i1 %_61, label %if7, label %if8
-
-if7:
-	%_64 = load i1, i1* %y
-	%_62 = icmp ne i1 %_64, 0
-	br label %if8
-
-if8:
-	%_63 = phi i1 [false, %if6], [%_62, %if7]
-	ret i1 %_63
+define i32 @Greeter.update(i8* %this_raw, i32 %.j) {
+	%this = bitcast i8* %this_raw to %class.Greeter*
+	%j = alloca i32
+	store i32 %.j, i32* %j
+	%_34 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	store i32 3, i32* %_34
+	%_35 = getelementptr %class.Greeter, %class.Greeter* %this, i32 0, i32 1
+	%_36 = load i32, i32* %_35
+	ret i32 %_36
 
 end:
 	call void @throw_oob()
-	ret i1 false
+	ret i32 1
 }

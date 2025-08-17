@@ -172,7 +172,17 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         ir.emit("%this = bitcast i8* %this_raw to %class."+ir.getCurClass()+"*\n");
         params = ir.getParams();
         for (Map.Entry<String, String> p : params.entrySet()) {
-            ir.emit("%"+p.getKey()+" = bitcast i8* %"+p.getKey()+"_raw to %class."+p.getValue()+"*\n");
+            if(ir.isClass(p.getValue())){
+                ir.emit("%."+p.getKey()+" = bitcast i8* %"+p.getKey()+"_raw to %class."+p.getValue()+"*\n");
+                ir.emit("%"+p.getKey()+" = alloca %class."+p.getValue()+"*\n");
+                ir.emit("store %class."+p.getValue()+"* %."+p.getKey()+", %class."+p.getValue()+"** %"+p.getKey()+"\n");
+            }
+            else{
+                ir.emit("%"+p.getKey()+" = alloca "+p.getValue()+"\n");
+                ir.emit("store "+p.getValue()+" %."+p.getKey()+", "+p.getValue()+"* %"+p.getKey()+"\n");
+            }
+            
+            
         }
         n.f7.accept(this,ir);
         n.f8.accept(this,ir);
@@ -230,15 +240,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         IRData typeData = n.f0.accept(this,ir);
         String type = typeData.getData();
         String id = n.f1.accept(this,ir).getData();
+        ir.addParam(id, type);
+        ir.addVariable(id, type);
         if(typeData.isId()){
-            ir.addParam(id, type);
-            ir.addVarParam(id);
             type = "i8*";
             ir.emit(", "+type+" %"+id+"_raw");
         }
         else{
-            ir.addVarParam(id);
-            ir.emit(", "+type+" %"+id);
+            ir.emit(", "+type+" %."+id);
             }
         return null;
     }
@@ -274,7 +283,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(MessageSend n, IRHelper ir) throws Exception{
         String thisVar = n.f0.accept(this,ir).getData();
         String methodName = n.f2.accept(this,ir).getData();
-        String originalVar = thisVar;
         //Load method from vtable to var and call it like that
         String cls;
         if(thisVar.equals("this")){
@@ -321,19 +329,13 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         String this_raw = thisVar;
         System.out.println(this_raw);
-        boolean bitcast = true;
-        if(originalVar.startsWith("%_")){
-            bitcast = false;
-        }
-        if(!ir.isParameter(this_raw.substring(1)) && !this_raw.equals("%this") && !this_raw.startsWith("%_")){
+        if(!this_raw.equals("%this") && !this_raw.startsWith("%_")){
             String this_loaded = ir.new_var();
             ir.emit(this_loaded + " = load %class."+cls+"*, %class."+cls+"** "+this_raw+"\n");
             this_raw = this_loaded;
         }
-        if(bitcast){
-            thisVar = ir.new_var();
-            ir.emit(thisVar + " = bitcast %class."+cls+"* "+this_raw+ " to i8*\n");
-        }
+        thisVar = ir.new_var();
+        ir.emit(thisVar + " = bitcast %class."+cls+"* "+this_raw+ " to i8*\n");
         String callCommand;
         String returnType = ir.getMethodRetType(cls,methodName);
         ir.lastCallClass(ir.getMethodRawRetType(cls, methodName));
@@ -344,22 +346,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             int i = 0;
             for(String id : ids){
                 String tp = ir.getLLVMType(types.get(i));
-                if(ir.isParameter(id)){
-                    id = "%" + id;
-                    if(tp.equals("i8*")){
-                        String new_id = ir.new_var();
-                        ir.emit(new_id + " = bitcast %class."+types.get(i)+"* "+id+ " to i8*\n");
-                        id = new_id;
-                    }
-                }
-                else{
-                    id = ir.idToTempVar(new IRData(id,"id"));
-                    if(tp.equals("i8*")){
-                        String new_id = ir.new_var();
-                        ir.emit(new_id + " = bitcast %class."+types.get(i)+"* "+id+ " to i8*\n");
-                        id = new_id;
-                    }
-                }
+                id = ir.idToTempVar(new IRData(id,"id"));
                 callCommand += ", "+tp+" "+id;
                 i++;
             }
@@ -367,9 +354,9 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         callCommand+=")\n";
         ir.emit(callCommand);
         if(returnType.equals("i8*")){
-            String new_ret = ir.new_var();
-            ir.emit(new_ret + " = bitcast i8* "+ ret +" to %class."+ir.getMethodRawRetType(cls, methodName)+"*\n");
-            ret = new_ret;
+            String ret_raw = ret;
+            ret = ir.new_var();
+            ir.emit(ret + " = bitcast i8* "+ret_raw+" to %class."+ir.getMethodRawRetType(cls,methodName)+"*\n");
         }
         return new IRData(ret,"id");
     }
@@ -423,7 +410,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
     public IRData visit(IfStatement n, IRHelper ir)throws Exception{
         IRData expr = n.f2.accept(this,ir);
         String var = expr.getData();
-        if(!var.startsWith("%")){
+        if(!var.startsWith("%") && !var.equals("true") && !var.equals(false)){
             String raw_var = "%" + var;
             var = ir.new_var();
             ir.emit(var + " = load i1, i1* "+raw_var+"\n");
@@ -461,7 +448,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         ir.emitlabel(condition);
         IRData expr = n.f2.accept(this,ir);
         String var = expr.getData();
-        if(!var.startsWith("%")){
+        if(!var.startsWith("%") && !var.equals("true") && !var.equals(false)){
             String raw_var = "%" + var;
             var = ir.new_var();
             ir.emit(var + " = load i1, i1* "+raw_var+"\n");
@@ -605,6 +592,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
      */
     @Override
     public IRData visit(ArrayLength n, IRHelper ir) throws Exception{
+        //Edit
         IRData arr = n.f0.accept(this,ir);
         String size_ptr = ir.new_var();
         String var = arr.getData();
@@ -716,16 +704,10 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         if(left.isId()){
             leftVar = ir.idToTempVar(left);
         }
-        if(ir.isParameter(leftVar)){
-            leftVar = "%" + leftVar;
-        }
         IRData right = n.f2.accept(this,ir);
         String rightVar = right.getData();
         if(right.isId()){
             rightVar = ir.idToTempVar(right);
-        }
-        if(ir.isParameter(rightVar)){
-            rightVar = "%" + rightVar;
         }
         String cond = ir.new_var();
         ir.emit(cond+" = icmp slt i32 "+leftVar+", "+rightVar+"\n");
@@ -811,16 +793,10 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         if(left.isId()){
             leftVar = ir.idToTempVar(left);
         }
-        if(ir.isParameter(leftVar)){
-            leftVar = "%" + leftVar;
-        }
         IRData right = n.f2.accept(this,ir);
         String rightVar = right.getData();
         if(right.isId()){
             rightVar = ir.idToTempVar(right);
-        }
-        if(ir.isParameter(rightVar)){
-            rightVar = "%" + rightVar;
         }
         String lhs = ir.new_var();
         ir.emit(lhs+" = add i32 "+leftVar+", "+rightVar+"\n");
@@ -839,16 +815,10 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         if(left.isId()){
             leftVar = ir.idToTempVar(left);
         }
-        if(ir.isParameter(leftVar)){
-            leftVar = "%" + leftVar;
-        }
         IRData right = n.f2.accept(this,ir);
         String rightVar = right.getData();
         if(right.isId()){
             rightVar = ir.idToTempVar(right);
-        }
-        if(ir.isParameter(rightVar)){
-            rightVar = "%" + rightVar;
         }
         String lhs = ir.new_var();
         ir.emit(lhs+" = sub i32 "+leftVar+", "+rightVar+"\n");
@@ -866,9 +836,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String leftVar = left.getData();
         if(left.isId()){
             leftVar = ir.idToTempVar(left);
-        }
-        if(ir.isParameter(leftVar)){
-            leftVar = "%" + leftVar;
         }
         IRData right = n.f2.accept(this,ir);
         String rightVar = right.getData();
@@ -899,7 +866,7 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String lhs = left.getData();
         IRData rightHand = n.f2.accept(this,ir);
         String rhs = rightHand.getData();
-        if(ir.isParameter(rhs) || rhs.equals("this")){
+        if(rhs.equals("this")){
             rhs = "%" + rhs;
         }
         else{
