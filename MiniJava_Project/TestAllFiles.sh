@@ -14,7 +14,7 @@ fi
 
 # Καθαρισμός παλιών
 rm -f "$IR_DIR"/*.out "$IR_DIR"/*.tmpout "$TEST_DIR"/*.tmpout "$TEST_DIR"/*.class
-
+mkdir -p "$IR_DIR"
 # Compile the CompilerManager
 javac CompilerManager.java || exit 1
 
@@ -76,5 +76,6 @@ echo "Correct: $CORRECT / $TOTAL"
 
 # Clean up unless --keep
 if ! $KEEP; then
-    rm -f "$IR_DIR" "$TEST_DIR"/*.tmpout "$TEST_DIR"/*.class 
+    rm -f "$TEST_DIR"/*.tmpout "$TEST_DIR"/*.class
+    rm -rf "$IR_DIR"
 fi

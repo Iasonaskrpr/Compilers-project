@@ -18,8 +18,6 @@ class A {
 
     public int get(){
         int rv;
-        boolean data;
-        data = true;
         if(data){
             rv = 1;
         }

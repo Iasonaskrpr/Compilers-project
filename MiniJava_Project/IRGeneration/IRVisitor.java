@@ -304,7 +304,15 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(size+" = ptrtoint %class."+cls+"* "+cls_ptr_ptr+ " to i32\n");
             ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
             ir.emit(cls_ptr + " = bitcast i8* " + mem + " to %class."+cls+"*\n");
-            ir.emit("store %class."+cls+"* "+cls_ptr+", %class."+cls+"** "+tempVar+"\n"); 
+            String vtbl = ir.new_var();
+            String vtblcast = ir.new_var();
+            String vptrfield = ir.new_var();
+            String vtblName = "@." + cls + "_vtable"; 
+            ir.emit(vtbl + " = getelementptr ["+ir.getVtableSize(cls)+" x i8*], ["+ir.getVtableSize(cls)+" x i8*]* "+vtblName+", i32 0, i32 0\n");
+            ir.emit(vtblcast + " = bitcast i8** " + vtbl + " to i8**\n");
+            ir.emit(vptrfield + " = getelementptr %class." + cls + ", %class." + cls + "* " + cls_ptr + ", i32 0, i32 0\n");
+            ir.emit("store i8** " + vtblcast + ", i8*** " + vptrfield + "\n");
+            ir.emit("store %class."+cls+"* "+cls_ptr+", %class."+cls+"** "+tempVar+"\n");
             ir.emit(thisVar+" = load %class."+cls+"*, %class."+cls+"** "+tempVar+"\n");
         }
         else{ 
@@ -317,7 +325,8 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         String method_raw = ir.new_var();
         String method = ir.new_var();
         String ret = ir.new_var();
-        ir.emit(method_ptr+ " = " + ir.getMethodLoadCommand(cls, methodName));
+        String Loadcmd = ir.getMethodLoadCommand(cls, methodName,thisVar);
+        ir.emit(method_ptr+ " = " + Loadcmd);
         ir.emit(method_raw + " = load i8*, i8** "+method_ptr+"\n");
         ir.emit(method + " = "+ ir.getMethodCallCommand(cls, methodName, method_raw));
         String Arguments;
@@ -913,6 +922,14 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             ir.emit(size+" = ptrtoint "+cls+"* "+cls_ptr_ptr+ " to i32\n");
             ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
             ir.emit(cls_ptr + " = bitcast i8* " + mem + " to "+cls+"*\n");
+            String vtbl = ir.new_var();
+            String vtblcast = ir.new_var();
+            String vptrfield = ir.new_var();
+            String vtblName = "@." + rightHand.getData() + "_vtable"; 
+            ir.emit(vtbl + " = getelementptr ["+ir.getVtableSize(rightHand.getData())+" x i8*], ["+ir.getVtableSize(rightHand.getData())+" x i8*]* "+vtblName+", i32 0, i32 0\n");
+            ir.emit(vtblcast + " = bitcast i8** " + vtbl + " to i8**\n");
+            ir.emit(vptrfield + " = getelementptr " + cls + ", " + cls + "* " + cls_ptr + ", i32 0, i32 0\n");
+            ir.emit("store i8** " + vtblcast + ", i8*** " + vptrfield + "\n");
             if(l == null){
                 ir.emit("store "+cls+"* "+cls_ptr+", "+cls+"** %"+lhs+"\n");
             }

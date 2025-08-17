@@ -144,7 +144,7 @@ public class IRHelper{
             this.emit(tablename);
         }
         for(Map.Entry<String,ClassVariables> cls : Vars.entrySet()){
-            String classDecl = "%class."+cls.getKey()+" = type{";
+            String classDecl = "%class."+cls.getKey()+" = type{i8**,";
             String Parent = cls.getValue().getSuper();
             if(Parent != null){
                 classDecl += " %class."+Parent+",";
@@ -234,7 +234,7 @@ public class IRHelper{
             }
             this.emit(tempVar+" = load "+ type +", "+type+"* %"+var.getData()+"\n"); 
             return tempVar;
-            }
+        }
         VarInfo classVar;
         String cls = CurClass;
         String tmp = "%this";
@@ -245,7 +245,7 @@ public class IRHelper{
                 String ptr = new_var();
                 String retVar = new_var();
                 this.emit(command);
-                this.emit(ptr+" = getelementptr %class."+cls+", %class."+cls+"* "+tmp+", i32 0, i32 "+ Vars.get(cls).getVar(var.getData()).getOffset() +"\n");
+                this.emit(ptr+" = getelementptr %class."+cls+", %class."+cls+"* "+tmp+", i32 0, i32 "+ (Vars.get(cls).getVar(var.getData()).getOffset()+1) +"\n");
                 this.emit(retVar+ " = load "+getLLVMType(classVar.getType())+", "+getLLVMType(classVar.getType())+"* "+ptr+"\n");
                 return retVar;
             }
@@ -291,7 +291,7 @@ public class IRHelper{
             if(classVar != null){
                 String retVar = new_var();
                 this.emit(command);
-                this.emit(retVar + " = getelementptr %class."+cls+", %class."+cls+"* "+ tmp+", i32 0, i32 "+ classVar.getOffset()+"\n");
+                this.emit(retVar + " = getelementptr %class."+cls+", %class."+cls+"* "+ tmp+", i32 0, i32 "+ (classVar.getOffset()+1) +"\n");
                 return retVar;
             }
             String oldtmp = tmp;
@@ -310,12 +310,24 @@ public class IRHelper{
     public Map<String, String> getParams(){
         return this.params;
     }
-    public String getMethodLoadCommand(String cls, String Method){
-        String size = Integer.toString(this.vtable.get(cls).size());
+    public String getMethodLoadCommand(String cls, String Method,String vtbl_ptr_ptr){
         FunctionVInfo meth = this.vtable.get(cls).get(Method);
         String methodOffset = Integer.toString(meth.getOffset()/8);
-        String command = "getelementptr ["+size+" x i8*], ["+size+" x i8*]* @."+cls+"_vtable, i32 0, i32 "+methodOffset+"\n";
+        String vtbl_ptr = new_var();
+        String vtbl = new_var();
+        if(!vtbl_ptr_ptr.equals("%this") && !vtbl_ptr_ptr.startsWith("%_")){
+            String vtbl_p = new_var();
+            emit(vtbl_p + " = load %class."+cls+"*, %class."+cls+"** "+vtbl_ptr_ptr+"\n");
+            vtbl_ptr_ptr = vtbl_p;
+        }
+        
+        emit(vtbl_ptr + " = getelementptr %class."+cls+", %class."+cls+"* "+vtbl_ptr_ptr+ ", i32 0, i32 0\n");
+        emit(vtbl + " = load i8**, i8*** "+vtbl_ptr+"\n");
+        String command = "getelementptr i8*, i8** "+vtbl+", i32 "+methodOffset+ "\n";
         return command;
+    }
+    public String getVtableSize(String cls){
+        return Integer.toString(this.vtable.get(cls).size());
     }
     public String getMethodCallCommand(String cls, String Method,String var){
         FunctionVInfo meth = this.vtable.get(cls).get(Method);
