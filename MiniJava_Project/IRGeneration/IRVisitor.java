@@ -86,7 +86,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         ir.emit("call void @throw_oob()\n");
         ir.emit("ret i32 1\n");
         ir.exit_block();
-        ir.exitClass();
         ir.emit("}\n");
         return null;
     }
@@ -115,7 +114,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         n.f3.accept(this,ir);
         ir.toggleEmit();
         n.f4.accept(this,ir);
-        ir.exitClass();
         return null;
     }
     /**
@@ -137,7 +135,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         n.f5.accept(this,ir);
         ir.toggleEmit();
         n.f6.accept(this,ir);
-        ir.exitClass();
         return null;
     }
     /**
@@ -338,8 +335,12 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
         }
         String this_raw = thisVar;
         if(!this_raw.equals("%this") && !this_raw.startsWith("%_")){
-            String this_loaded = ir.new_var();
-            ir.emit(this_loaded + " = load %class."+cls+"*, %class."+cls+"** "+this_raw+"\n");
+            String this_loaded = ir.idToTempVar(new IRData(this_raw.substring(1),"id"));
+            if(this_loaded == null){
+                this_loaded= ir.new_var();
+                ir.emit(this_loaded + " = load %class."+cls+"*, %class."+cls+"** "+this_raw+"\n");
+            }
+            
             this_raw = this_loaded;
         }
         thisVar = ir.new_var();
@@ -353,8 +354,46 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             List<String> types = ir.getMethodArgs(cls, methodName);
             int i = 0;
             for(String id : ids){
-                String tp = ir.getLLVMType(types.get(i));
-                id = ir.idToTempVar(new IRData(id,"id"));
+                String tp;
+                System.out.println(types.get(i));
+                if(ir.isClass(id)){
+                    String varcls = id;
+                    String tempVar;
+                    id = ir.new_var();
+                    String uncastid = ir.new_var();
+                    tempVar = ir.new_var();
+                    ir.emit(tempVar+" = alloca %class."+varcls+"*\n"); 
+                    ir.emit("store %class."+varcls+ "* null, %class."+varcls+"** "+tempVar+"\n"); 
+                    String size = ir.new_var();
+                    String mem = ir.new_var();
+                    String cls_ptr = ir.new_var();
+                    String cls_ptr_ptr = ir.new_var();
+                    ir.emit(cls_ptr_ptr + " = getelementptr %class."+varcls+", %class."+varcls+"* null, i32 1\n");
+                    ir.emit(size+" = ptrtoint %class."+varcls+"* "+cls_ptr_ptr+ " to i32\n");
+                    ir.emit(mem + " = call i8* @calloc(i32 1, i32 "+size+")\n");
+                    ir.emit(cls_ptr + " = bitcast i8* " + mem + " to %class."+varcls+"*\n");
+                    String vtbl = ir.new_var();
+                    String vtblcast = ir.new_var();
+                    String vptrfield = ir.new_var();
+                    String vtblName = "@." + varcls + "_vtable"; 
+                    ir.emit(vtbl + " = getelementptr ["+ir.getVtableSize(varcls)+" x i8*], ["+ir.getVtableSize(varcls)+" x i8*]* "+vtblName+", i32 0, i32 0\n");
+                    ir.emit(vtblcast + " = bitcast i8** " + vtbl + " to i8**\n");
+                    ir.emit(vptrfield + " = getelementptr %class." + varcls + ", %class." + varcls + "* " + cls_ptr + ", i32 0, i32 0\n");
+                    ir.emit("store i8** " + vtblcast + ", i8*** " + vptrfield + "\n");
+                    ir.emit("store %class."+varcls+"* "+cls_ptr+", %class."+varcls+"** "+tempVar+"\n");
+                    ir.emit(uncastid+" = load %class."+varcls+"*, %class."+varcls+"** "+tempVar+"\n");
+                    ir.emit(id + " = bitcast %class."+varcls+"* "+ uncastid+" to i8* ");
+                    tp = "i8*";
+                }
+                else{
+                    tp = ir.getLLVMType(types.get(i));
+                    id = ir.idToTempVar(new IRData(id,"id"));
+                }
+                if(id.equals("this")){
+                    String new_id = ir.new_var();
+                    ir.emit(new_id + " = bitcast %class."+cls+"* %this to i8*\n");
+                    id = new_id;
+                }
                 callCommand += ", "+tp+" "+id;
                 i++;
             }
@@ -927,9 +966,8 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             String vptrfield = ir.new_var();
             String vtblName = "@." + rightHand.getData() + "_vtable"; 
             ir.emit(vtbl + " = getelementptr ["+ir.getVtableSize(rightHand.getData())+" x i8*], ["+ir.getVtableSize(rightHand.getData())+" x i8*]* "+vtblName+", i32 0, i32 0\n");
-            ir.emit(vtblcast + " = bitcast i8** " + vtbl + " to i8**\n");
             ir.emit(vptrfield + " = getelementptr " + cls + ", " + cls + "* " + cls_ptr + ", i32 0, i32 0\n");
-            ir.emit("store i8** " + vtblcast + ", i8*** " + vptrfield + "\n");
+            ir.emit("store i8** " + vtbl + ", i8*** " + vptrfield + "\n");
             if(l == null){
                 ir.emit("store "+cls+"* "+cls_ptr+", "+cls+"** %"+lhs+"\n");
             }

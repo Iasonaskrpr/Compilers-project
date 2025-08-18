@@ -23,7 +23,7 @@ public class IRHelper{
     private boolean emit;
     private String CurClass;
     // Initializes variables and opens a new output stream
-    public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable,Map<String,ClassVariables> Vars) {
+    public IRHelper(String filename,Map<String ,Map<String , FunctionVInfo>> vtable,Map<String,ClassVariables> Vars,String mainClass) throws Exception {
         iflabelcount = 0;
         looplabelcount = 0;
         ooblabelcount = 0;
@@ -41,6 +41,8 @@ public class IRHelper{
             e.printStackTrace();
         }
         this.Vars = Vars;
+        String main_type = "%class."+mainClass+" = type{ }\n";
+        f.write(main_type.getBytes());
         this.startGeneration(vtable);
     }
     public String getLLVMType(String var){
@@ -145,6 +147,7 @@ public class IRHelper{
         }
         for(Map.Entry<String,ClassVariables> cls : Vars.entrySet()){
             String classDecl = "%class."+cls.getKey()+" = type{i8**,";
+            ClassVariables curCls = cls.getValue();
             String Parent = cls.getValue().getSuper();
             if(Parent != null){
                 classDecl += " %class."+Parent+",";
@@ -222,9 +225,6 @@ public class IRHelper{
         }
         return ret;
     }
-    public void exitClass(){
-        VariableTypes.clear();
-    }
     public String idToTempVar(IRData var){ //Generates a temporary variable and returns it to whoever needs it
         if(this.VariableTypes.containsKey(var.getData())){
             String tempVar = this.new_var();
@@ -286,6 +286,9 @@ public class IRHelper{
         String cls = CurClass;
         String tmp = "%this";
         String command = "";
+        if(this.VariableTypes.containsKey(var.getData())){
+            return null;
+        }
         while(Vars.containsKey(cls)){
             classVar = this.getClassVar(var.getData(),cls);
             if(classVar != null){
@@ -302,6 +305,7 @@ public class IRHelper{
         return null;
     }
     public void new_method(){
+        this.VariableTypes = new HashMap<>();
         this.params = new HashMap<>();
     }
     public void addParam(String name, String cls){
@@ -316,8 +320,11 @@ public class IRHelper{
         String vtbl_ptr = new_var();
         String vtbl = new_var();
         if(!vtbl_ptr_ptr.equals("%this") && !vtbl_ptr_ptr.startsWith("%_")){
-            String vtbl_p = new_var();
-            emit(vtbl_p + " = load %class."+cls+"*, %class."+cls+"** "+vtbl_ptr_ptr+"\n");
+            String vtbl_p = idToTempVar(new IRData(vtbl_ptr_ptr.substring(1),"id"));
+            if(vtbl_p == null){
+                vtbl_p = new_var();
+                emit(vtbl_p + " = load %class."+cls+"*, %class."+cls+"** "+vtbl_ptr_ptr+"\n");
+            }
             vtbl_ptr_ptr = vtbl_p;
         }
         

@@ -41,7 +41,7 @@ public class CompilerManager {
                 if (filename.endsWith(".java")) {
                     filename = filename.substring(0, filename.length() - 5);
                 }
-                IRHelper irhelp = new IRHelper("IRFiles/"+ filename + ".ll",vtable,classes);
+                IRHelper irhelp = new IRHelper("IRFiles/"+ filename + ".ll",vtable,classes,filename);
                 IRVisitor irVisitor = new IRVisitor();
                 root.accept(irVisitor,irhelp);
                 System.out.println("Generated IR code for "+filename+".java");

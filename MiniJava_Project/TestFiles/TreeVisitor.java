@@ -334,7 +334,7 @@ class Visitor {
 
     public int visit(Tree n){
 	int nti ;
-
+	System.out.println(44);
 	if (n.GetHas_Right()){
 	    r = n.GetRight() ;
 	    nti = r.accept(this) ; }
@@ -355,7 +355,7 @@ class MyVisitor extends Visitor {
 
     public int visit(Tree n){
 	int nti ;
-
+	System.out.println(44);
 	if (n.GetHas_Right()){
 	    r = n.GetRight() ;
 	    nti = r.accept(this) ; }
