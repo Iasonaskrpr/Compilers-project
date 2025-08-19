@@ -100,5 +100,5 @@ echo "Correct: $CORRECT / $TOTAL"
 # Clean up unless --keep
 if ! $KEEP; then
     rm -f "$TEST_DIR"/*.tmpout "$TEST_DIR"/*.class
-    rm -rf "$IR_DIR"
+    rm -rf "$IR_DIR"/*
 fi
