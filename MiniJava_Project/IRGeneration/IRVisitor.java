@@ -355,7 +355,6 @@ public class IRVisitor extends GJDepthFirst<IRData,IRHelper>{
             int i = 0;
             for(String id : ids){
                 String tp;
-                System.out.println(types.get(i));
                 if(ir.isClass(id)){
                     String varcls = id;
                     String tempVar;
